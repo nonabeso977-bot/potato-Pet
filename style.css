@@ -257,3 +257,32 @@ footer{display:flex;justify-content:space-between;gap:8px;color:var(--muted);fon
 .room-action{box-shadow:0 5px 15px #536e7920,0 0 0 0 #ffffff;transition:transform .18s,box-shadow .18s}
 .room-action:active{box-shadow:0 2px 8px #536e7920}
 @media(prefers-reduced-motion:reduce){.ambient-layer i,.pet-aura,.body,.eye,.tail{animation:none!important}}
+
+
+/* v1.3 — local time changes the atmosphere */
+.clock-chip{position:absolute;z-index:6;top:42px;left:11px;padding:4px 9px;border:1px solid #fff9;border-radius:99px;background:#ffffffa8;color:#66808d;font-size:9px;font-weight:900;direction:rtl;backdrop-filter:blur(8px)}
+.room-time-dawn{--wall:#f0d9d5;--floor:#e9cbbd;--sun-color:#ffd3a0}
+.room-time-day{--wall:#d7eae0;--floor:#ead8c5}
+.room-time-evening{--wall:#d9c9df;--floor:#cbb6ad;--sun-color:#f4b58f}
+.room-time-night{--wall:#7886a8;--floor:#655f83;--rug-color:#8f80b488;--sun-color:#dce5ff;background:linear-gradient(var(--wall) 0 68%,var(--floor) 68% 100%)}
+.room-time-night .sun{opacity:.18;box-shadow:0 0 0 12px #e2e8ff18,0 0 28px #dce5ff35}
+.room-time-night .cloud{background:#ffffff30}
+.room-time-night .wall-star{color:#fff4c9;opacity:1;text-shadow:0 0 10px #fff8c9}
+.room-time-night .window{background:linear-gradient(#263958,#59678c)}
+.room-time-night .window-view{background:linear-gradient(145deg,#354d68 50%,#4c6170 50%)}
+.room-time-night .window i{background:#d9e5ff}
+.room-time-night .room-label,.room-time-night .weather-chip,.room-time-night .clock-chip{color:#e8edf9;background:#35415cce;border-color:#aab7d455}
+.room-time-night .speech,.room-time-night .room-action{color:#34445f;background:#f1f3ff}
+.room-time-night .floor-line{background:#8c86a6}
+.room-time-night .pet-name{color:#394963;background:#f1f3ffe8}
+.room-time-evening .sun{background:#f7b38d;box-shadow:0 0 0 10px #f7b38d24}
+.room-time-evening .cloud{background:#fff1e6a8}
+.room-prop,.plant{touch-action:manipulation}
+.room-prop{border:5px solid #ffffffa8;font-family:inherit;cursor:pointer}
+.room-prop:focus-visible,.plant:focus-visible{outline:3px solid #77bda4;outline-offset:4px}
+.room-prop:active{transform:scale(.94) rotate(-3deg)}
+.plant{border:0;padding:0;background:transparent;cursor:pointer;transition:transform .2s}
+.plant:active{transform:scale(1.12) rotate(5deg);transform-origin:bottom left}
+.room-time-night .plant b{background:#c18e9c}
+.room-time-night .plant span{background:#6f9c87}
+@media(max-width:390px){.clock-chip{top:68px;left:8px;font-size:8px}}
