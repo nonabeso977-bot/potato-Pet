@@ -36,7 +36,7 @@ function updateHUD(){
  fill.style.width=(count/20*100)+"%";
  $("missionCount").textContent=count+" / 20";
  $("missionText").textContent=missionDone?"اكتملت المهمة! +150":"اجمعي 20 نجمة";
- $("missionCount").parentElement.setAttribute("aria-valuenow",String(count));
+ $("missionTrack").setAttribute("aria-valuenow",String(count));
  const active=shieldTime>0||magnetTime>0;
  $("powerState").hidden=!active;
  $("powerState").classList.toggle("magnet",magnetTime>0);
@@ -114,7 +114,10 @@ function update(dt){
  player.x=clamp(player.x,player.r+7,width-player.r-7);player.y=clamp(player.y,height*.42,height-28);
  player.invulnerable=Math.max(0,player.invulnerable-dt);
  if(comboTime>0){comboTime-=dt;if(comboTime<=0){combo=1;updateHUD();}}
+ const hadPower=shieldTime>0||magnetTime>0;
  shieldTime=Math.max(0,shieldTime-dt);magnetTime=Math.max(0,magnetTime-dt);shake=Math.max(0,shake-dt*24);
+ if(hadPower&&!shieldTime&&!magnetTime)updateHUD();
+ if(shieldTime>0||magnetTime>0)$("powerTimer").style.width=(Math.max(shieldTime,magnetTime)/7*30)+"px";
  if(magnetTime>0){
    for(const s of stars){const dx=player.x-s.x,dy=player.y-s.y,d=Math.hypot(dx,dy);if(d<175&&d>1){const pull=(1-d/175)*420;s.x+=dx/d*pull*dt;s.y+=dy/d*pull*dt;}}
  }
