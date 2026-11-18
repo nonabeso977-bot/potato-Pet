@@ -150,7 +150,8 @@ function updateUI() {
   $("bondBar").style.width = state.bond + "%";
   const mood = state.food < 25 ? "جائعة وتحتاج وجبة" : state.energy < 20 ? "متعبة وتحتاج راحة" : state.attention < 25 ? "تشتاق إلى الونس" : state.happy < 25 ? "تحتاج بعض المرح" : state.bond >= 75 ? "مرتبطة بك جدًا ♡" : state.happy >= 65 ? "سعيدة ومرحة ♡" : "هادئة";
   $("moodChip").textContent = "مزاج لوزة: " + mood;
-  $("roomAction").textContent = state.room === "bedroom" && state.sleeping ? "إيقاظ لوزة ☀️" : rooms[state.room].button;
+  const currentRoom = rooms[state.room] || rooms.lounge;
+  $("roomAction").textContent = state.room === "bedroom" && state.sleeping ? "إيقاظ لوزة ☀️" : currentRoom.button;
   pet.classList.toggle("sleeping", state.room === "bedroom" && state.sleeping);
   room.classList.toggle("sleep-mode", state.room === "bedroom" && state.sleeping);
   const bagCount = Object.values(state.inventory).reduce((sum, count) => sum + count, 0);
@@ -160,7 +161,7 @@ function updateUI() {
   pet.classList.remove(...skins);
   pet.classList.add(state.skin);
   $("accessory").className = "accessory" + (state.accessory ? " " + state.accessory : "");
-  $("zzz").setAttribute("aria-hidden", state.room !== "bedroom" ? "true" : "false");
+  $("zzz").setAttribute("aria-hidden", state.room !== "bedroom" || !state.sleeping ? "true" : "false");
   renderQuests();
 }
 
