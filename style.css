@@ -111,7 +111,7 @@ h1{margin:-3px 0 0;font-size:clamp(19px,5vw,25px);line-height:1.35;letter-spacin
 .room-bedroom .cloud{background:#ffffff55}.room-bedroom .wall-star{color:#fff3c8}.room-bedroom .sun{opacity:.45}
 .room-lounge{--wall:#d5e9df;--floor:#e9d7c2;--rug-color:#e4b9c899;--sun-color:#ffe5a2}
 .room-playroom .wall-star{color:#fff}
-.status{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.status{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .status-card{padding:8px 10px;border:1px solid #fff;border-radius:14px;background:#ffffffc2}
 .status-card>div:first-child{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;font-size:10px;font-weight:900}
 .status-card b{font-size:12px}.status-card strong{font-size:9px;color:#7f949b}
@@ -154,7 +154,7 @@ footer{display:flex;justify-content:space-between;gap:8px;color:var(--muted);fon
 .settings-note{margin:10px 0 0;color:var(--muted);font-size:10px;line-height:1.7}
 .toast{position:fixed;z-index:50;bottom:max(20px,env(safe-area-inset-bottom));left:50%;max-width:calc(100% - 30px);padding:10px 16px;border:1px solid #fff;border-radius:99px;color:#fff;background:#476777;box-shadow:0 8px 25px #253f4a35;font-size:11px;font-weight:800;text-align:center;opacity:0;pointer-events:none;transform:translate(-50%,12px);transition:opacity .2s,transform .2s}
 .toast.show{opacity:1;transform:translate(-50%,0)}
-@media(min-width:650px){.app{gap:12px;padding:16px 20px}.room{min-height:440px}.actions{gap:10px}.action{min-height:54px}.quick-button{min-height:46px}}
+@media(min-width:650px){.app{gap:12px;padding:16px 20px}.room{min-height:440px}.actions{gap:10px}.action{min-height:54px}.quick-button{min-height:46px}.status{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:390px){.app{padding-left:9px;padding-right:9px;gap:8px}.brand-mark{width:37px;height:37px}.top-tools{gap:4px}.level-pill,.coin,.icon-button{height:34px;min-width:34px;padding:4px 7px;font-size:10px}.icon-button{width:34px}.action{min-height:44px;gap:3px}.action span{font-size:17px}.action b{font-size:9px}.room{min-height:315px;border-radius:20px}.room-action{top:91px;right:8px;padding:7px 9px;font-size:9px}.speech{right:8px;max-width:58%;font-size:9px}.status-card{padding:7px 7px}.quest{gap:3px;padding:6px 4px;font-size:8px}.quest b{font-size:8px}}
 @media(max-height:720px){.app{gap:7px;padding-top:6px;padding-bottom:6px}.room{min-height:270px}.daily-card{padding:7px 10px}.quest-list{margin-top:6px}.status-card{padding:6px 8px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
@@ -199,3 +199,6 @@ footer{display:flex;justify-content:space-between;gap:8px;color:var(--muted);fon
 .room-garden .sun{box-shadow:0 0 0 13px #fff0b344,0 0 35px #fff0b355}
 .room-garden .pet-name{background:#f7fff0e8}
 @media(max-width:390px){.mood-chip{top:46px;left:8px;font-size:8px}.bond-copy{margin-top:5px}}
+
+.attention-status b{color:#79a9a2}
+#attentionBar{background:linear-gradient(90deg,#a9d9cf,#78b8ad)}
