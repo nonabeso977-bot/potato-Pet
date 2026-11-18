@@ -1,94 +1,74 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#eaf2f3">
-  <meta name="description" content="اعتني بلوزة، العب معها، واجمع النجوم في Potato Pet.">
-  <title>Potato Pet ♡</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080d20">
+<meta name="description" content="مدار: اجمع النجوم، تفادَ الشهب، واصنع رقمك القياسي.">
+<title>مدار | ORBIT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Changa:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main class="app">
-    <header class="topbar">
-      <div class="brand"><div class="brand-mark">P<span>♡</span></div><div><p class="eyebrow">عالم صغير مليء بالمرح</p><h1>Potato Pet</h1></div></div>
-      <div class="top-tools">
-        <div class="level-pill"><span>LV</span><b id="level">1</b></div>
-        <div class="coin"><span>✦</span><b id="coins">0</b></div>
-        <button class="icon-button" id="settingsButton" type="button" aria-label="الإعدادات" title="الإعدادات">⚙</button>
+<main class="shell">
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="مدار">
+      <span class="brand-icon"><i></i><b></b></span>
+      <span><strong>مَدار</strong><small>ORBIT / ARCADE</small></span>
+    </a>
+    <div class="top-meta"><span class="status-live"><i></i> SYSTEM ONLINE</span><button class="sound-button" id="soundButton" type="button" aria-label="تشغيل أو إيقاف المؤثرات">♫</button></div>
+  </header>
+
+  <section class="intro" id="intro">
+    <div class="intro-copy">
+      <p class="eyebrow">رحلة قصيرة خارج المألوف</p>
+      <h1>المجرة لا تنتظر<span>.</span></h1>
+      <p class="lead">انطلقي إلى المدار. اجمعي الضوء، تفادي الحطام، وحاولي تحطيم رقمك القياسي.</p>
+      <div class="record-line"><span>أفضل نتيجة</span><strong id="menuBest">000000</strong></div>
+      <button class="primary-button" id="startButton" type="button"><span>ابدئي الرحلة</span><b>↗</b></button>
+      <p class="control-note">اسحبي المركبة بإصبعك · أو استخدمي الأسهم / WASD</p>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+      <div class="planet"><i></i></div>
+      <div class="ship"><i></i><b></b></div>
+      <span class="hero-star s1">✦</span><span class="hero-star s2">✧</span><span class="hero-star s3">✦</span>
+      <span class="hero-caption">SECTOR 07 <i>•</i> DEEP SPACE</span>
+    </div>
+  </section>
+
+  <section class="game-panel" id="gamePanel" hidden>
+    <div class="game-topline">
+      <div class="game-stat"><small>النقاط</small><strong id="score">000000</strong></div>
+      <div class="game-stat"><small>أفضل نتيجة</small><strong id="best">000000</strong></div>
+      <div class="game-stat compact"><small>المرحلة</small><strong id="level">01</strong></div>
+      <div class="lives" id="lives" aria-label="ثلاث فرص"><i></i><i></i><i></i></div>
+      <button class="pause-button" id="pauseButton" type="button" aria-label="إيقاف مؤقت">Ⅱ</button>
+    </div>
+    <div class="arena-wrap">
+      <canvas id="arena" aria-label="ساحة لعبة مدار. اسحبي المركبة لتجنب الشهب وجمع النجوم."></canvas>
+      <div class="arena-vignette" aria-hidden="true"></div>
+      <div class="arena-message" id="arenaMessage" hidden>
+        <span class="message-kicker">ORBIT CONTROL</span>
+        <h2 id="messageTitle">توقفت الرحلة</h2>
+        <p id="messageText">خذي نفسًا، المدار ينتظرك.</p>
+        <button class="primary-button small" id="resumeButton" type="button">متابعة الرحلة <b>↗</b></button>
+        <button class="text-button" id="exitButton" type="button">العودة للقائمة</button>
       </div>
-    </header>
-    <section class="progress-card" aria-label="تقدم المستوى">
-      <div class="progress-copy"><span id="levelTitle">مبتدئة العناية</span><b><span id="xpText">0</span> / <span id="xpNeeded">50</span> XP</b></div>
-      <div class="xp-track"><span id="xpBar"></span></div>
-      <div class="bond-copy"><span>♡ علاقتك بلوزة</span><b id="bondValue">0%</b></div><div class="bond-track"><span id="bondBar"></span></div>
-    </section>
-    <section class="quick-actions" aria-label="أدوات اللعبة">
-      <button class="quick-button" id="shopButton" type="button"><span>🛍️</span> المتجر</button>
-      <button class="quick-button" id="bagButton" type="button"><span>🎒</span> الحقيبة <i id="bagCount">0</i></button>
-      <button class="quick-button reward-button" id="rewardButton" type="button"><span>🎁</span> هدية اليوم</button>
-      <button class="quick-button game-button" id="butterflyButton" type="button"><span>🦋</span> صيد الفراشات</button>
-    </section>
-    <nav class="actions" aria-label="التنقل بين الغرف">
-      <button class="action active" data-room="lounge" type="button" aria-pressed="true"><span>🛋️</span><b>الجلوس</b></button>
-      <button class="action" data-room="kitchen" type="button" aria-pressed="false"><span>🥣</span><b>المطبخ</b></button>
-      <button class="action" data-room="playroom" type="button" aria-pressed="false"><span>🧶</span><b>اللعب</b></button>
-      <button class="action" data-room="bedroom" type="button" aria-pressed="false"><span>🌙</span><b>النوم</b></button>
-      <button class="action" data-room="garden" type="button" aria-pressed="false"><span>🌷</span><b>الحديقة</b></button>
-    </nav>
-    <section class="room room-lounge" id="room" aria-label="غرفة القطة">
-      <div class="ambient-layer" id="ambientLayer" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
-      <div class="fx-layer" id="fxLayer" aria-hidden="true"></div>
-      <div class="room-label"><span class="live-dot"></span><span id="roomName">غرفة الجلوس</span></div>
-      <div class="mood-chip" id="moodChip">مزاج لوزة: سعيدة ♡</div>
-      <div class="weather-chip" id="weatherChip">☀️ نهار لطيف</div>
-      <div class="clock-chip" id="clockChip" aria-label="وقت اللعبة">12:00 · نهار</div>
-      <div class="window"><i></i><i></i><span class="window-view"></span></div>
-      <div class="sun"></div><div class="cloud cloud-one"></div><div class="cloud cloud-two"></div>
-      <div class="wall-star star-one">✦</div><div class="wall-star star-two">✧</div>
-      <div class="shelf"><span>♡</span><span>▱</span><span>✿</span></div>
-      <button class="room-prop" id="roomProp" type="button" aria-label="تفاعلي مع أثاث الغرفة" title="تفاعلي مع أثاث الغرفة">🛋️</button>
-      <button class="plant" id="plant" type="button" aria-label="تفاعلي مع النبتة" title="تفاعلي مع النبتة"><span></span><span></span><span></span><b></b></button>
-      <div class="rug"></div>
-      <div class="speech" id="speech" aria-live="polite">أهلًا! أنا لوزة ♡</div>
-      <div class="zzz" id="zzz" aria-hidden="true">z z Z</div>
-      <button class="room-action" id="roomAction" type="button">داعبي لوزة ♡</button>
-      <button class="pet skin-blue" id="pet" type="button" aria-label="لوزة، قطتك الأليفة. اضغطي للتفاعل معها" title="اضغطي للتفاعل مع لوزة">
-        <span class="pet-aura"></span><span class="tail"></span><span class="ear ear-left"><i></i></span><span class="ear ear-right"><i></i></span>
-        <span class="body"><i class="belly"></i></span>
-        <span class="head"><i class="patch"></i><i class="eye eye-left"><b></b></i><i class="eye eye-right"><b></b></i><i class="cheek cheek-left"></i><i class="cheek cheek-right"></i><i class="whisker whisker-left"></i><i class="whisker whisker-right"></i><i class="muzzle muzzle-left"></i><i class="muzzle muzzle-right"></i><i class="nose"></i><i class="mouth"></i></span>
-        <span class="paw paw-left"></span><span class="paw paw-right"></span><span class="accessory" id="accessory"></span>
-      </button>
-      <div class="pet-name" id="petName">لوزة</div>
-      <div class="floor-line"></div>
-      <div class="room-hint" id="roomHint">اضغطي على لوزة لتسمعيها تموء</div>
-    </section>
-    <section class="status" aria-label="حالة لوزة">
-      <div class="status-card food-status"><div><span>الشبع</span><b>🍎 <strong id="foodValue">76%</strong></b></div><div class="meter"><span id="foodBar"></span></div></div>
-      <div class="status-card happy-status"><div><span>السعادة</span><b>♡ <strong id="happyValue">72%</strong></b></div><div class="meter"><span id="happyBar"></span></div></div>
-      <div class="status-card energy-status"><div><span>الطاقة</span><b>⚡ <strong id="energyValue">82%</strong></b></div><div class="meter"><span id="energyBar"></span></div></div>
-      <div class="status-card attention-status"><div><span>الونس</span><b>♡ <strong id="attentionValue">70%</strong></b></div><div class="meter"><span id="attentionBar"></span></div></div>
-    </section>
-    <section class="daily-card">
-      <div class="daily-heading"><div><span class="daily-icon">✧</span><div><b>مهمات لوزة</b><small>أنجزيها واجمعي الخبرة</small></div></div><span class="daily-tag">يومي</span></div>
-      <div class="quest-list" id="questList">
-        <div class="quest"><span>🍎</span><span>أطعمي لوزة مرة</span><b>0/1</b></div>
-        <div class="quest"><span>🧶</span><span>العبي معها مرة</span><b>0/1</b></div>
-        <div class="quest"><span>♡</span><span>دلّليها مرتين</span><b>0/2</b></div>
-      </div>
-    </section>
-    <footer>Potato Pet · إصدار 1.8 · مساحة لوزة ♡ <span id="saveStatus">يُحفظ تقدمك تلقائيًا</span></footer>
-  </main>
-  <div class="modal-backdrop" id="modalBackdrop" hidden>
-    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <header class="modal-header"><div><p class="eyebrow">عالم لوزة</p><h2 id="modalTitle">المتجر</h2></div><button class="close-button" id="closeModal" type="button" aria-label="إغلاق">×</button></header>
-      <div class="modal-content" id="modalContent"></div>
-    </section>
-  </div>
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="script.js"></script>
+      <div class="arena-hint" id="arenaHint">اسحبي المركبة للتحرك</div>
+    </div>
+    <div class="game-bottomline"><span><i class="legend-star">✦</i> اجمعي النجوم</span><span><i class="legend-rock">◆</i> تجنبي الشهب</span><span id="comboLabel">COMBO ×1</span></div>
+  </section>
+
+  <section class="features" id="features">
+    <article><span class="feature-icon">✦</span><div><strong>اجمعي الضوء</strong><small>كل نجمة ترفع نتيجتك</small></div></article>
+    <article><span class="feature-icon danger">◇</span><div><strong>تفادي الشهب</strong><small>ثلاث فرص فقط لكل رحلة</small></div></article>
+    <article><span class="feature-icon violet">⌁</span><div><strong>تحدّي متصاعد</strong><small>السرعة تزيد مع الوقت</small></div></article>
+  </section>
+  <footer><span>ORBIT / BUILD 1.0</span><span>صُممت لتُلعَب، لا لتُشاهَد فقط.</span></footer>
+</main>
+<script src="script.js"></script>
 </body>
 </html>
