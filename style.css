@@ -729,3 +729,270 @@ footer{grid-area:footer}
 @media(prefers-reduced-motion:reduce){
   .quick-button:hover,.action:hover{transform:none}
 }
+
+
+/* v1.8 — play space: remove dashboard feeling and let the pet lead */
+.app{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  grid-template-areas:
+    "header header"
+    "room room"
+    "nav nav"
+    "status status"
+    "progress tools"
+    "daily daily"
+    "footer footer";
+  gap:14px 18px;
+  width:min(100%,1040px);
+  padding:16px clamp(14px,3vw,28px) max(20px,env(safe-area-inset-bottom));
+}
+.topbar{grid-area:header}
+.room{
+  grid-area:room;
+  width:100%;
+  height:clamp(500px,57vw,650px);
+  min-height:0;
+  border:7px solid #fff;
+  border-radius:34px;
+  box-shadow:0 24px 60px #526c791b,0 5px 15px #526c790d;
+}
+.actions{
+  grid-area:nav;
+  display:flex;
+  justify-content:center;
+  gap:clamp(7px,2vw,18px);
+  padding:8px 12px;
+  border:1px solid #ffffffb8;
+  border-radius:24px;
+  background:#ffffff8a;
+  box-shadow:0 8px 25px #526c790b,inset 0 1px 0 #fff;
+  backdrop-filter:blur(14px);
+}
+.action{
+  flex:1 1 0;
+  min-width:0;
+  min-height:68px;
+  flex-direction:column;
+  gap:5px;
+  border:1px solid transparent;
+  border-radius:18px;
+  background:transparent;
+  box-shadow:none;
+}
+.action span{
+  width:37px;height:37px;
+  display:grid;place-items:center;
+  border:1px solid #ffffffc9;
+  border-radius:14px;
+  background:#ffffffa8;
+  font-size:21px;
+}
+.action b{font-size:10px;color:#71848e}
+.action.active{
+  border-color:#c8e5d7;
+  background:linear-gradient(145deg,#e9f6ef,#dff0e6);
+  box-shadow:0 5px 14px #82b79b1b,inset 0 1px 0 #fff;
+}
+.action.active b{color:#477b68}
+.status{
+  grid-area:status;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+}
+.status-card{
+  min-height:67px;
+  padding:10px 13px;
+  border:1px solid #ffffffd1;
+  border-radius:17px;
+  background:linear-gradient(145deg,#ffffffc9,#ffffff78);
+  box-shadow:0 5px 16px #526c7909;
+}
+.progress-card{grid-area:progress;align-self:stretch}
+.quick-actions{
+  grid-area:tools;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  align-content:stretch;
+}
+.quick-button{
+  min-height:49px;
+  justify-content:flex-start;
+  padding:6px 10px;
+  border:1px solid #ffffffb8;
+  border-radius:16px;
+  background:#ffffffa8;
+  box-shadow:0 4px 13px #526c7908;
+}
+.quick-button>span{
+  width:31px;height:31px;flex:0 0 31px;
+  display:grid;place-items:center;
+  border-radius:11px;
+  background:#ffffffb8;
+  font-size:18px;
+}
+.daily-card{grid-area:daily}
+footer{grid-area:footer}
+
+/* The room is a scene, not a card containing a cat */
+.room{
+  background-image:
+    radial-gradient(ellipse at 50% 86%,#ffffff35,transparent 44%),
+    linear-gradient(90deg,#ffffff0b 1px,transparent 1px),
+    linear-gradient(var(--wall) 0 68%,var(--floor) 68% 100%);
+  background-size:auto,52px 100%,100% 100%;
+}
+.room::after{
+  background:
+    linear-gradient(115deg,#ffffff45,transparent 32%,transparent 76%,#ffffff20),
+    linear-gradient(0deg,#8b78610b,transparent 27%);
+}
+.room-label{top:15px;left:15px;padding:8px 13px}
+.weather-chip{top:15px;right:15px;padding:8px 13px}
+.mood-chip{top:61px;left:15px;padding:7px 11px}
+.clock-chip{top:101px;left:15px;padding:7px 11px}
+.speech{
+  top:68px;right:17px;
+  max-width:min(40%,330px);
+  padding:11px 15px;
+  border-radius:19px 19px 5px 19px;
+  font-size:12px;
+}
+.room-action{
+  top:auto;right:17px;bottom:17px;
+  min-height:44px;padding:9px 17px;
+  border-radius:16px;
+  box-shadow:0 9px 22px #536e7920;
+}
+.room-hint{bottom:5%;font-size:10px}
+.pet{
+  top:55%;
+  width:clamp(245px,31vw,320px);
+  height:clamp(295px,38vw,385px);
+}
+.pet-name{bottom:13%;padding:6px 20px}
+.rug{bottom:4%;height:19%}
+.floor-line{bottom:20%}
+.room-prop{
+  right:8%;bottom:19%;
+  width:clamp(86px,12vw,126px);
+  height:clamp(86px,12vw,126px);
+  border:0;
+  background:transparent;
+  box-shadow:none;
+  filter:drop-shadow(0 10px 8px #536e7920);
+}
+.room-prop:hover{transform:translateY(-5px) rotate(-3deg)}
+.plant{left:8%;bottom:9%;transform:scale(1.25);transform-origin:bottom left}
+
+/* Give each destination its own atmosphere */
+.room-kitchen{
+  --wall:#f1dfc9;--floor:#d8b995;--rug-color:#cda77b88;
+  background-image:radial-gradient(ellipse at 50% 86%,#fff7e8aa,transparent 43%),linear-gradient(var(--wall) 0 68%,var(--floor) 68% 100%);
+}
+.room-kitchen .sun{background:#f5d18c;box-shadow:0 0 0 12px #f5d18c25}
+.room-kitchen .rug{background:radial-gradient(ellipse,#e9c99f,#c99e7580 70%,transparent 72%)}
+.room-playroom{
+  --wall:#f0d8e8;--floor:#e5c9d7;--rug-color:#c5b3df99;
+  background-image:radial-gradient(ellipse at 50% 86%,#fff4f8aa,transparent 43%),linear-gradient(var(--wall) 0 68%,var(--floor) 68% 100%);
+}
+.room-playroom .wall-star{color:#fff4c9;text-shadow:0 2px 8px #d69cbe66}
+.room-bedroom{
+  --wall:#aebbd7;--floor:#c7bfd8;--rug-color:#b9a6d399;
+  background-image:radial-gradient(ellipse at 50% 86%,#e9e9ff55,transparent 43%),linear-gradient(var(--wall) 0 68%,var(--floor) 68% 100%);
+}
+.room-bedroom .window{box-shadow:0 0 25px #fff4c955,0 10px 25px #38486b30}
+.room-garden{
+  --wall:#cce6c9;--floor:#a8ce9e;--rug-color:#82b98b99;
+  background-image:radial-gradient(ellipse at 50% 86%,#eff8c877,transparent 43%),linear-gradient(var(--wall) 0 56%,#b5d99e 56% 100%);
+}
+.room-garden .room-prop{background:transparent;filter:drop-shadow(0 8px 8px #47754b30)}
+
+/* Compact screens: scene first, navigation dock next, details after */
+@media(max-width:759px){
+  .app{
+    grid-template-columns:minmax(0,1fr);
+    grid-template-areas:
+      "header"
+      "room"
+      "nav"
+      "quick"
+      "status"
+      "progress"
+      "daily"
+      "footer";
+    gap:10px;
+    padding:10px 11px max(16px,env(safe-area-inset-bottom));
+  }
+  .topbar{min-height:49px;padding:0 2px 2px}
+  .room{
+    height:clamp(420px,59svh,540px);
+    min-height:0;
+    border-width:5px;
+    border-radius:27px;
+  }
+  .actions{
+    gap:4px;
+    padding:5px;
+    border-radius:20px;
+  }
+  .action{min-height:57px;gap:3px;padding:4px 2px;border-radius:15px}
+  .action span{width:29px;height:29px;border-radius:11px;font-size:17px}
+  .action b{font-size:9px}
+  .quick-actions{
+    grid-area:quick;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:6px;
+  }
+  .quick-button{
+    min-height:65px;
+    flex-direction:column;
+    justify-content:center;
+    gap:3px;
+    padding:5px 3px;
+    border-radius:15px;
+    font-size:9px;
+  }
+  .quick-button>span{
+    width:31px;height:31px;flex-basis:31px;
+    border-radius:11px;font-size:17px;
+  }
+  .quick-button i{position:absolute;margin:0;transform:translate(13px,-13px)}
+  .status{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .status-card{min-height:59px;padding:8px 10px;border-radius:15px}
+  .progress-card{padding:11px 13px}
+  .daily-card{padding:12px 13px}
+  .speech{top:67px;right:10px;max-width:54%;font-size:10px}
+  .room-action{right:10px;bottom:12px;min-height:38px;padding:7px 11px;font-size:9px}
+  .room-label{top:10px;left:10px;padding:6px 9px}
+  .weather-chip{top:10px;right:10px;padding:6px 9px}
+  .mood-chip{top:48px;left:10px;font-size:8px}
+  .clock-chip{top:82px;left:10px;font-size:8px}
+  .pet{
+    top:55%;
+    width:clamp(215px,55vw,285px);
+    height:clamp(260px,67vw,340px);
+  }
+  .pet-name{bottom:13%;font-size:11px}
+  .room-prop{right:5%;bottom:18%;width:70px;height:70px;font-size:40px}
+  .plant{left:5%;bottom:8%;transform:scale(1.05);transform-origin:bottom left}
+  .rug{bottom:4%;height:17%}
+  .floor-line{bottom:19%}
+}
+@media(max-width:390px){
+  .app{gap:8px;padding-left:9px;padding-right:9px}
+  .room{height:clamp(405px,57svh,480px);border-radius:23px}
+  .action{min-height:53px}
+  .action span{width:26px;height:26px;font-size:16px}
+  .action b{font-size:8px}
+  .quick-button{min-height:59px;font-size:8px}
+  .quick-button>span{width:28px;height:28px;flex-basis:28px;font-size:16px}
+  .pet{width:clamp(205px,57vw,235px);height:clamp(248px,69vw,285px)}
+  .speech{max-width:52%;font-size:9px}
+}
+@media(min-width:760px){
+  .status-card{min-height:72px}
+  .quick-actions{min-height:100%;grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(prefers-reduced-motion:reduce){
+  .room-prop:hover,.quick-button:hover,.action:hover{transform:none}
+}
