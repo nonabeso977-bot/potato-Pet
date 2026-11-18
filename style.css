@@ -221,3 +221,17 @@ footer{font-size:8px;margin-top:14px}
 .music-button[aria-pressed="true"]{color:#071521;background:linear-gradient(110deg,#c7baff,#8fe4e9);box-shadow:0 0 18px #a99bff44}
 .top-meta .sound-button{flex:0 0 36px}
 .record-row:first-child{border-color:#ffd77a66;background:#ffd77a0c}
+
+/* ORBIT 3.2 · expanded local leaderboard */
+.record-row{grid-template-columns:34px minmax(0,1fr) auto;min-height:54px}
+.record-player{display:flex;flex-direction:column;min-width:0;gap:1px}
+.record-player strong{color:#edf1ff;font:600 12px "Changa",sans-serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.record-player small{color:#8493b3;font-size:9px}
+.record-row.leader-first{border-color:#ffd77a88;background:linear-gradient(90deg,#ffd77a12,#ffffff06)}
+.record-row.leader-first>b{color:#ffd77a}
+.record-row.leader-second>b{color:#c8d5e8}
+.record-row.leader-third>b{color:#d7a17d}
+.music-button{position:relative}
+.music-button[aria-pressed="true"]{animation:musicPulse 2.8s ease-in-out infinite}
+@keyframes musicPulse{0%,100%{box-shadow:0 0 10px #a99bff22}50%{box-shadow:0 0 22px #a99bff77}}
+@media(prefers-reduced-motion:reduce){.music-button[aria-pressed="true"]{animation:none}}
