@@ -176,7 +176,7 @@ async function startAmbient(){
    const master=audio.createGain(),filter=audio.createBiquadFilter();
    filter.type="lowpass";filter.frequency.value=1500;filter.Q.value=.35;
    master.gain.setValueAtTime(.0001,audio.currentTime);
-   master.gain.linearRampToValueAtTime(.24,audio.currentTime+1.4);
+   master.gain.linearRampToValueAtTime(.72,audio.currentTime+1.4);
    filter.connect(master);master.connect(audio.destination);
    const chordProgression=[
      [146.83,220,261.63,293.66],
@@ -187,7 +187,7 @@ async function startAmbient(){
    const pads=chordProgression[0].map((frequency,index)=>{
      const osc=audio.createOscillator(),gain=audio.createGain();
      osc.type=index===3?"triangle":"sine";osc.frequency.value=frequency;
-     gain.gain.value=[.18,.12,.085,.045][index];
+     gain.gain.value=[.34,.25,.18,.11][index];
      osc.connect(gain);gain.connect(filter);osc.start();return osc;
    });
    const lfo=audio.createOscillator(),lfoGain=audio.createGain();
@@ -202,7 +202,7 @@ async function startAmbient(){
      const now=audio.currentTime,osc=audio.createOscillator(),gain=audio.createGain();
      osc.type="sine";osc.frequency.setValueAtTime(melody[step%melody.length],now);
      gain.gain.setValueAtTime(.0001,now);
-     gain.gain.linearRampToValueAtTime(.16,now+.12);
+     gain.gain.linearRampToValueAtTime(.28,now+.12);
      gain.gain.exponentialRampToValueAtTime(.0001,now+1.8);
      osc.connect(gain);gain.connect(filter);osc.start(now);osc.stop(now+1.9);
      step++;
