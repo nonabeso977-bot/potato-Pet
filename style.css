@@ -209,3 +209,9 @@ footer{font-size:8px;margin-top:14px}
 .pilot-name-row{display:flex;gap:8px;margin:12px 0 4px}
 .pilot-name-row input{min-width:0;flex:1;padding:10px 12px;border:1px solid #ffffff22;border-radius:10px;background:#080f24;color:#eef3ff;font:12px "Changa",sans-serif}
 .pilot-name-row button{padding:8px 14px;border:1px solid #76e4e455;border-radius:10px;background:#76e4e412;color:var(--cyan);font:11px "Changa",sans-serif;cursor:pointer}
+
+/* 3.0.1: keep the current region readable on narrow screens */
+.pilot-name-row{align-items:center;flex-wrap:wrap}
+.pilot-name-row label{width:100%;color:#9eacc8;font-size:10px}
+@media(max-width:650px){.game-stat.compact{flex:0 0 86px;min-width:86px}.game-stat.compact #stageName{display:block;max-width:100%;overflow:visible;font-size:9px!important;line-height:1.35}}
+@media(max-width:370px){.game-stat.compact{flex-basis:78px;min-width:78px}}
