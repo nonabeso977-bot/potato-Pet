@@ -202,3 +202,58 @@ footer{display:flex;justify-content:space-between;gap:8px;color:var(--muted);fon
 
 .attention-status b{color:#79a9a2}
 #attentionBar{background:linear-gradient(90deg,#a9d9cf,#78b8ad)}
+
+/* v1.2 — character polish, room atmosphere and tactile reactions */
+.room{background-image:linear-gradient(90deg,#ffffff08 1px,transparent 1px),linear-gradient(var(--wall) 0 68%,var(--floor) 68% 100%);background-size:34px 100%,100% 100%}
+.room:before{content:"";position:absolute;z-index:0;inset:0 0 32%;pointer-events:none;opacity:.22;background:radial-gradient(ellipse at 50% 100%,#fff 0 1px,transparent 2px),radial-gradient(ellipse at 20% 35%,#fff 0 1px,transparent 2px);background-size:48px 43px,67px 59px}
+.room-prop{box-shadow:inset 0 2px 8px #fff8,0 10px 18px #536e7918}
+.window{box-shadow:inset 0 0 0 2px #ffffffa8,0 8px 18px #6a9bab22}
+.window-view:after{content:"";position:absolute;right:12%;bottom:0;width:20%;height:60%;border-radius:60% 60% 0 0;background:#78b88988}
+.rug{border:2px solid #ffffff4a;box-shadow:inset 0 0 0 5px #ffffff20,0 5px 10px #765e4b10}
+.pet{transform-origin:50% 83%;will-change:transform;filter:drop-shadow(0 12px 5px #536e7928)}
+.pet-aura{position:absolute;z-index:-1;left:15%;top:10%;width:70%;height:68%;border-radius:50%;background:radial-gradient(ellipse,#ffffff70 0,#ffffff20 48%,transparent 72%);opacity:.55;animation:auraPulse 3.5s ease-in-out infinite}
+@keyframes auraPulse{0%,100%{transform:scale(.92);opacity:.35}50%{transform:scale(1.08);opacity:.72}}
+.body{background:linear-gradient(145deg,var(--fur-light),var(--fur) 68%);box-shadow:inset -9px -8px 0 #496b7912,inset 7px 6px 0 #ffffff30}
+.head{background:radial-gradient(ellipse at 35% 24%,#fff9,transparent 30%),linear-gradient(145deg,#fff,var(--fur-light) 42%,var(--fur-light));box-shadow:inset -5px -7px 0 #6d879014,0 5px 10px #526d7910}
+.ear{filter:drop-shadow(0 3px 1px #526d7918);transform-origin:50% 90%}
+.eye{animation:softBlink 5.2s infinite;transform-origin:center}
+.eye-right{animation-delay:.08s}
+@keyframes softBlink{0%,43%,47%,100%{transform:scaleY(1)}45%{transform:scaleY(.08)}}
+.cheek{filter:blur(.4px);box-shadow:0 0 9px #ed9fb244}
+.nose{box-shadow:0 2px 2px #9e667455}
+.tail{border-width:14px;filter:drop-shadow(1px 2px 1px #526d7922);animation:tailSway 2.1s ease-in-out infinite}
+@keyframes tailSway{0%,100%{transform:rotate(-18deg)}50%{transform:rotate(22deg)}}
+.body{animation:breath 3.4s ease-in-out infinite;transform-origin:50% 100%}
+@keyframes breath{0%,100%{scale:1 1}50%{scale:1.025 1.035}}
+.pet.playing{animation:playfulHop .48s cubic-bezier(.3,.7,.3,1) 3}
+@keyframes playfulHop{0%,100%{translate:0 0;rotate:0}35%{translate:0 -25px;rotate:-4deg}70%{translate:0 -8px;rotate:4deg}}
+.pet.excited{animation:excitedDance .72s ease-in-out 2}
+@keyframes excitedDance{0%,100%{rotate:0;translate:0 0}25%{rotate:-8deg;translate:0 -8px}50%{rotate:0;translate:0 -15px}75%{rotate:8deg;translate:0 -7px}}
+.pet.purring .head{animation:purrTilt 1.2s ease-in-out 2}
+@keyframes purrTilt{0%,100%{rotate:0}35%{rotate:-3deg}70%{rotate:3deg}}
+.pet.curious .ear-right{animation:earFlick .55s ease-in-out 2}
+@keyframes earFlick{0%,100%{rotate:13deg}50%{rotate:28deg}}
+.pet.sleeping{animation:sleepBob 3.5s ease-in-out infinite}
+@keyframes sleepBob{0%,100%{translate:0 0}50%{translate:0 3px}}
+.pet.sleeping .body{animation-duration:4.5s}
+.pet.sleeping .eye{animation:none}
+.pet.sleeping .tail{animation-play-state:paused}
+.pet.sleeping .pet-aura{opacity:.22}
+.pet-name{box-shadow:0 4px 12px #536e7918}
+.ambient-layer{position:absolute;z-index:1;inset:0;overflow:hidden;pointer-events:none}
+.ambient-layer i{position:absolute;bottom:-20px;left:12%;width:7px;height:7px;border-radius:2px 8px 2px 8px;background:#fff9;animation:ambientRise 9s linear infinite}
+.ambient-layer i:nth-child(2){left:31%;width:5px;height:5px;animation-delay:-3s;animation-duration:11s}
+.ambient-layer i:nth-child(3){left:67%;width:8px;height:8px;animation-delay:-6s;animation-duration:10s}
+.ambient-layer i:nth-child(4){left:84%;width:4px;height:4px;animation-delay:-2s;animation-duration:8s}
+.ambient-layer i:nth-child(5){left:52%;width:6px;height:6px;animation-delay:-7s;animation-duration:12s}
+@keyframes ambientRise{0%{translate:0 0;rotate:0;opacity:0}12%{opacity:.7}88%{opacity:.5}100%{translate:18px -390px;rotate:180deg;opacity:0}}
+.fx-layer{position:absolute;z-index:12;inset:0;overflow:hidden;pointer-events:none}
+.pet-fx{position:absolute;left:50%;top:50%;font-size:clamp(17px,5vw,25px);line-height:1;animation:petFxFly 1.05s ease-out forwards;filter:drop-shadow(0 3px 4px #536e7920)}
+@keyframes petFxFly{0%{opacity:0;translate:0 12px;scale:.45;rotate:-15deg}18%{opacity:1;scale:1.15}100%{opacity:0;translate:var(--drift,0px) -76px;scale:.7;rotate:var(--spin,18deg)}}
+.room-garden .ambient-layer i{background:#fff8}
+.room-bedroom .ambient-layer i{background:#fff1c9}
+.room-playroom .ambient-layer i{background:#f6c4e1}
+.room.sleep-mode .ambient-layer{opacity:.45}
+.room-action{box-shadow:0 5px 15px #536e7920,0 0 0 0 #ffffff;transition:transform .18s,box-shadow .18s}
+.room-action:active{box-shadow:0 2px 8px #536e7920}
+@media(prefers-reduced-motion:reduce){.ambient-layer i,.pet-aura,.body,.eye,.tail{animation:none!important}}
