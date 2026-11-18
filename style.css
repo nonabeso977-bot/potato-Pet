@@ -178,3 +178,11 @@ footer{font-size:8px;margin-top:14px}
  .atlas-grid{grid-template-columns:1fr}
  .atlas-dialog{border-radius:18px}
 }
+
+
+/* EVENT HORIZON: black-hole encounter */
+.features{grid-template-columns:repeat(4,minmax(0,1fr))}
+.feature-icon.blackhole-feature{color:#d2b5ff;background:radial-gradient(circle,#05050d 22%,#9b73d733 24%,#a99bff12 70%);text-shadow:0 0 12px #c5a2ff88}
+.legend-blackhole{color:#c9aaff}
+.legend-blackhole i{font-style:normal;font-size:15px;text-shadow:0 0 10px #b89aff}
+@media(max-width:650px){.features{grid-template-columns:1fr}}
