@@ -4,6 +4,12 @@ const $ = id => document.getElementById(id);
 const canvas=$("arena"),ctx=canvas.getContext("2d");
 const SAVE="orbitArcade.v2";
 const ATLAS_SAVE="orbitAtlas.v1";
+const RECORDS_SAVE="orbitRecords.v1";
+const SKIN_SAVE="orbitSkin.v1";
+const SKINS=[{id:"nova",name:"نوفا",main:"#f0ffff",edge:"#76e4e4",glow:"#76e4e4"},{id:"coral",name:"مرجان",main:"#fff0f3",edge:"#ff8eaa",glow:"#ff8eaa"},{id:"nebula",name:"سديم",main:"#f4eaff",edge:"#b99aff",glow:"#b99aff"},{id:"solar",name:"شمسي",main:"#fff4c9",edge:"#ffc85c",glow:"#ffc85c"}];
+const STAGES=[{name:"مدار الأرض",hint:"نجوم زرقاء وهواء هادئ",bg:"#10264a",glow:"#275b83",rock:"#63829b"},{name:"سهول المريخ",hint:"غبار أحمر وصخور أكثر",bg:"#3a1d2a",glow:"#a34c45",rock:"#bd7864"},{name:"حلقات زحل",hint:"غبار ذهبي وحلقات لامعة",bg:"#352b20",glow:"#a17a42",rock:"#b89a6c"},{name:"حافة السديم",hint:"سحب بنفسجية وثقوب سوداء",bg:"#251b45",glow:"#7654a8",rock:"#8c79b7"}];
+let selectedSkin=(()=>{try{return localStorage.getItem(SKIN_SAVE)||"nova";}catch(_){return"nova";}})();
+let records=(()=>{try{const v=JSON.parse(localStorage.getItem(RECORDS_SAVE)||"[]");return Array.isArray(v)?v.filter(x=>x&&typeof x.name==="string"&&Number.isFinite(x.score)).slice(0,5):[];}catch(_){return[];}})();
 const FACTS=[
  {tag:"THE SUN",title:"ثماني دقائق من الماضي",body:"ضوء الشمس يحتاج نحو 8 دقائق و20 ثانية ليصل إلى الأرض. عندما تنظرين إليها، فأنت ترينها كما كانت قبل دقائق."},
  {tag:"VENUS",title:"يوم أطول من سنة",body:"الزهرة يدور حول محوره في نحو 243 يومًا أرضيًا، بينما يكمل دورته حول الشمس في نحو 225 يومًا."},
@@ -11,7 +17,14 @@ const FACTS=[
  {tag:"EUROPA",title:"محيط تحت الجليد",body:"تشير الأدلة إلى أن قمر المشتري أوروبا يخفي محيطًا مالحًا واسعًا تحت قشرته الجليدية."},
  {tag:"SATURN",title:"حلقات من الجليد",body:"حلقات زحل تتكون أساسًا من جليد مائي، مع كميات أقل من المواد الصخرية والغبار."},
  {tag:"THE MOON",title:"القمر يبتعد ببطء",body:"القمر يبتعد عن الأرض بمعدل يقارب 3.8 سنتيمتر كل سنة، وقد قيس ذلك باستخدام عواكس الليزر."},
- {tag:"BLACK HOLE",title:"لا شيء يفلت من الأفق",body:"الثقب الأسود منطقة في الزمكان تكون جاذبيتها شديدة جدًا، بحيث لا يستطيع الضوء الإفلات بعد تجاوز حد يُسمّى أفق الحدث. وليس ثقبًا يشفط كل ما في الكون من بعيد."}
+ {tag:"BLACK HOLE",title:"لا شيء يفلت من الأفق",body:"الثقب الأسود مكان تسحب جاذبيته بقوة كبيرة. إذا تجاوز الضوء حدًا حوله، فلن يستطيع الخروج. لكنه لا يسحب كل شيء من بعيد."},
+ {tag:"JUPITER",title:"عملاق له عواصف",body:"المشتري أكبر كواكب مجموعتنا الشمسية. فيه عاصفة ضخمة اسمها البقعة الحمراء العظيمة، وهي مستمرة منذ زمن طويل."},
+ {tag:"MERCURY",title:"سنة سريعة",body:"عطارد أقرب كوكب إلى الشمس. يكمل دورة حولها في 88 يومًا من أيام الأرض."},
+ {tag:"NEUTRON STAR",title:"نجمة شديدة الكثافة",body:"النجم النيوتروني صغير جدًا مقارنة بالشمس، لكن مادته مضغوطة بشكل هائل. ملعقة صغيرة من مادته ستكون ثقيلة بصورة لا نتخيلها."},
+ {tag:"MILKY WAY",title:"بيتنا في الفضاء",body:"الشمس والأرض جزء من مجرة درب التبانة، وهي تجمع هائل من النجوم والغاز والغبار."},
+ {tag:"LIGHT YEAR",title:"السنة الضوئية مسافة",body:"السنة الضوئية ليست وقتًا، بل مسافة يقطعها الضوء خلال سنة كاملة: نحو 9.46 تريليون كيلومتر."},
+ {tag:"COMET",title:"ذيل لا يسبق المذنب",body:"عندما يقترب المذنب من الشمس، يسخن الجليد فيه ويخرج منه غاز وغبار. لذلك يظهر له ذيل يتجه بعيدًا عن الشمس."},
+ {tag:"EXOPLANET",title:"عوالم حول نجوم أخرى",body:"الكواكب الخارجية تدور حول نجوم غير الشمس. اكتشف العلماء آلافًا منها، وبعضها قد تكون لديه ظروف مناسبة للماء."}
 ];
 const safeReadAtlas=()=>{try{const v=JSON.parse(localStorage.getItem(ATLAS_SAVE)||"[]");return Array.isArray(v)?[...new Set(v.filter(n=>Number.isInteger(n)&&n>=0&&n<FACTS.length))]:[];}catch(_){return[];}};
 const safeSaveAtlas=()=>{try{localStorage.setItem(ATLAS_SAVE,JSON.stringify(discovered));}catch(_){}};
@@ -19,7 +32,7 @@ const safeReadBest=()=>{try{return Number(localStorage.getItem(SAVE)||localStora
 const safeSaveBest=value=>{try{localStorage.setItem(SAVE,String(value));}catch(_){}};
 let best=safeReadBest(),discovered=safeReadAtlas(),score=0,lives=3,level=1,combo=1,comboTime=0;
 let state="menu",last=0,elapsed=0,spawnClock=0,stars=[],rocks=[],blackHoles=[],pickups=[],artifacts=[],particles=[],backgroundStars=[];
-let discoveryToastTime=0;
+let discoveryToastTime=0,stageIndex=0;
 let shieldTime=0,magnetTime=0,collected=0,missionDone=false,shake=0;
 let width=0,height=0,dpr=1,player={x:0,y:0,targetX:0,targetY:0,r:13,invulnerable:0};
 let pointerDown=false,muted=false,audio=null,runId=0;
@@ -41,6 +54,23 @@ function renderAtlas(){
  updateAtlasButton();
 }
 function openAtlas(){renderAtlas();$("atlasModal").hidden=false;}
+function saveRecords(){try{localStorage.setItem(RECORDS_SAVE,JSON.stringify(records));}catch(_){}}
+function renderRecords(){
+ const host=$("recordsList");
+ if(!records.length){host.innerHTML="<p class=\"empty-records\">لا توجد رحلات مسجلة بعد. ابدئي أول محاولة واصنعي رقمك!</p>";return;}
+ host.innerHTML=records.map((r,i)=>"<div class=\"record-row\"><b>"+String(i+1).padStart(2,"0")+"</b><span>"+escapeText(r.name)+"</span><strong>"+format(r.score)+"</strong></div>").join("");
+}
+function escapeText(value){return value.replace(/[&<>\"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[ch]));}
+function renderSkins(){
+ $("skinGrid").innerHTML=SKINS.map(s=>"<button type=\"button\" class=\"skin-option "+(s.id===selectedSkin?"selected":"")+"\" data-skin=\""+s.id+"\"><i style=\"--skin-main:"+s.main+";--skin-edge:"+s.edge+";--skin-glow:"+s.glow+"\"></i><span>"+s.name+"</span>"+(s.id===selectedSkin?"<small>محدد</small>":"")+"</button>").join("");
+ $("skinGrid").querySelectorAll("[data-skin]").forEach(button=>button.addEventListener("click",()=>{selectedSkin=button.dataset.skin;try{localStorage.setItem(SKIN_SAVE,selectedSkin);}catch(_){}renderSkins();}));
+}
+function openHangar(){renderSkins();renderRecords();$("hangarModal").hidden=false;}
+function closeHangar(){$("hangarModal").hidden=true;}
+function saveRunRecord(){
+ const name=(localStorage.getItem("orbitPilotName")||"رحّالة").trim().slice(0,16)||"رحّالة";
+ records.push({name,score,when:Date.now()});records.sort((a,b)=>b.score-a.score);records=records.slice(0,5);saveRecords();
+}
 function closeAtlas(){$("atlasModal").hidden=true;}
 function showDiscovery(index){
  const fact=FACTS[index],toast=$("discoveryToast");
@@ -58,7 +88,7 @@ function resize(){
  backgroundStars=Array.from({length:Math.max(45,Math.round(width*height/6500))},()=>({x:rand(0,width),y:rand(0,height),r:rand(.4,1.7),a:rand(.2,.8),phase:rand(0,6)}));
 }
 function reset(){
- score=0;lives=3;level=1;combo=1;comboTime=0;elapsed=0;spawnClock=0;stars=[];rocks=[];blackHoles=[];pickups=[];artifacts=[];particles=[];
+ score=0;lives=3;level=1;stageIndex=0;combo=1;comboTime=0;elapsed=0;spawnClock=0;stars=[];rocks=[];blackHoles=[];pickups=[];artifacts=[];particles=[];
  shieldTime=0;magnetTime=0;collected=0;missionDone=false;shake=0;discoveryToastTime=0;
  $("discoveryToast").hidden=true;$("discoveryToast").classList.remove("show");
  player={x:width/2,y:height*.78,targetX:width/2,targetY:height*.78,r:12,invulnerable:1.5};
@@ -66,6 +96,7 @@ function reset(){
 }
 function updateHUD(){
  $("score").textContent=format(score);$("best").textContent=format(best);$("level").textContent=String(level).padStart(2,"0");
+ $("stageName").textContent=STAGES[stageIndex].name;$("stageHint").textContent=STAGES[stageIndex].name;
  $("lives").querySelectorAll("i").forEach((el,i)=>el.classList.toggle("off",i>=lives));
  $("comboLabel").textContent="COMBO ×"+combo;
  $("runAtlasCount").textContent=discovered.length+" / "+FACTS.length;
@@ -100,7 +131,7 @@ function resume(){
  if(state!=="paused")return;state="running";$("arenaMessage").hidden=true;$("pauseButton").textContent="Ⅱ";last=performance.now();requestAnimationFrame(loop);
 }
 function endGame(){
- state="over";const newRecord=score>best;if(newRecord){best=score;safeSaveBest(best);setBest();}
+ state="over";saveRunRecord();const newRecord=score>best;if(newRecord){best=score;safeSaveBest(best);setBest();}
  $("pauseButton").textContent="↻";showMessage("انتهت الرحلة","نتيجتك "+format(score)+" · "+(newRecord?"رقم قياسي جديد!":"حاولي تجاوز رقمك القياسي"),"رحلة جديدة");
  $("exitButton").hidden=false;
 }
@@ -160,7 +191,9 @@ function hitRock(r){
  if(lives<=0)endGame();
 }
 function update(dt){
- elapsed+=dt;const nextLevel=1+Math.floor(elapsed/18);if(nextLevel!==level){level=nextLevel;updateHUD();}spawnClock+=dt;
+ elapsed+=dt;const nextLevel=1+Math.floor(elapsed/18);if(nextLevel!==level){level=nextLevel;updateHUD();}
+ const nextStage=Math.floor(elapsed/35)%STAGES.length;
+ if(nextStage!==stageIndex){stageIndex=nextStage;updateHUD();sound(360,.16,"sine");}spawnClock+=dt;
  const interval=Math.max(.28,.88-level*.055);
  while(spawnClock>interval){spawnClock-=interval;spawn();}
  player.x+=(player.targetX-player.x)*Math.min(1,dt*13);
@@ -213,8 +246,9 @@ function update(dt){
  for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=.985;p.vy*=.985;p.life-=dt;if(p.life<=0)particles.splice(i,1);}
 }
 function drawBackground(t){
- ctx.fillStyle="#080f24";ctx.fillRect(0,0,width,height);
- const glow=ctx.createRadialGradient(width*.5,height*.38,5,width*.5,height*.38,width*.7);glow.addColorStop(0,"#1b2a4b55");glow.addColorStop(1,"#080f2400");ctx.fillStyle=glow;ctx.fillRect(0,0,width,height);
+ const stage=STAGES[stageIndex];
+ ctx.fillStyle=stage.bg;ctx.fillRect(0,0,width,height);
+ const glow=ctx.createRadialGradient(width*.5,height*.38,5,width*.5,height*.38,width*.7);glow.addColorStop(0,stage.glow+"66");glow.addColorStop(1,stage.bg+"00");ctx.fillStyle=glow;ctx.fillRect(0,0,width,height);
  for(const s of backgroundStars){const alpha=s.a*(.65+.35*Math.sin(t*.001+s.phase));ctx.globalAlpha=alpha;ctx.fillStyle="#c9dcff";ctx.fillRect(s.x,s.y,s.r,s.r);}ctx.globalAlpha=1;
  ctx.strokeStyle="#8ca8d00c";ctx.lineWidth=1;
  for(let y=height*.6;y<height;y+=38){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(width,y);ctx.stroke();}
@@ -237,7 +271,8 @@ function drawArtifact(a){
 function drawRock(r){
  ctx.save();ctx.translate(r.x,r.y);ctx.rotate(r.rot);ctx.beginPath();
  for(let i=0;i<r.sides;i++){const a=i/r.sides*Math.PI*2,rr=r.r*(.78+.22*Math.sin(i*13+r.seed));const x=Math.cos(a)*rr,y=Math.sin(a)*rr;i?ctx.lineTo(x,y):ctx.moveTo(x,y);}
- ctx.closePath();const g=ctx.createLinearGradient(-r.r,-r.r,r.r,r.r);g.addColorStop(0,"#c18ca8");g.addColorStop(.55,"#6c668d");g.addColorStop(1,"#333c60");ctx.fillStyle=g;ctx.shadowBlur=13;ctx.shadowColor="#d58eaf55";ctx.fill();ctx.strokeStyle="#f0b7d655";ctx.lineWidth=1;ctx.stroke();
+ ctx.closePath();const rockColor=STAGES[stageIndex].rock;
+ const g=ctx.createLinearGradient(-r.r,-r.r,r.r,r.r);g.addColorStop(0,"#e4c5a0");g.addColorStop(.55,rockColor);g.addColorStop(1,"#333c60");ctx.fillStyle=g;ctx.shadowBlur=13;ctx.shadowColor="#d58eaf55";ctx.fill();ctx.strokeStyle="#f0b7d655";ctx.lineWidth=1;ctx.stroke();
  ctx.fillStyle="#27304c88";ctx.beginPath();ctx.arc(-r.r*.2,-r.r*.12,r.r*.2,0,Math.PI*2);ctx.fill();ctx.restore();
 }
 function drawBlackHole(b,t){
@@ -259,9 +294,10 @@ function drawPlayer(t){
  ctx.save();ctx.translate(player.x,player.y);
  if(player.invulnerable>0&&Math.floor(t/90)%2===0)ctx.globalAlpha=.35;
  if(shieldTime>0||magnetTime>0){ctx.save();ctx.globalAlpha=.7;ctx.strokeStyle=shieldTime>0?"#76e4e4":"#a99bff";ctx.lineWidth=2;ctx.shadowBlur=18;ctx.shadowColor=ctx.strokeStyle;ctx.beginPath();ctx.arc(0,0,player.r+10+Math.sin(t*.009)*2,0,Math.PI*2);ctx.stroke();ctx.restore();}
- ctx.shadowBlur=23;ctx.shadowColor="#76e4e4aa";
- const flame=rand(10,18);const fg=ctx.createLinearGradient(0,8,0,flame+17);fg.addColorStop(0,"#fff0b1");fg.addColorStop(.4,"#76e4e4");fg.addColorStop(1,"#a99bff00");ctx.fillStyle=fg;ctx.beginPath();ctx.moveTo(-5,8);ctx.lineTo(0,flame+17);ctx.lineTo(5,8);ctx.fill();
- ctx.beginPath();ctx.moveTo(0,-17);ctx.lineTo(13,12);ctx.lineTo(0,8);ctx.lineTo(-13,12);ctx.closePath();const g=ctx.createLinearGradient(-12,0,12,0);g.addColorStop(0,"#68bfcf");g.addColorStop(.5,"#f0ffff");g.addColorStop(1,"#a99bff");ctx.fillStyle=g;ctx.fill();ctx.strokeStyle="#d9ffff";ctx.lineWidth=1;ctx.stroke();
+ const skin=SKINS.find(s=>s.id===selectedSkin)||SKINS[0];
+ ctx.shadowBlur=23;ctx.shadowColor=skin.glow+"aa";
+ const flame=rand(10,18);const fg=ctx.createLinearGradient(0,8,0,flame+17);fg.addColorStop(0,"#fff0b1");fg.addColorStop(.4,skin.edge);fg.addColorStop(1,skin.glow+"00");ctx.fillStyle=fg;ctx.beginPath();ctx.moveTo(-5,8);ctx.lineTo(0,flame+17);ctx.lineTo(5,8);ctx.fill();
+ ctx.beginPath();ctx.moveTo(0,-17);ctx.lineTo(13,12);ctx.lineTo(0,8);ctx.lineTo(-13,12);ctx.closePath();const g=ctx.createLinearGradient(-12,0,12,0);g.addColorStop(0,skin.edge);g.addColorStop(.5,skin.main);g.addColorStop(1,skin.glow);ctx.fillStyle=g;ctx.fill();ctx.strokeStyle="#d9ffff";ctx.lineWidth=1;ctx.stroke();
  ctx.fillStyle="#192c4b";ctx.beginPath();ctx.ellipse(0,-4,4,7,0,0,Math.PI*2);ctx.fill();
  ctx.restore();
 }
@@ -302,14 +338,17 @@ window.addEventListener("keydown",e=>{
 });
 $("startButton").addEventListener("click",start);
 $("atlasButton").addEventListener("click",openAtlas);
+$("hangarButton").addEventListener("click",openHangar);
+$("closeHangar").addEventListener("click",closeHangar);
+$("hangarModal").addEventListener("click",e=>{if(e.target===$("hangarModal"))closeHangar();});
 $("closeAtlas").addEventListener("click",closeAtlas);
 $("atlasModal").addEventListener("click",e=>{if(e.target===$("atlasModal"))closeAtlas();});
-window.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("atlasModal").hidden)closeAtlas();});
+window.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("atlasModal").hidden)closeAtlas();if(e.key==="Escape"&&!$("hangarModal").hidden)closeHangar();});
 $("pauseButton").addEventListener("click",()=>state==="running"?pause():state==="over"?start():null);
 $("resumeButton").addEventListener("click",()=>{if(state==="paused")resume();else if(state==="over")start();});
 $("exitButton").addEventListener("click",backToMenu);
 $("soundButton").addEventListener("click",()=>{muted=!muted;$("soundButton").textContent=muted?"♪̸":"♫";$("soundButton").setAttribute("aria-label",muted?"تشغيل المؤثرات":"إيقاف المؤثرات");if(!muted)sound();});
 window.addEventListener("resize",()=>{if(!$("gamePanel").hidden){resize();draw(performance.now());}});
 document.addEventListener("visibilitychange",()=>{if(document.hidden&&state==="running")pause();});
-$("exitButton").hidden=true;setBest();updateAtlasButton();renderAtlas();resize();draw(0);
+$("exitButton").hidden=true;setBest();updateAtlasButton();renderAtlas();renderSkins();renderRecords();resize();draw(0);
 })();
