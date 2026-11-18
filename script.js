@@ -17,6 +17,13 @@ const ACHIEVEMENTS=[
  {id:"all-sectors",icon:"◉",name:"رحّالة المجرة",desc:"زوري المناطق الفضائية الأربع."},
  {id:"atlas-master",icon:"✧",name:"موسوعة مكتملة",desc:"اجمعي الاكتشافات الفضائية الستة عشر كلها."}
 ];
+const STAGES=[{name:"مدار الأرض",hint:"نجوم زرقاء وهواء هادئ",bg:"#10264a",glow:"#275b83",rock:"#63829b"},{name:"سهول المريخ",hint:"غبار أحمر وصخور أكثر",bg:"#3a1d2a",glow:"#a34c45",rock:"#bd7864"},{name:"حلقات زحل",hint:"غبار ذهبي وحلقات لامعة",bg:"#352b20",glow:"#a17a42",rock:"#b89a6c"},{name:"حافة السديم",hint:"سحب بنفسجية وثقوب سوداء",bg:"#251b45",glow:"#7654a8",rock:"#8c79b7"}];
+const MISSIONS=[
+ {id:"stars",title:"اجمعي 20 نجمة",target:20,unit:"نجمة",reward:150},
+ {id:"survive",title:"ابقي 45 ثانية في المدار",target:45,unit:"ث",reward:180},
+ {id:"near",title:"ناوري الصخور عن قرب",target:4,unit:"/ 4",reward:200},
+ {id:"sector",title:"اكتشفي منطقة جديدة",target:1,unit:"/ 1",reward:180}
+];
 const PROGRESS_SAVE="orbitProgress.v1";
 const safeReadProgress=()=>{
  try{
@@ -25,7 +32,7 @@ const safeReadProgress=()=>{
  }catch(_){return{stars:0,sectors:[],unlocked:[]};}
 };
 let progress=safeReadProgress(),survivedMinute=false;
-const STAGES=[{name:"مدار الأرض",hint:"نجوم زرقاء وهواء هادئ",bg:"#10264a",glow:"#275b83",rock:"#63829b"},{name:"سهول المريخ",hint:"غبار أحمر وصخور أكثر",bg:"#3a1d2a",glow:"#a34c45",rock:"#bd7864"},{name:"حلقات زحل",hint:"غبار ذهبي وحلقات لامعة",bg:"#352b20",glow:"#a17a42",rock:"#b89a6c"},{name:"حافة السديم",hint:"سحب بنفسجية وثقوب سوداء",bg:"#251b45",glow:"#7654a8",rock:"#8c79b7"}];
+let selectedMission=MISSIONS[0],lastMissionId="",nearMisses=0,starMilestoneAwarded=false,missionDone=false,missionShownProgress=-1,timeDilation=1,lastMusicDilation=1;
 let selectedSkin=(()=>{try{return localStorage.getItem(SKIN_SAVE)||"nova";}catch(_){return"nova";}})();
 let records=(()=>{try{const v=JSON.parse(localStorage.getItem(RECORDS_SAVE)||"[]");return Array.isArray(v)?v.filter(x=>x&&typeof x.name==="string"&&Number.isFinite(x.score)).sort((a,b)=>b.score-a.score).slice(0,10):[];}catch(_){return[];}})();
 const FACTS=[
@@ -53,7 +60,7 @@ const safeSaveBest=value=>{try{localStorage.setItem(SAVE,String(value));}catch(_
 let best=safeReadBest(),discovered=safeReadAtlas(),score=0,lives=3,level=1,combo=1,comboTime=0;
 let state="menu",last=0,elapsed=0,spawnClock=0,stars=[],rocks=[],blackHoles=[],pickups=[],artifacts=[],particles=[],backgroundStars=[];
 let discoveryToastTime=0,stageIndex=0,firstRockPending=false;
-let shieldTime=0,magnetTime=0,collected=0,missionDone=false,shake=0;
+let shieldTime=0,magnetTime=0,collected=0,shake=0;
 let width=0,height=0,dpr=1,player={x:0,y:0,targetX:0,targetY:0,r:13,invulnerable:0};
 let pointerDown=false,muted=false,audio=null,runId=0,musicOn=false,musicNodes=[],musicTimer=null;
 const rand=(a,b)=>a+Math.random()*(b-a);
@@ -138,7 +145,8 @@ function resize(){
 }
 function reset(){
  score=0;lives=3;level=1;stageIndex=0;combo=1;comboTime=0;elapsed=0;spawnClock=0;stars=[];rocks=[];blackHoles=[];pickups=[];artifacts=[];particles=[];firstRockPending=true;
- shieldTime=0;magnetTime=0;collected=0;missionDone=false;shake=0;discoveryToastTime=0;survivedMinute=false;markSector(0);
+ shieldTime=0;magnetTime=0;collected=0;missionDone=false;nearMisses=0;starMilestoneAwarded=false;missionShownProgress=-1;timeDilation=1;lastMusicDilation=1;shake=0;discoveryToastTime=0;survivedMinute=false;
+ const choices=MISSIONS.filter(m=>m.id!==lastMissionId);selectedMission=choices[Math.floor(Math.random()*choices.length)]||MISSIONS[0];lastMissionId=selectedMission.id;markSector(0);
  $("discoveryToast").hidden=true;$("discoveryToast").classList.remove("show");
  player={x:width/2,y:height*.78,targetX:width/2,targetY:height*.78,r:12,invulnerable:1.5};
  updateHUD();runId++;
@@ -149,11 +157,14 @@ function updateHUD(){
  $("lives").querySelectorAll("i").forEach((el,i)=>el.classList.toggle("off",i>=lives));
  $("comboLabel").textContent="COMBO ×"+combo;
  $("runAtlasCount").textContent=discovered.length+" / "+FACTS.length;
- const count=Math.min(collected,20),fill=$("missionFill");
- fill.style.width=(count/20*100)+"%";
- $("missionCount").textContent=count+" / 20";
- $("missionText").textContent=missionDone?"اكتملت المهمة! +150":"اجمعي 20 نجمة";
+ const missionProgress=selectedMission.id==="stars"?collected:selectedMission.id==="survive"?Math.floor(elapsed):selectedMission.id==="near"?nearMisses:stageIndex>0?1:0;
+ const count=Math.min(missionProgress,selectedMission.target),fill=$("missionFill");
+ fill.style.width=(count/selectedMission.target*100)+"%";
+ $("missionCount").textContent=selectedMission.id==="survive"?count+" / "+selectedMission.target+" ث":count+" / "+selectedMission.target;
+ $("missionText").textContent=missionDone?"اكتملت المهمة! +"+selectedMission.reward:selectedMission.title;
+ $("missionTrack").setAttribute("aria-valuemax",String(selectedMission.target));
  $("missionTrack").setAttribute("aria-valuenow",String(count));
+ missionShownProgress=count;
  const active=shieldTime>0||magnetTime>0;
  $("powerState").hidden=!active;
  $("powerState").classList.toggle("magnet",magnetTime>0);
@@ -313,10 +324,15 @@ function spawn(){
  else rocks.push(makeRock());
 }
 function circleHit(a,b){const dx=a.x-b.x,dy=a.y-b.y,rr=a.r+b.r;return dx*dx+dy*dy<rr*rr;}
+function checkMission(){
+ if(missionDone)return;
+ const value=selectedMission.id==="stars"?collected:selectedMission.id==="survive"?elapsed:selectedMission.id==="near"?nearMisses:stageIndex>0?1:0;
+ if(value>=selectedMission.target){missionDone=true;score+=selectedMission.reward;burst(player.x,player.y,"#76e4e4",30);sound(980,.24,"triangle");updateHUD();}
+}
 function collectStar(s){
- score+=10*combo;combo=Math.min(8,combo+1);comboTime=2.2;collected++;addLifetimeStar();awardAchievement("first-star");
+ score+=10*combo;combo=Math.min(8,combo+1);comboTime=2.2;collected++;addLifetimeStar();awardAchievement("first-star");checkMission();
  burst(s.x,s.y,"#ffd77a",12);sound(720+combo*55,.065,"triangle");
- if(collected>=20&&!missionDone){missionDone=true;score+=150;awardAchievement("mission-20");burst(player.x,player.y,"#76e4e4",28);sound(980,.22,"triangle");}
+ if(collected>=20&&!starMilestoneAwarded){starMilestoneAwarded=true;awardAchievement("mission-20");}
  updateHUD();
 }
 function collectPickup(p){
@@ -337,36 +353,42 @@ function hitRock(r){
  if(lives<=0)endGame();
 }
 function update(dt){
- elapsed+=dt;const nextLevel=1+Math.floor(elapsed/18);if(nextLevel!==level){level=nextLevel;updateHUD();}
+ let nearest=Infinity;
+ for(const hole of blackHoles)nearest=Math.min(nearest,Math.hypot(hole.x-player.x,hole.y-player.y));
+ timeDilation=nearest<180?.34+.66*(nearest/180):1;
+ if(musicOn&&musicNodes.length>1&&Math.abs(timeDilation-lastMusicDilation)>.04){try{musicNodes[1].frequency.setTargetAtTime(650+850*timeDilation,audio.currentTime,.25);lastMusicDilation=timeDilation;}catch(_){}}
+ const step=dt*timeDilation;
+ elapsed+=step;const nextLevel=1+Math.floor(elapsed/18);if(nextLevel!==level){level=nextLevel;updateHUD();}
  const nextStage=Math.floor(elapsed/35)%STAGES.length;
- if(nextStage!==stageIndex){stageIndex=nextStage;markSector(stageIndex);updateHUD();sound(360,.16,"sine");}
- if(elapsed>=60&&!survivedMinute){survivedMinute=true;awardAchievement("minute-survivor");}spawnClock+=dt;
+ if(nextStage!==stageIndex){stageIndex=nextStage;markSector(stageIndex);checkMission();updateHUD();sound(360,.16,"sine");}
+ if(elapsed>=60&&!survivedMinute){survivedMinute=true;awardAchievement("minute-survivor");}spawnClock+=step;
+ if(selectedMission.id==="survive"&&Math.floor(elapsed)!==missionShownProgress){updateHUD();checkMission();}
  const interval=Math.max(.28,.88-level*.055);
  while(spawnClock>interval){spawnClock-=interval;spawn();}
- player.x+=(player.targetX-player.x)*Math.min(1,dt*13);
- player.y+=(player.targetY-player.y)*Math.min(1,dt*13);
+ player.x+=(player.targetX-player.x)*Math.min(1,step*13);
+ player.y+=(player.targetY-player.y)*Math.min(1,step*13);
  player.x=clamp(player.x,player.r+7,width-player.r-7);player.y=clamp(player.y,height*.42,height-28);
- player.invulnerable=Math.max(0,player.invulnerable-dt);
- if(comboTime>0){comboTime-=dt;if(comboTime<=0){combo=1;updateHUD();}}
+ player.invulnerable=Math.max(0,player.invulnerable-step);
+ if(comboTime>0){comboTime-=step;if(comboTime<=0){combo=1;updateHUD();}}
  const hadPower=shieldTime>0||magnetTime>0;
- shieldTime=Math.max(0,shieldTime-dt);magnetTime=Math.max(0,magnetTime-dt);shake=Math.max(0,shake-dt*24);
+ shieldTime=Math.max(0,shieldTime-step);magnetTime=Math.max(0,magnetTime-step);shake=Math.max(0,shake-step*24);
  if(hadPower&&!shieldTime&&!magnetTime)updateHUD();
  if(shieldTime>0||magnetTime>0)$("powerTimer").style.width=(Math.max(shieldTime,magnetTime)/7*30)+"px";
  if(discoveryToastTime>0){
-   discoveryToastTime-=dt;
+   discoveryToastTime-=step;
    if(discoveryToastTime<=0){$("discoveryToast").classList.remove("show");$("discoveryToast").hidden=true;}
  }
  if(magnetTime>0){
-   for(const s of stars){const dx=player.x-s.x,dy=player.y-s.y,d=Math.hypot(dx,dy);if(d<175&&d>1){const pull=(1-d/175)*420;s.x+=dx/d*pull*dt;s.y+=dy/d*pull*dt;}}
+   for(const s of stars){const dx=player.x-s.x,dy=player.y-s.y,d=Math.hypot(dx,dy);if(d<175&&d>1){const pull=(1-d/175)*420;s.x+=dx/d*pull*step;s.y+=dy/d*pull*step;}}
  }
  for(let i=blackHoles.length-1;i>=0;i--){
-   const b=blackHoles[i];b.life-=dt;b.spin+=dt*.7;
+   const b=blackHoles[i];b.life-=dt;b.spin+=step*.7;
    const dx=b.x-player.x,dy=b.y-player.y,d=Math.hypot(dx,dy);
    if(d<180&&d>1){
      const pull=(1-d/180)*118;
-     player.x+=dx/d*pull*dt;player.y+=dy/d*pull*dt;
-     player.targetX=clamp(player.targetX+dx/d*pull*dt*.55,player.r+7,width-player.r-7);
-     player.targetY=clamp(player.targetY+dy/d*pull*dt*.55,height*.42,height-28);
+     player.x+=dx/d*pull*step;player.y+=dy/d*pull*step;
+     player.targetX=clamp(player.targetX+dx/d*pull*step*.55,player.r+7,width-player.r-7);
+     player.targetY=clamp(player.targetY+dy/d*pull*step*.55,height*.42,height-28);
    }
    if(d<b.r+player.r*.72&&player.invulnerable<=0){
      blackHoles.splice(i,1);
@@ -378,19 +400,19 @@ function update(dt){
    if(b.life<=0)blackHoles.splice(i,1);
  }
  for(let i=artifacts.length-1;i>=0;i--){
-   const a=artifacts[i];a.y+=a.vy*dt;a.spin+=dt*1.8;
+   const a=artifacts[i];a.y+=a.vy*step;a.spin+=step*1.8;
    if(circleHit(player,a)){collectArtifact(a);artifacts.splice(i,1);continue;}
    if(a.y>height+25)artifacts.splice(i,1);
  }
- for(let i=stars.length-1;i>=0;i--){const s=stars[i];s.y+=s.vy*dt;s.spin+=dt*2.4;s.pulse+=dt*4;if(circleHit(player,s)){collectStar(s);stars.splice(i,1);updateHUD();continue;}if(s.y>height+25)stars.splice(i,1);}
- for(let i=pickups.length-1;i>=0;i--){const p=pickups[i];p.y+=p.vy*dt;p.spin+=dt*2.8;if(circleHit(player,p)){collectPickup(p);pickups.splice(i,1);continue;}if(p.y>height+25)pickups.splice(i,1);}
- for(let i=rocks.length-1;i>=0;i--){const r=rocks[i];r.x+=r.vx*dt;r.y+=r.vy*dt;r.rot+=r.spin*dt;if(r.x<r.r||r.x>width-r.r)r.vx*=-1;
+ for(let i=stars.length-1;i>=0;i--){const s=stars[i];s.y+=s.vy*step;s.spin+=step*2.4;s.pulse+=step*4;if(circleHit(player,s)){collectStar(s);stars.splice(i,1);updateHUD();continue;}if(s.y>height+25)stars.splice(i,1);}
+ for(let i=pickups.length-1;i>=0;i--){const p=pickups[i];p.y+=p.vy*step;p.spin+=step*2.8;if(circleHit(player,p)){collectPickup(p);pickups.splice(i,1);continue;}if(p.y>height+25)pickups.splice(i,1);}
+ for(let i=rocks.length-1;i>=0;i--){const r=rocks[i];r.x+=r.vx*step;r.y+=r.vy*step;r.rot+=r.spin*step;if(r.x<r.r||r.x>width-r.r)r.vx*=-1;
    const dx=player.x-r.x,dy=player.y-r.y,d=Math.hypot(dx,dy);
-   if(!r.nearMiss&&d<player.r+r.r+18&&d>player.r+r.r*.83){r.nearMiss=true;score+=5;burst(r.x,r.y,"#a99bff",5);updateHUD();}
+   if(!r.nearMiss&&d<player.r+r.r+18&&d>player.r+r.r*.83){r.nearMiss=true;nearMisses++;checkMission();score+=5;burst(r.x,r.y,"#a99bff",5);updateHUD();}
    if(circleHit(player,{...r,r:r.r*.83})){rocks.splice(i,1);if(shieldTime>0){shieldTime=0;player.invulnerable=.65;burst(r.x,r.y,"#76e4e4",24);sound(520,.16,"triangle");updateHUD();}else hitRock(r);if(state!=="running")return;continue;}
    if(r.y>height+35)rocks.splice(i,1);
  }
- for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=.985;p.vy*=.985;p.life-=dt;if(p.life<=0)particles.splice(i,1);}
+ for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.x+=p.vx*step;p.y+=p.vy*step;p.vx*=.985;p.vy*=.985;p.life-=step;if(p.life<=0)particles.splice(i,1);}
 }
 function drawBackground(t){
  const stage=STAGES[stageIndex];
