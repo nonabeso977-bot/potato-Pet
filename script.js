@@ -61,6 +61,7 @@ let butterflySeconds = 12;
 let butterflyScore = 0;
 let lastInteractionAt = Date.now();
 let lastIdleAt = 0;
+const objectCooldowns = Object.create(null);
 
 function markInteraction() {
   lastInteractionAt = Date.now();
@@ -130,6 +131,71 @@ function addXP(amount) {
   }
 }
 
+function updateEnvironment() {
+  const now = new Date();
+  const hour = now.getHours();
+  const phase = hour >= 5 && hour < 8 ? "dawn" : hour >= 8 && hour < 17 ? "day" : hour >= 17 && hour < 20 ? "evening" : "night";
+  room.classList.remove("room-time-dawn", "room-time-day", "room-time-evening", "room-time-night");
+  room.classList.add("room-time-" + phase);
+  const phaseNames = { dawn: "فجر", day: "نهار", evening: "غروب", night: "ليل" };
+  $("clockChip").textContent = new Intl.DateTimeFormat("ar-LY", { hour: "2-digit", minute: "2-digit" }).format(now) + " · " + phaseNames[phase];
+  const roomWeather = {
+    lounge: "☀️ جو هادئ",
+    kitchen: "🥣 وقت الوجبة",
+    playroom: "🎈 وقت المرح",
+    bedroom: "🌙 وقت الراحة",
+    garden: "🌷 نسيم الحديقة"
+  };
+  const phaseIcon = { dawn: "🌅", day: "☀️", evening: "🌇", night: "🌙" };
+  $("weatherChip").textContent = phaseIcon[phase] + " " + roomWeather[state.room].replace(/^\S+\s*/, "");
+}
+
+function exploreRoomObject(kind) {
+  if (state.room === "bedroom" && state.sleeping) {
+    talk("ششش… خلينا ما نزعج الهدوء ☾");
+    return;
+  }
+  const key = state.room + ":" + kind;
+  const now = Date.now();
+  if (now - (objectCooldowns[key] || 0) < 18000) {
+    showToast("استكشفي شيئًا آخر قليلًا، لوزة ما زالت تتأمل هذا المكان.");
+    return;
+  }
+  objectCooldowns[key] = now;
+  const stories = {
+    lounge: {
+      prop: ["هذه الكنبة مكان ممتاز للمراقبة الملكية.", "أظن أنني أستطيع النوم هنا طوال اليوم.", "هل نختبئ خلف الوسادة؟"],
+      plant: ["هذه النبتة لا تتحرك… مريبة جدًا.", "شممت الورقة، لا توجد رائحة سمك للأسف.", "سأترك هذه النبتة وشأنها. غالبًا."]
+    },
+    kitchen: {
+      prop: ["أراقب الوعاء. ربما يظهر الطعام بالسحر؟", "المطبخ مليء بالأسرار اللذيذة.", "سمعت صوت كيس… هل هذا طعام؟"],
+      plant: ["حتى المطبخ يحتاج إلى قليل من الخضرة.", "هذه الورقة تبدو كأنها سلطة صغيرة.", "لن آكل النبتة. أعدك تقريبًا."]
+    },
+    playroom: {
+      prop: ["هل هذه لعبة جديدة أم فخ؟", "أستطيع ابتكار لعبة من أي شيء!", "انتبهي، أنا أسرع مما أبدو."],
+      plant: ["أحتاج إلى استراحة من مطاردة الألعاب.", "أراقب الظلال وهي تتحرك على الجدار.", "هذه الزاوية مثالية للاختباء."]
+    },
+    bedroom: {
+      prop: ["سريري ناعم… خمس دقائق إضافية؟", "أحب الهدوء هنا.", "هذا المكان يجعلني أتثاءب."],
+      plant: ["حتى قبل النوم أحب مراقبة الأوراق.", "تصبحين على خير أيتها النبتة.", "الليل يجعل كل شيء هادئًا."]
+    },
+    garden: {
+      prop: ["أشم رائحة الزهور من هنا!", "أعتقد أن فراشة مرت قبل قليل.", "الحديقة أجمل مكان للاستكشاف."],
+      plant: ["مرحبًا أيتها الزهرة، كيف حالك؟", "أحب الألوان التي تصنعها الطبيعة.", "سمعت حفيفًا… ربما فراشة!"]
+    }
+  };
+  const lines = (stories[state.room] || stories.lounge)[kind];
+  state.happy = clamp(state.happy + 2);
+  state.attention = clamp(state.attention + 2);
+  addBond(1);
+  addXP(1);
+  animatePet("curious");
+  petReaction("curious");
+  talk(lines[Math.floor(Math.random() * lines.length)]);
+  updateUI();
+  saveGame();
+}
+
 function updateUI() {
   $("foodBar").style.width = state.food + "%";
   $("happyBar").style.width = state.happy + "%";
@@ -151,6 +217,7 @@ function updateUI() {
   $("bondBar").style.width = state.bond + "%";
   const mood = state.food < 25 ? "جائعة وتحتاج وجبة" : state.energy < 20 ? "متعبة وتحتاج راحة" : state.attention < 25 ? "تشتاق إلى الونس" : state.happy < 25 ? "تحتاج بعض المرح" : state.bond >= 75 ? "مرتبطة بك جدًا ♡" : state.happy >= 65 ? "سعيدة ومرحة ♡" : "هادئة";
   $("moodChip").textContent = "مزاج لوزة: " + mood;
+  updateEnvironment();
   const currentRoom = rooms[state.room] || rooms.lounge;
   $("roomAction").textContent = state.room === "bedroom" && state.sleeping ? "إيقاظ لوزة ☀️" : currentRoom.button;
   pet.classList.toggle("sleeping", state.room === "bedroom" && state.sleeping);
@@ -229,9 +296,11 @@ function goToRoom(id) {
   room.classList.add("room-" + id);
   $("roomName").textContent = next.name;
   $("roomProp").textContent = next.icon;
+  $("roomProp").setAttribute("aria-label", "تفاعلي مع " + next.name);
+  $("roomProp").title = "استكشفي " + next.name;
   $("roomAction").textContent = next.button;
   $("roomHint").textContent = next.hint;
-  $("weatherChip").textContent = id === "bedroom" ? "🌙 وقت الهدوء" : id === "playroom" ? "🎈 وقت المرح" : id === "kitchen" ? "🍓 وقت الوجبة" : id === "garden" ? "🌤️ نسيم عليل" : "☀️ نهار لطيف";
+  updateEnvironment();
   document.querySelectorAll("[data-room]").forEach(button => {
     const active = button.dataset.room === id;
     button.classList.toggle("active", active);
@@ -484,6 +553,8 @@ function applyOfflineTime() {
 
 document.querySelectorAll("[data-room]").forEach(button => button.addEventListener("click", () => goToRoom(button.dataset.room)));
 $("roomAction").addEventListener("click", performRoomAction);
+$("roomProp").addEventListener("click", () => exploreRoomObject("prop"));
+$("plant").addEventListener("click", () => exploreRoomObject("plant"));
 pet.addEventListener("click", petTap);
 $("shopButton").addEventListener("click", openShop);
 $("bagButton").addEventListener("click", openBag);
