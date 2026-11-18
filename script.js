@@ -122,8 +122,22 @@ function showMessage(title,body,buttonText="متابعة الرحلة"){
 }
 function start(){
  $("intro").hidden=true;$("features").hidden=true;$("gamePanel").hidden=false;
- resize();reset();state="running";$("arenaMessage").hidden=true;$("exitButton").hidden=true;$("pauseButton").textContent="Ⅱ";
- $("arenaHint").style.opacity="1";last=performance.now();requestAnimationFrame(loop);
+ state="starting";$("arenaMessage").hidden=true;$("exitButton").hidden=true;$("pauseButton").textContent="Ⅱ";
+ $("arenaHint").style.opacity="1";
+ // Wait for the newly revealed game panel to receive its real layout size.
+ requestAnimationFrame(()=>{
+   resize();
+   if(!width||!height){
+     const rect=canvas.getBoundingClientRect(),parent=canvas.parentElement;
+     width=Math.max(320,rect.width||parent.clientWidth||window.innerWidth-24);
+     height=Math.max(350,rect.height||parent.clientHeight||Math.min(window.innerHeight*.64,620));
+     dpr=Math.min(window.devicePixelRatio||1,2);
+     canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);
+     ctx.setTransform(dpr,0,0,dpr,0,0);
+   }
+   reset();state="running";
+   last=performance.now();draw(last);requestAnimationFrame(loop);
+ });
 }
 function pause(){
  if(state!=="running")return;state="paused";$("pauseButton").textContent="▶";$("exitButton").hidden=false;
