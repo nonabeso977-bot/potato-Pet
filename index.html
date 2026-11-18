@@ -24,6 +24,7 @@
     <section class="progress-card" aria-label="تقدم المستوى">
       <div class="progress-copy"><span id="levelTitle">مبتدئة العناية</span><b><span id="xpText">0</span> / <span id="xpNeeded">50</span> XP</b></div>
       <div class="xp-track"><span id="xpBar"></span></div>
+      <div class="bond-copy"><span>♡ علاقتك بلوزة</span><b id="bondValue">0%</b></div><div class="bond-track"><span id="bondBar"></span></div>
     </section>
     <section class="quick-actions" aria-label="أدوات اللعبة">
       <button class="quick-button" id="shopButton" type="button"><span>🛍️</span> المتجر</button>
@@ -36,9 +37,11 @@
       <button class="action" data-room="kitchen" type="button" aria-pressed="false"><span>🥣</span><b>المطبخ</b></button>
       <button class="action" data-room="playroom" type="button" aria-pressed="false"><span>🧶</span><b>اللعب</b></button>
       <button class="action" data-room="bedroom" type="button" aria-pressed="false"><span>🌙</span><b>النوم</b></button>
+      <button class="action" data-room="garden" type="button" aria-pressed="false"><span>🌷</span><b>الحديقة</b></button>
     </nav>
     <section class="room room-lounge" id="room" aria-label="غرفة القطة">
       <div class="room-label"><span class="live-dot"></span><span id="roomName">غرفة الجلوس</span></div>
+      <div class="mood-chip" id="moodChip">مزاج لوزة: سعيدة ♡</div>
       <div class="weather-chip" id="weatherChip">☀️ نهار لطيف</div>
       <div class="window"><i></i><i></i><span class="window-view"></span></div>
       <div class="sun"></div><div class="cloud cloud-one"></div><div class="cloud cloud-two"></div>
