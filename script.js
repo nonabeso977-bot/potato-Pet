@@ -1,608 +1,155 @@
-const SAVE_KEY = "potatoPetSave_v2";
-const today = () => new Date().toLocaleDateString("en-CA");
-
-const freshState = () => ({
-  food: 76, happy: 72, energy: 82, bond: 0, attention: 70, coins: 20, xp: 0, level: 1,
-  room: "lounge", skin: "skin-blue", accessory: "", sleeping: false,
-  inventory: {}, quests: { feed: 0, play: 0, pet: 0 }, questPaid: [],
-  rewardDate: "", lastTick: Date.now()
-});
-
-let state = freshState();
-try {
-  const saved = JSON.parse(localStorage.getItem(SAVE_KEY));
-  if (saved && typeof saved === "object") {
-    state = { ...freshState(), ...saved };
-    state.inventory = saved.inventory && typeof saved.inventory === "object" ? saved.inventory : {};
-    state.attention = Number.isFinite(Number(saved.attention)) ? clamp(saved.attention) : 70;
-    state.sleeping = Boolean(saved.sleeping);
-    state.quests = saved.quests && saved.questDate === today() ? saved.quests : { feed: 0, play: 0, pet: 0 };
-    state.questPaid = saved.questDate === today() && Array.isArray(saved.questPaid) ? saved.questPaid : [];
-    if (saved.questDate !== today()) state.questDate = today();
-  }
-} catch (error) {
-  console.warn("تعذر تحميل الحفظ السابق:", error);
-}
-
+(() => {
+"use strict";
 const $ = id => document.getElementById(id);
-const pet = $("pet");
-const room = $("room");
-const speech = $("speech");
-const toastBox = $("toast");
-const modalBackdrop = $("modalBackdrop");
-const modalTitle = $("modalTitle");
-const modalContent = $("modalContent");
-const fxLayer = $("fxLayer");
-
-const rooms = {
-  lounge: { name: "غرفة الجلوس", icon: "🛋️", action: "pet", button: "داعبي لوزة ♡", welcome: "تعالي نجلس معًا قليلًا.", hint: "اضغطي على لوزة لتسمعي خرخرتها" },
-  kitchen: { name: "المطبخ", icon: "🍳", action: "feed", button: "قدّمي لها وجبة 🍎", welcome: "مياو! هل أحضرتِ شيئًا لذيذًا؟", hint: "لوزة تنتظر وجبتها" },
-  playroom: { name: "غرفة اللعب", icon: "🧸", action: "play", button: "ابدئي اللعب 🧶", welcome: "أحضرتِ الخيط؟ هيا نلعب!", hint: "اللعب يرفع السعادة ويستهلك الطاقة" },
-  bedroom: { name: "غرفة النوم", icon: "🛏️", action: "sleep", button: "وقت الراحة ☾", welcome: "بدأ النعاس… أريد سريري.", hint: "الراحة تعيد طاقة لوزة" },
-  garden: { name: "حديقة لوزة", icon: "🌷", action: "garden", button: "لنستكشف الحديقة 🌼", welcome: "الهواء هنا جميل! تعالي نتمشى.", hint: "النزهة ترفع السعادة وتستهلك قليلًا من الطاقة" }
-};
-
-const items = {
-  fish: { name: "سمكة طازجة", icon: "🐟", price: 8, description: "ترفع الشبع 30 نقطة.", type: "food", amount: 30 },
-  milk: { name: "وعاء حليب", icon: "🥛", price: 6, description: "وجبة خفيفة ترفع الشبع 20 نقطة.", type: "food", amount: 20 },
-  yarn: { name: "كرة خيط", icon: "🧶", price: 12, description: "لعبة جديدة ترفع السعادة 25 نقطة.", type: "toy", amount: 25 },
-  hat: { name: "قبعة وردية", icon: "🎩", price: 25, description: "زينة لطيفة تلبسها لوزة.", type: "accessory" },
-  bow: { name: "ربطة لطيفة", icon: "🎀", price: 22, description: "ربطة شعر وردية للوزة.", type: "accessory" },
-  star: { name: "نجمة ذهبية", icon: "⭐", price: 30, description: "نجمة صغيرة تزين رأس لوزة.", type: "accessory" }
-};
-
-const skins = ["skin-blue", "skin-cream", "skin-orange", "skin-lilac"];
-let toastTimer;
-let speechTimer;
-let saveTimer;
-let butterflyTimer = null;
-let butterflyActive = false;
-let butterflySeconds = 12;
-let butterflyScore = 0;
-let lastInteractionAt = Date.now();
-let lastIdleAt = 0;
-const objectCooldowns = Object.create(null);
-
-function markInteraction() {
-  lastInteractionAt = Date.now();
+const canvas=$("arena"),ctx=canvas.getContext("2d");
+const SAVE="orbitArcade.v1";
+let best=Number(localStorage.getItem(SAVE)||0),score=0,lives=3,level=1,combo=1,comboTime=0;
+let state="menu",last=0,elapsed=0,spawnClock=0,stars=[],rocks=[],particles=[],backgroundStars=[];
+let width=0,height=0,dpr=1,player={x:0,y:0,targetX:0,targetY:0,r:13,invulnerable:0};
+let pointerDown=false,muted=false,audio=null,runId=0;
+const rand=(a,b)=>a+Math.random()*(b-a);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function format(n){return String(Math.floor(n)).padStart(6,"0")}
+function setBest(){ $("best").textContent=format(best);$("menuBest").textContent=format(best); }
+function resize(){
+ const rect=canvas.getBoundingClientRect();if(!rect.width||!rect.height)return;
+ dpr=Math.min(window.devicePixelRatio||1,2);width=rect.width;height=rect.height;
+ canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);
+ player.x=clamp(player.x||width/2,20,width-20);player.targetX=clamp(player.targetX||width/2,20,width-20);
+ player.y=height*.78;player.targetY=player.y;
+ backgroundStars=Array.from({length:Math.max(45,Math.round(width*height/6500))},()=>({x:rand(0,width),y:rand(0,height),r:rand(.4,1.7),a:rand(.2,.8),phase:rand(0,6)}));
 }
-
-function idleThought() {
-  const now = Date.now();
-  if (!modalBackdrop.hidden || state.sleeping || now - lastInteractionAt < 45000 ||
-      now - lastIdleAt < 90000 || !speech.classList.contains("hide")) return;
-  lastIdleAt = now;
-  let thoughts;
-  if (state.food < 28) thoughts = ["بطني تصدر أصواتًا… هل اقترب موعد الطعام؟", "أفكر في وجبة سمك صغيرة."];
-  else if (state.energy < 22) thoughts = ["بدأت أتثاءب… أحتاج إلى قيلولة.", "أشعر أنني أحتاج إلى بعض الراحة."];
-  else if (state.attention < 28) thoughts = ["اشتقت إلى اللعب معك قليلًا.", "هل ما زلتِ هنا؟ أريد بعض الونس."];
-  else if (state.room === "garden") thoughts = ["أراقب الفراشة، أظنها تراقبني أيضًا.", "هذه الزهرة تستحق شمّة أخرى."];
-  else if (state.room === "playroom") thoughts = ["أين اختبأت كرة الخيط؟", "لدي طاقة لحركة مرحة صغيرة!"];
-  else if (state.room === "kitchen") thoughts = ["رائحة المطبخ تجعلني فضولية.", "هل هذه سمكة؟ أرجوك قولي إنها سمكة."];
-  else thoughts = ["أتساءل ماذا يوجد خلف النافذة.", "الجلوس بجانبك لطيف.", "مياو… لدي أفكار كثيرة اليوم."];
-  talk(thoughts[Math.floor(Math.random() * thoughts.length)]);
+function reset(){
+ score=0;lives=3;level=1;combo=1;comboTime=0;elapsed=0;spawnClock=0;stars=[];rocks=[];particles=[];
+ player={x:width/2,y:height*.78,targetX:width/2,targetY:height*.78,r:12,invulnerable:1.5};
+ updateHUD();runId++;
 }
-
-function saveGame() {
-  state.lastTick = Date.now();
-  state.questDate = today();
-  try {
-    localStorage.setItem(SAVE_KEY, JSON.stringify(state));
-    $("saveStatus").textContent = "تم الحفظ ✓";
-  } catch (error) {
-    $("saveStatus").textContent = "تعذر الحفظ";
-  }
+function updateHUD(){
+ $("score").textContent=format(score);$("best").textContent=format(best);$("level").textContent=String(level).padStart(2,"0");
+ $("lives").querySelectorAll("i").forEach((el,i)=>el.classList.toggle("off",i>=lives));
+ $("comboLabel").textContent="COMBO ×"+combo;
 }
-
-function showToast(message) {
-  toastBox.textContent = message;
-  toastBox.classList.add("show");
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toastBox.classList.remove("show"), 2300);
+function showMessage(title,body,buttonText="متابعة الرحلة"){
+ $("messageTitle").textContent=title;$("messageText").textContent=body;
+ $("resumeButton").innerHTML=buttonText+' <b>↗</b>';$("arenaMessage").hidden=false;
 }
-
-function talk(message) {
-  speech.textContent = message;
-  speech.classList.remove("hide");
-  clearTimeout(speechTimer);
-  speechTimer = setTimeout(() => speech.classList.add("hide"), 3000);
+function start(){
+ $("intro").hidden=true;$("features").hidden=true;$("gamePanel").hidden=false;
+ resize();reset();state="running";$("arenaMessage").hidden=true;$("pauseButton").textContent="Ⅱ";
+ $("arenaHint").style.opacity="1";last=performance.now();requestAnimationFrame(loop);
 }
-
-function clamp(value) {
-  return Math.max(0, Math.min(100, Math.round(value)));
+function pause(){
+ if(state!=="running")return;state="paused";$("pauseButton").textContent="▶";
+ showMessage("استراحة في المدار","النتيجة الحالية: "+format(score),"متابعة الرحلة");
 }
-
-function xpNeeded() {
-  return 50 + (state.level - 1) * 20;
+function resume(){
+ if(state!=="paused")return;state="running";$("arenaMessage").hidden=true;$("pauseButton").textContent="Ⅱ";last=performance.now();requestAnimationFrame(loop);
 }
-
-function addXP(amount) {
-  state.xp += amount;
-  let leveled = false;
-  while (state.xp >= xpNeeded()) {
-    state.xp -= xpNeeded();
-    state.level += 1;
-    state.coins += 10;
-    leveled = true;
-  }
-  if (leveled) {
-    showToast("وصلتِ للمستوى " + state.level + "! +10 عملات ✨");
-    talk("أنا فخورة بكِ! صرنا مستوى " + state.level + " ♡");
-  }
+function endGame(){
+ state="over";if(score>best){best=score;localStorage.setItem(SAVE,String(best));setBest();}
+ $("pauseButton").textContent="↻";showMessage("انتهت الرحلة","نتيجتك "+format(score)+" · "+(score>=best?"رقم قياسي جديد!":"حاولي تجاوز رقمك القياسي"),"رحلة جديدة");
+ $("resumeButton").onclick=()=>{ $("resumeButton").onclick=null;start(); };
+ $("exitButton").hidden=false;
 }
-
-function updateEnvironment() {
-  const now = new Date();
-  const hour = now.getHours();
-  const phase = hour >= 5 && hour < 8 ? "dawn" : hour >= 8 && hour < 17 ? "day" : hour >= 17 && hour < 20 ? "evening" : "night";
-  room.classList.remove("room-time-dawn", "room-time-day", "room-time-evening", "room-time-night");
-  room.classList.add("room-time-" + phase);
-  const phaseNames = { dawn: "فجر", day: "نهار", evening: "غروب", night: "ليل" };
-  $("clockChip").textContent = new Intl.DateTimeFormat("ar-LY", { hour: "2-digit", minute: "2-digit" }).format(now) + " · " + phaseNames[phase];
-  const roomWeather = {
-    lounge: "☀️ جو هادئ",
-    kitchen: "🥣 وقت الوجبة",
-    playroom: "🎈 وقت المرح",
-    bedroom: "🌙 وقت الراحة",
-    garden: "🌷 نسيم الحديقة"
-  };
-  const phaseIcon = { dawn: "🌅", day: "☀️", evening: "🌇", night: "🌙" };
-  $("weatherChip").textContent = phaseIcon[phase] + " " + roomWeather[state.room].replace(/^\S+\s*/, "");
+function backToMenu(){
+ state="menu";$("gamePanel").hidden=true;$("intro").hidden=false;$("features").hidden=false;
+ $("resumeButton").onclick=null;$("exitButton").hidden=true;setBest();
 }
-
-function exploreRoomObject(kind) {
-  if (state.room === "bedroom" && state.sleeping) {
-    talk("ششش… خلينا ما نزعج الهدوء ☾");
-    return;
-  }
-  const key = state.room + ":" + kind;
-  const now = Date.now();
-  if (now - (objectCooldowns[key] || 0) < 18000) {
-    showToast("استكشفي شيئًا آخر قليلًا، لوزة ما زالت تتأمل هذا المكان.");
-    return;
-  }
-  objectCooldowns[key] = now;
-  const stories = {
-    lounge: {
-      prop: ["هذه الكنبة مكان ممتاز للمراقبة الملكية.", "أظن أنني أستطيع النوم هنا طوال اليوم.", "هل نختبئ خلف الوسادة؟"],
-      plant: ["هذه النبتة لا تتحرك… مريبة جدًا.", "شممت الورقة، لا توجد رائحة سمك للأسف.", "سأترك هذه النبتة وشأنها. غالبًا."]
-    },
-    kitchen: {
-      prop: ["أراقب الوعاء. ربما يظهر الطعام بالسحر؟", "المطبخ مليء بالأسرار اللذيذة.", "سمعت صوت كيس… هل هذا طعام؟"],
-      plant: ["حتى المطبخ يحتاج إلى قليل من الخضرة.", "هذه الورقة تبدو كأنها سلطة صغيرة.", "لن آكل النبتة. أعدك تقريبًا."]
-    },
-    playroom: {
-      prop: ["هل هذه لعبة جديدة أم فخ؟", "أستطيع ابتكار لعبة من أي شيء!", "انتبهي، أنا أسرع مما أبدو."],
-      plant: ["أحتاج إلى استراحة من مطاردة الألعاب.", "أراقب الظلال وهي تتحرك على الجدار.", "هذه الزاوية مثالية للاختباء."]
-    },
-    bedroom: {
-      prop: ["سريري ناعم… خمس دقائق إضافية؟", "أحب الهدوء هنا.", "هذا المكان يجعلني أتثاءب."],
-      plant: ["حتى قبل النوم أحب مراقبة الأوراق.", "تصبحين على خير أيتها النبتة.", "الليل يجعل كل شيء هادئًا."]
-    },
-    garden: {
-      prop: ["أشم رائحة الزهور من هنا!", "أعتقد أن فراشة مرت قبل قليل.", "الحديقة أجمل مكان للاستكشاف."],
-      plant: ["مرحبًا أيتها الزهرة، كيف حالك؟", "أحب الألوان التي تصنعها الطبيعة.", "سمعت حفيفًا… ربما فراشة!"]
-    }
-  };
-  const lines = (stories[state.room] || stories.lounge)[kind];
-  state.happy = clamp(state.happy + 2);
-  state.attention = clamp(state.attention + 2);
-  addBond(1);
-  addXP(1);
-  animatePet("curious");
-  petReaction("curious");
-  talk(lines[Math.floor(Math.random() * lines.length)]);
-  updateUI();
-  saveGame();
+function sound(freq=620,duration=.07,type="sine"){
+ if(muted)return;
+ try{audio=audio||new(window.AudioContext||window.webkitAudioContext)();const osc=audio.createOscillator(),gain=audio.createGain();osc.type=type;osc.frequency.value=freq;gain.gain.setValueAtTime(.045,audio.currentTime);gain.gain.exponentialRampToValueAtTime(.001,audio.currentTime+duration);osc.connect(gain);gain.connect(audio.destination);osc.start();osc.stop(audio.currentTime+duration);}catch(_){}
 }
-
-function updateUI() {
-  $("foodBar").style.width = state.food + "%";
-  $("happyBar").style.width = state.happy + "%";
-  $("energyBar").style.width = state.energy + "%";
-  $("foodValue").textContent = state.food + "%";
-  $("happyValue").textContent = state.happy + "%";
-  $("energyValue").textContent = state.energy + "%";
-  state.attention = clamp(state.attention ?? 70);
-  $("attentionBar").style.width = state.attention + "%";
-  $("attentionValue").textContent = state.attention + "%";
-  $("coins").textContent = state.coins;
-  $("level").textContent = state.level;
-  $("xpText").textContent = state.xp;
-  $("xpNeeded").textContent = xpNeeded();
-  $("xpBar").style.width = (state.xp / xpNeeded() * 100) + "%";
-  $("levelTitle").textContent = state.level < 3 ? "مبتدئة العناية" : state.level < 6 ? "صديقة الحيوانات" : state.level < 10 ? "خبيرة لوزة" : "أسطورة القطط";
-  state.bond = clamp(state.bond || 0);
-  $("bondValue").textContent = state.bond + "%";
-  $("bondBar").style.width = state.bond + "%";
-  const mood = state.food < 25 ? "جائعة وتحتاج وجبة" : state.energy < 20 ? "متعبة وتحتاج راحة" : state.attention < 25 ? "تشتاق إلى الونس" : state.happy < 25 ? "تحتاج بعض المرح" : state.bond >= 75 ? "مرتبطة بك جدًا ♡" : state.happy >= 65 ? "سعيدة ومرحة ♡" : "هادئة";
-  $("moodChip").textContent = "مزاج لوزة: " + mood;
-  updateEnvironment();
-  const currentRoom = rooms[state.room] || rooms.lounge;
-  $("roomAction").textContent = state.room === "bedroom" && state.sleeping ? "إيقاظ لوزة ☀️" : currentRoom.button;
-  pet.classList.toggle("sleeping", state.room === "bedroom" && state.sleeping);
-  room.classList.toggle("sleep-mode", state.room === "bedroom" && state.sleeping);
-  const bagCount = Object.values(state.inventory).reduce((sum, count) => sum + count, 0);
-  $("bagCount").textContent = bagCount;
-  $("rewardButton").classList.toggle("claimed", state.rewardDate === today());
-  $("rewardButton").innerHTML = state.rewardDate === today() ? "<span>✓</span> استلمتِ الهدية" : "<span>🎁</span> هدية اليوم";
-  pet.classList.remove(...skins);
-  pet.classList.add(state.skin);
-  $("accessory").className = "accessory" + (state.accessory ? " " + state.accessory : "");
-  $("zzz").setAttribute("aria-hidden", state.room !== "bedroom" || !state.sleeping ? "true" : "false");
-  renderQuests();
+function burst(x,y,color,count=10){
+ for(let i=0;i<count;i++){const a=rand(0,Math.PI*2),speed=rand(35,180);particles.push({x,y,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,life:rand(.25,.65),max:.65,size:rand(1,3),color});}
 }
-
-function renderQuests() {
-  const questData = [
-    { key: "feed", icon: "🍎", label: "أطعمي لوزة مرة", goal: 1 },
-    { key: "play", icon: "🧶", label: "العبي معها مرة", goal: 1 },
-    { key: "pet", icon: "♡", label: "دلّليها مرتين", goal: 2 }
-  ];
-  $("questList").innerHTML = questData.map(q => {
-    const count = Math.min(state.quests[q.key] || 0, q.goal);
-    const done = count >= q.goal;
-    return '<div class="quest ' + (done ? "done" : "") + '"><span>' + q.icon + '</span><span>' + q.label + '</span><b>' + count + "/" + q.goal + (done ? " ✓" : "") + '</b></div>';
-  }).join("");
+function spawn(){
+ const x=rand(22,width-22);
+ if(Math.random()<.56)stars.push({x,y:-15,r:8,vy:rand(95,145)+level*7,spin:rand(0,6),pulse:rand(0,6)});
+ else rocks.push({x,y:-25,r:rand(11,20),vy:rand(115,175)+level*12,vx:rand(-18,18),rot:rand(0,6),spin:rand(-2,2),sides:Math.floor(rand(7,10)),seed:rand(0,100)});
 }
-
-function completeQuest(key) {
-  const goals = { feed: 1, play: 1, pet: 2 };
-  const rewards = { feed: 12, play: 12, pet: 12 };
-  state.quests[key] = Math.min(goals[key], (state.quests[key] || 0) + 1);
-  if (state.quests[key] >= goals[key] && !state.questPaid.includes(key)) {
-    state.questPaid.push(key);
-    state.coins += rewards[key];
-    addXP(15);
-    showToast("اكتملت المهمة! +12 عملة و+15 XP");
-  }
+function circleHit(a,b){const dx=a.x-b.x,dy=a.y-b.y,rr=a.r+b.r;return dx*dx+dy*dy<rr*rr;}
+function collectStar(s){
+ score+=10*combo;combo=Math.min(8,combo+1);comboTime=2.2;burst(s.x,s.y,"#ffd77a",12);sound(720+combo*55,.065,"triangle");
 }
-
-function animatePet(kind) {
-  pet.classList.remove("playing", "sleeping", "excited", "purring", "curious");
-  room.classList.toggle("sleep-mode", kind === "sleeping");
-  void pet.offsetWidth;
-  if (kind) pet.classList.add(kind);
+function hitRock(r){
+ if(player.invulnerable>0)return;
+ lives--;player.invulnerable=1.35;combo=1;comboTime=0;burst(player.x,player.y,"#ff9fcb",20);sound(150,.2,"sawtooth");updateHUD();
+ if(lives<=0)endGame();
 }
-
-function petReaction(kind = "happy") {
-  const reactions = {
-    happy: ["♡", "✦", "♥", "✧"],
-    play: ["✦", "🎈", "♫", "✿"],
-    curious: ["?", "✧", "…"],
-    love: ["♥", "♡", "♥", "✦"]
-  };
-  const symbols = reactions[kind] || reactions.happy;
-  const count = kind === "play" ? 7 : 5;
-  for (let i = 0; i < count; i++) {
-    const particle = document.createElement("span");
-    particle.className = "pet-fx";
-    particle.textContent = symbols[Math.floor(Math.random() * symbols.length)];
-    particle.style.left = (37 + Math.random() * 26) + "%";
-    particle.style.top = (43 + Math.random() * 20) + "%";
-    particle.style.setProperty("--drift", (Math.random() * 110 - 55) + "px");
-    particle.style.setProperty("--spin", (Math.random() * 70 - 35) + "deg");
-    fxLayer.appendChild(particle);
-    particle.addEventListener("animationend", () => particle.remove(), { once: true });
-  }
+function update(dt){
+ elapsed+=dt;level=1+Math.floor(elapsed/18);spawnClock+=dt;
+ const interval=Math.max(.28,.88-level*.055);
+ while(spawnClock>interval){spawnClock-=interval;spawn();}
+ player.x+=(player.targetX-player.x)*Math.min(1,dt*13);
+ player.y+=(player.targetY-player.y)*Math.min(1,dt*13);
+ player.x=clamp(player.x,player.r+7,width-player.r-7);player.y=clamp(player.y,height*.42,height-28);
+ player.invulnerable=Math.max(0,player.invulnerable-dt);
+ if(comboTime>0){comboTime-=dt;if(comboTime<=0){combo=1;updateHUD();}}
+ for(let i=stars.length-1;i>=0;i--){const s=stars[i];s.y+=s.vy*dt;s.spin+=dt*2.4;s.pulse+=dt*4;if(circleHit(player,s)){collectStar(s);stars.splice(i,1);updateHUD();continue;}if(s.y>height+25)stars.splice(i,1);}
+ for(let i=rocks.length-1;i>=0;i--){const r=rocks[i];r.x+=r.vx*dt;r.y+=r.vy*dt;r.rot+=r.spin*dt;if(r.x<r.r||r.x>width-r.r)r.vx*=-1;if(circleHit(player,{...r,r:r.r*.83})){rocks.splice(i,1);hitRock(r);if(state!=="running")return;continue;}if(r.y>height+35)rocks.splice(i,1);}
+ for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=.985;p.vy*=.985;p.life-=dt;if(p.life<=0)particles.splice(i,1);}
+ updateHUD();
 }
-
-function goToRoom(id) {
-  const next = rooms[id];
-  if (!next) return;
-  if (state.room === "bedroom" && id !== "bedroom") state.sleeping = false;
-  state.room = id;
-  room.classList.remove("room-lounge", "room-kitchen", "room-playroom", "room-bedroom", "room-garden");
-  room.classList.add("room-" + id);
-  $("roomName").textContent = next.name;
-  $("roomProp").textContent = next.icon;
-  $("roomProp").setAttribute("aria-label", "تفاعلي مع " + next.name);
-  $("roomProp").title = "استكشفي " + next.name;
-  $("roomAction").textContent = next.button;
-  $("roomHint").textContent = next.hint;
-  updateEnvironment();
-  document.querySelectorAll("[data-room]").forEach(button => {
-    const active = button.dataset.room === id;
-    button.classList.toggle("active", active);
-    button.setAttribute("aria-pressed", String(active));
-  });
-  animatePet(state.sleeping && id === "bedroom" ? "sleeping" : "");
-  updateUI();
-  if (state.sleeping && id === "bedroom") talk("لوزة نائمة الآن… ششش ☾");
-  else talk(next.welcome);
-  markInteraction();
-  saveGame();
+function drawBackground(t){
+ ctx.fillStyle="#080f24";ctx.fillRect(0,0,width,height);
+ const glow=ctx.createRadialGradient(width*.5,height*.38,5,width*.5,height*.38,width*.7);glow.addColorStop(0,"#1b2a4b55");glow.addColorStop(1,"#080f2400");ctx.fillStyle=glow;ctx.fillRect(0,0,width,height);
+ for(const s of backgroundStars){const alpha=s.a*(.65+.35*Math.sin(t*.001+s.phase));ctx.globalAlpha=alpha;ctx.fillStyle="#c9dcff";ctx.fillRect(s.x,s.y,s.r,s.r);}ctx.globalAlpha=1;
+ ctx.strokeStyle="#8ca8d00c";ctx.lineWidth=1;
+ for(let y=height*.6;y<height;y+=38){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(width,y);ctx.stroke();}
 }
-
-function changeLook() {
-  const current = skins.indexOf(state.skin);
-  state.skin = skins[(current + 1) % skins.length];
-  updateUI();
-  talk("كيف صار لوني الجديد؟ ✿");
-  saveGame();
+function drawStar(s){
+ ctx.save();ctx.translate(s.x,s.y);ctx.rotate(s.spin);const pulse=1+Math.sin(s.pulse)*.13;
+ ctx.scale(pulse,pulse);ctx.shadowBlur=18;ctx.shadowColor="#ffd77a";
+ ctx.fillStyle="#ffe39a";ctx.beginPath();
+ for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,r=i%2===0?s.r:s.r*.42;const x=Math.cos(a)*r,y=Math.sin(a)*r;i?ctx.lineTo(x,y):ctx.moveTo(x,y);}
+ ctx.closePath();ctx.fill();ctx.restore();
 }
-
-function addCoins(amount) {
-  state.coins += amount;
+function drawRock(r){
+ ctx.save();ctx.translate(r.x,r.y);ctx.rotate(r.rot);ctx.beginPath();
+ for(let i=0;i<r.sides;i++){const a=i/r.sides*Math.PI*2,rr=r.r*(.78+.22*Math.sin(i*13+r.seed));const x=Math.cos(a)*rr,y=Math.sin(a)*rr;i?ctx.lineTo(x,y):ctx.moveTo(x,y);}
+ ctx.closePath();const g=ctx.createLinearGradient(-r.r,-r.r,r.r,r.r);g.addColorStop(0,"#c18ca8");g.addColorStop(.55,"#6c668d");g.addColorStop(1,"#333c60");ctx.fillStyle=g;ctx.shadowBlur=13;ctx.shadowColor="#d58eaf55";ctx.fill();ctx.strokeStyle="#f0b7d655";ctx.lineWidth=1;ctx.stroke();
+ ctx.fillStyle="#27304c88";ctx.beginPath();ctx.arc(-r.r*.2,-r.r*.12,r.r*.2,0,Math.PI*2);ctx.fill();ctx.restore();
 }
-
-function addBond(amount) {
-  state.bond = clamp((state.bond || 0) + amount);
+function drawPlayer(t){
+ ctx.save();ctx.translate(player.x,player.y);
+ if(player.invulnerable>0&&Math.floor(t/90)%2===0)ctx.globalAlpha=.35;
+ ctx.shadowBlur=23;ctx.shadowColor="#76e4e4aa";
+ const flame=rand(10,18);const fg=ctx.createLinearGradient(0,8,0,flame+17);fg.addColorStop(0,"#fff0b1");fg.addColorStop(.4,"#76e4e4");fg.addColorStop(1,"#a99bff00");ctx.fillStyle=fg;ctx.beginPath();ctx.moveTo(-5,8);ctx.lineTo(0,flame+17);ctx.lineTo(5,8);ctx.fill();
+ ctx.beginPath();ctx.moveTo(0,-17);ctx.lineTo(13,12);ctx.lineTo(0,8);ctx.lineTo(-13,12);ctx.closePath();const g=ctx.createLinearGradient(-12,0,12,0);g.addColorStop(0,"#68bfcf");g.addColorStop(.5,"#f0ffff");g.addColorStop(1,"#a99bff");ctx.fillStyle=g;ctx.fill();ctx.strokeStyle="#d9ffff";ctx.lineWidth=1;ctx.stroke();
+ ctx.fillStyle="#192c4b";ctx.beginPath();ctx.ellipse(0,-4,4,7,0,0,Math.PI*2);ctx.fill();
+ ctx.restore();
 }
-
-function performRoomAction() {
-  const action = rooms[state.room].action;
-  if (action === "feed") {
-    if (state.food >= 96) return talk("أنا شبعانة جدًا، شكرًا ♡");
-    state.food = clamp(state.food + 24);
-    state.happy = clamp(state.happy + 4);
-    state.attention = clamp(state.attention + 2);
-    addCoins(2); addXP(5); addBond(2); completeQuest("feed");
-    animatePet("excited");
-    petReaction("love");
-    talk("مممم… وجبة لذيذة! شكرًا ♡");
-  } else if (action === "play") {
-    if (state.energy < 18) return talk("طاقتي خلصت تقريبًا… أحتاج راحة ☾");
-    state.happy = clamp(state.happy + 19);
-    state.energy = clamp(state.energy - 16);
-    state.food = clamp(state.food - 7);
-    state.attention = clamp(state.attention + 8);
-    addCoins(3); addXP(8); addBond(3); completeQuest("play");
-    animatePet("playing");
-    petReaction("play");
-    talk("يا لها من لعبة ممتعة! مرة ثانية!");
-  } else if (action === "sleep") {
-    if (state.sleeping) {
-      state.sleeping = false;
-      animatePet("");
-      talk("صحيت! كان نومًا مريحًا ☀️");
-    } else {
-      if (state.energy >= 96) return talk("أنا مرتاحة ومليانة طاقة!");
-      state.sleeping = true;
-      state.energy = clamp(state.energy + 12);
-      state.happy = clamp(state.happy + 3);
-      addXP(4); addBond(1);
-      animatePet("sleeping");
-      talk("تصبحين على خير… ززز");
-    }
-  } else if (action === "garden") {
-    if (state.energy < 12) return talk("أحتاج أن أرتاح قبل النزهة ☾");
-    state.happy = clamp(state.happy + 13);
-    state.energy = clamp(state.energy - 8);
-    state.food = clamp(state.food - 4);
-    state.attention = clamp(state.attention + 5);
-    addCoins(2); addXP(5); addBond(3);
-    animatePet("curious");
-    petReaction("play");
-    talk("الفراشات والزهور! أحب حديقتنا 🌷");
-  } else {
-    state.happy = clamp(state.happy + 12);
-    state.attention = clamp(state.attention + 6);
-    addCoins(1); addXP(3); addBond(4); completeQuest("pet");
-    animatePet("purring");
-    petReaction("love");
-    talk("خرخرةةة… أحب المداعبة ♡");
-  }
-  markInteraction();
-  updateUI();
-  saveGame();
+function draw(t){
+ drawBackground(t);stars.forEach(drawStar);rocks.forEach(drawRock);
+ for(const p of particles){ctx.globalAlpha=Math.max(0,p.life/p.max);ctx.fillStyle=p.color;ctx.shadowBlur=9;ctx.shadowColor=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();}ctx.globalAlpha=1;ctx.shadowBlur=0;
+ if(state!=="menu")drawPlayer(t);
 }
-
-function petTap() {
-  if (state.room === "bedroom" && pet.classList.contains("sleeping")) {
-    talk("ششش… لوزة نائمة الآن ☾");
-    return;
-  }
-  state.happy = clamp(state.happy + 5);
-  state.attention = clamp(state.attention + 7);
-  addXP(1); addBond(1);
-  completeQuest("pet");
-  const tapMood = state.happy > 70 ? "love" : "happy";
-  animatePet(state.happy > 75 ? "purring" : "excited");
-  petReaction(tapMood);
-  updateUI();
-  talk(["مياااو! انتبهي لي ♡", "خررر… هذا لطيف!", "أحب لما تلعبين معي!", "نونو! مرة ثانية!"][Math.floor(Math.random() * 4)]);
-  markInteraction();
-  saveGame();
+function loop(now){
+ if(state!=="running")return;
+ const dt=Math.min((now-last)/1000,.033);last=now;update(dt);draw(now);
+ if(state==="running")requestAnimationFrame(loop);
 }
-
-function openModal(title, html) {
-  modalTitle.textContent = title;
-  modalContent.innerHTML = html;
-  modalBackdrop.hidden = false;
-  $("closeModal").focus();
+function moveTo(clientX,clientY){
+ const rect=canvas.getBoundingClientRect();player.targetX=clamp(clientX-rect.left,18,width-18);player.targetY=clamp(clientY-rect.top,height*.43,height-27);
+ $("arenaHint").style.opacity="0";
 }
-
-function closeModal() {
-  modalBackdrop.hidden = true;
-  if (butterflyTimer) clearInterval(butterflyTimer);
-  butterflyTimer = null;
-  butterflyActive = false;
-}
-
-function openShop() {
-  const html = '<div class="shop-grid">' + Object.entries(items).map(([id, item]) => {
-    const owned = state.inventory[id] || 0;
-    const equipped = state.accessory === id;
-    return '<article class="shop-item"><div class="item-art">' + item.icon + '</div><h3>' + item.name + '</h3><p>' + item.description + '</p><div class="item-price"><span>✦ ' + item.price + '</span><span>' + (owned ? "لديكِ " + owned : "") + '</span></div><button class="item-buy" data-buy="' + id + '" ' + (state.coins < item.price || equipped ? "disabled" : "") + '>' + (equipped ? "تُلبسها لوزة" : "شراء") + '</button></article>';
-  }).join("") + '</div>';
-  openModal("متجر لوزة", html);
-}
-
-function openBag() {
-  const owned = Object.entries(state.inventory).filter(([, count]) => count > 0);
-  if (!owned.length && !state.accessory) {
-    openModal("حقيبة لوزة", '<div class="empty-state"><span>🎒</span>الحقيبة فارغة حاليًا.<br>زوري المتجر وأحضري شيئًا للوزة!</div>');
-    return;
-  }
-  let html = '<div class="bag-grid">' + owned.map(([id, count]) => {
-    const item = items[id];
-    const isAccessory = item.type === "accessory";
-    return '<article class="bag-item"><div class="item-art">' + item.icon + '</div><h3>' + item.name + '</h3><p>' + item.description + '<br>الكمية: ' + count + '</p><button class="use-item" data-use="' + id + '">' + (isAccessory ? "ارتديها" : "استخدمي") + '</button></article>';
-  }).join("") + '</div>';
-  if (state.accessory) html += '<button class="settings-action" data-remove-accessory="true" style="margin-top:10px">إزالة الزينة الحالية</button>';
-  openModal("حقيبة لوزة", html);
-}
-
-function buyItem(id) {
-  const item = items[id];
-  if (!item || state.coins < item.price) return showToast("عملاتك لا تكفي لهذه القطعة.");
-  if (item.type === "accessory" && state.accessory === id) return;
-  state.coins -= item.price;
-  state.inventory[id] = (state.inventory[id] || 0) + 1;
-  updateUI(); saveGame(); openShop();
-  showToast("أضفتِ " + item.name + " إلى الحقيبة!");
-}
-
-function useItem(id) {
-  const item = items[id];
-  if (!item || !state.inventory[id]) return;
-  if (item.type === "food") {
-    if (state.food >= 98) return showToast("لوزة شبعانة، احتفظي بها لوقت لاحق.");
-    state.food = clamp(state.food + item.amount);
-    state.attention = clamp(state.attention + 2);
-    addBond(1);
-    talk("يا سلام! أحب هذا الطعام 🐟");
-    petReaction("love");
-    animatePet("excited");
-  } else if (item.type === "toy") {
-    if (state.energy < 12) return showToast("لوزة متعبة وتحتاج إلى النوم.");
-    state.happy = clamp(state.happy + item.amount);
-    state.energy = clamp(state.energy - 7);
-    state.attention = clamp(state.attention + 6);
-    addBond(2);
-    talk("هذه لعبتي الجديدة! لنلعب!");
-    animatePet("playing");
-    petReaction("play");
-  } else if (item.type === "accessory") {
-    state.accessory = id === "hat" ? "hat" : id;
-    talk("كيف أبدو بهذه الزينة؟ ✨");
-    petReaction("love");
-    animatePet("excited");
-  }
-  state.inventory[id] -= 1;
-  if (!state.inventory[id]) delete state.inventory[id];
-  addXP(4);
-  updateUI(); saveGame(); openBag();
-}
-
-
-function openButterflyGame() {
-  openModal("صيد الفراشات", '<div class="game-intro"><span class="game-hero">🦋</span><h3>لعبة لوزة الصغيرة</h3><p>التقطي أكبر عدد من الفراشات خلال 12 ثانية. كل فراشة تمنحك عملات وخبرة!</p><div class="game-rule">⏱️ 12 ثانية · ✦ عملات · XP خبرة</div><button class="game-start" data-start-game="true" type="button">ابدئي اللعب</button></div>');
-}
-
-function moveButterfly() {
-  const target = modalContent.querySelector("[data-catch-butterfly]");
-  if (!target) return;
-  target.style.left = (8 + Math.random() * 78) + "%";
-  target.style.top = (8 + Math.random() * 66) + "%";
-  target.style.transform = "rotate(" + Math.round(Math.random() * 30 - 15) + "deg)";
-}
-
-function startButterflyRound() {
-  if (butterflyTimer) clearInterval(butterflyTimer);
-  butterflyActive = true;
-  butterflySeconds = 12;
-  butterflyScore = 0;
-  modalContent.innerHTML = '<div class="game-stats"><span>الوقت: <b id="gameTime">12</b></span><span>الفراشات: <b id="gameScore">0</b></span></div><div class="game-arena"><span class="game-flower flower-one">✿</span><span class="game-flower flower-two">✿</span><button class="butterfly-target" data-catch-butterfly="true" type="button" aria-label="التقطي الفراشة">🦋</button></div><p class="game-help">المسي الفراشة كلما ظهرت في مكان جديد!</p>';
-  moveButterfly();
-  butterflyTimer = setInterval(() => {
-    butterflySeconds -= 1;
-    const timeLabel = $("gameTime");
-    if (timeLabel) timeLabel.textContent = butterflySeconds;
-    if (butterflySeconds <= 0) finishButterflyRound();
-  }, 1000);
-}
-
-function finishButterflyRound() {
-  if (butterflyTimer) clearInterval(butterflyTimer);
-  butterflyTimer = null;
-  butterflyActive = false;
-  const reward = 3 + butterflyScore * 2;
-  state.coins += reward;
-  addXP(Math.min(12, butterflyScore));
-  updateUI();
-  saveGame();
-  talk("كانت مطاردة ممتعة! 🦋");
-  modalContent.innerHTML = '<div class="game-result"><span>🏆</span><h3>انتهى التحدي!</h3><p>التقطتِ <b>' + butterflyScore + '</b> فراشة</p><div class="game-prize">✦ +' + reward + ' عملة · +' + Math.min(12, butterflyScore) + ' XP</div><button class="game-start" data-start-game="true" type="button">العبِي مرة أخرى</button></div>';
-}
-
-function claimDailyReward() {
-  if (state.rewardDate === today()) return showToast("هدية اليوم استلمتيها بالفعل. عودي غدًا!");
-  state.rewardDate = today();
-  state.coins += 15;
-  addXP(10);
-  updateUI(); saveGame();
-  talk("هدية؟ لي أنا؟ شكرًااا! ♡");
-  showToast("هدية اليوم: +15 عملة و+10 XP 🎁");
-}
-
-function openSettings() {
-  openModal("إعدادات اللعبة", '<div class="settings-list"><button class="settings-action" data-change-look="true">🎨 تغيير لون لوزة</button><button class="settings-action" data-go-home="true">⌂ العودة لغرفة الجلوس</button><button class="settings-action" data-reset="true">↻ بدء لعبة جديدة ومسح الحفظ</button></div><p class="settings-note">تُحفظ العملات والمستوى والحقيبة وحالة لوزة تلقائيًا على هذا المتصفح في هذا الجهاز.</p>');
-}
-
-function applyOfflineTime() {
-  const elapsed = Math.max(0, Math.min(4 * 60 * 60, Date.now() - (state.lastTick || Date.now())));
-  const minutes = elapsed / 60000;
-  state.food = clamp(state.food - minutes * 0.35);
-  state.attention = clamp(state.attention - minutes * 0.12);
-  state.energy = clamp(state.energy + (state.sleeping ? minutes * 1.8 : -minutes * 0.2));
-  if (state.energy >= 100) state.sleeping = false;
-  if (state.food < 20) state.happy = clamp(state.happy - minutes * 0.12);
-}
-
-document.querySelectorAll("[data-room]").forEach(button => button.addEventListener("click", () => goToRoom(button.dataset.room)));
-$("roomAction").addEventListener("click", performRoomAction);
-$("roomProp").addEventListener("click", () => exploreRoomObject("prop"));
-$("plant").addEventListener("click", () => exploreRoomObject("plant"));
-pet.addEventListener("click", petTap);
-$("shopButton").addEventListener("click", openShop);
-$("bagButton").addEventListener("click", openBag);
-$("rewardButton").addEventListener("click", claimDailyReward);
-$("butterflyButton").addEventListener("click", openButterflyGame);
-$("settingsButton").addEventListener("click", openSettings);
-$("closeModal").addEventListener("click", closeModal);
-modalBackdrop.addEventListener("click", event => { if (event.target === modalBackdrop) closeModal(); });
-document.addEventListener("keydown", event => { if (event.key !== "Escape") markInteraction(); if (event.key === "Escape" && !modalBackdrop.hidden) closeModal(); });
-document.addEventListener("pointerdown", markInteraction, { passive: true });
-modalContent.addEventListener("click", event => {
-  const button = event.target.closest("button");
-  if (!button) return;
-  if (button.dataset.startGame) startButterflyRound();
-  if (button.dataset.catchButterfly && butterflyActive) { butterflyScore += 1; const score = $("gameScore"); if (score) score.textContent = butterflyScore; moveButterfly(); }
-  if (button.dataset.buy) buyItem(button.dataset.buy);
-  if (button.dataset.use) useItem(button.dataset.use);
-  if (button.dataset.removeAccessory) { state.accessory = ""; updateUI(); saveGame(); openBag(); showToast("أزلنا الزينة."); }
-  if (button.dataset.changeLook) { changeLook(); closeModal(); }
-  if (button.dataset.goHome) { goToRoom("lounge"); closeModal(); }
-  if (button.dataset.reset && confirm("هل أنتِ متأكدة؟ سيُمسح تقدم Potato Pet من هذا المتصفح.")) {
-    localStorage.removeItem(SAVE_KEY);
-    state = freshState();
-    updateUI(); goToRoom("lounge"); closeModal();
-    showToast("بدأت مغامرة جديدة مع لوزة!");
-  }
+canvas.addEventListener("pointerdown",e=>{if(state!=="running")return;pointerDown=true;canvas.setPointerCapture(e.pointerId);moveTo(e.clientX,e.clientY);});
+canvas.addEventListener("pointermove",e=>{if(pointerDown&&state==="running")moveTo(e.clientX,e.clientY);});
+canvas.addEventListener("pointerup",()=>pointerDown=false);canvas.addEventListener("pointercancel",()=>pointerDown=false);
+window.addEventListener("keydown",e=>{
+ const key=e.key.toLowerCase();if(["arrowleft","arrowright","arrowup","arrowdown"," "].includes(key))e.preventDefault();
+ if(key==="escape"||key==="p"){state==="running"?pause():state==="paused"?resume():null;return;}
+ if(state!=="running")return;const step=width*.08;
+ if(key==="arrowleft"||key==="a")player.targetX-=step;if(key==="arrowright"||key==="d")player.targetX+=step;
+ if(key==="arrowup"||key==="w")player.targetY-=step;if(key==="arrowdown"||key==="s")player.targetY+=step;
+ player.targetX=clamp(player.targetX,18,width-18);player.targetY=clamp(player.targetY,height*.43,height-27);
 });
-
-applyOfflineTime();
-updateUI();
-goToRoom(rooms[state.room] ? state.room : "lounge");
-setInterval(() => {
-  state.food = clamp(state.food - 0.35);
-  state.attention = clamp(state.attention - 0.12);
-  if (state.room === "bedroom" && state.sleeping) {
-    state.energy = clamp(state.energy + 1.8);
-    if (state.energy >= 100) {
-      state.sleeping = false;
-      animatePet("");
-      talk("استيقظت لوزة بعد قيلولة مريحة ☀️");
-    }
-  } else {
-    state.energy = clamp(state.energy - 0.2);
-  }
-  if (state.food < 20) state.happy = clamp(state.happy - 0.2);
-  updateUI();
-  saveGame();
-}, 60000);
-setInterval(idleThought, 15000);
-window.addEventListener("beforeunload", saveGame);
-saveGame();
+$("startButton").addEventListener("click",start);
+$("pauseButton").addEventListener("click",()=>state==="running"?pause():state==="over"?start():null);
+$("resumeButton").addEventListener("click",()=>state==="paused"?resume():null);
+$("exitButton").addEventListener("click",backToMenu);
+$("soundButton").addEventListener("click",()=>{muted=!muted;$("soundButton").textContent=muted?"♪̸":"♫";$("soundButton").setAttribute("aria-label",muted?"تشغيل المؤثرات":"إيقاف المؤثرات");if(!muted)sound();});
+window.addEventListener("resize",()=>{if(!$("gamePanel").hidden){resize();draw(performance.now());}});
+document.addEventListener("visibilitychange",()=>{if(document.hidden&&state==="running")pause();});
+$("exitButton").hidden=true;setBest();resize();draw(0);
+})();
