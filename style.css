@@ -285,3 +285,58 @@ footer{display:flex;justify-content:space-between;gap:8px;color:var(--muted);fon
 .room-time-night .plant b{background:#c18e9c}
 .room-time-night .plant span{background:#6f9c87}
 @media(max-width:390px){.clock-chip{top:70px;left:8px;font-size:8px}}
+
+
+/* v1.4 — visual identity and responsive game layout */
+:root{--ink:#354d60;--muted:#82949c;--mint:#b8dfd0;--mint-dark:#6fae96;--pink:#f3c9d8;--cream:#fffaf3;--shadow:0 18px 42px #526c7918}
+body{background:radial-gradient(ellipse at 8% 8%,#ffffffd9 0 2%,transparent 34%),radial-gradient(ellipse at 92% 88%,#d9e6f7a8 0 2%,transparent 30%),linear-gradient(135deg,#e7f2ec,#f8eee8 52%,#e9edf7);background-attachment:fixed}
+.app{width:min(100%,1080px);gap:12px;padding-left:clamp(12px,2.5vw,25px);padding-right:clamp(12px,2.5vw,25px)}
+.topbar{padding:4px 2px 8px}.brand{gap:12px}.brand-mark{width:48px;height:48px;border-radius:17px;background:linear-gradient(145deg,#9bcfba,#6ca992);box-shadow:0 8px 18px #76ae9840,inset 0 1px 0 #ffffffa8}
+h1{font-size:clamp(22px,4vw,29px);letter-spacing:-.8px}.eyebrow{letter-spacing:.25px}
+.level-pill,.coin,.icon-button{min-height:42px;border:1px solid #ffffffd9;border-radius:15px;background:#ffffffc7;box-shadow:0 5px 15px #526c790d,inset 0 1px 0 #fff}
+.progress-card,.daily-card{border:1px solid #ffffffd9;border-radius:20px;background:linear-gradient(145deg,#ffffffdf,#ffffffa8);box-shadow:0 8px 24px #526c790d,inset 0 1px 0 #fff;backdrop-filter:blur(12px)}
+.progress-card{padding:13px 16px}.progress-copy{font-size:11px}.xp-track{height:9px;background:#e8eeeb}.bond-track{height:7px}
+.quick-actions{gap:8px}.quick-button{min-height:47px;border:1px solid #ffffffd9;border-radius:15px;background:linear-gradient(145deg,#ffffffed,#f9fcfa);box-shadow:0 6px 15px #526c790b,inset 0 1px 0 #fff;font-size:11px;transition:transform .18s,box-shadow .18s}
+.quick-button:hover{transform:translateY(-2px);box-shadow:0 9px 18px #526c7914}.reward-button{background:linear-gradient(145deg,#fff8e9,#fff2d9)}.game-button{background:linear-gradient(145deg,#f8f3ff,#eee8fb)}
+.actions{gap:8px;padding:5px;border:1px solid #ffffffc9;border-radius:19px;background:#ffffff82;box-shadow:0 7px 20px #526c790b;backdrop-filter:blur(10px)}
+.action{min-height:50px;border:1px solid transparent;border-radius:14px;background:transparent;box-shadow:none;color:#71848e}.action span{font-size:21px;filter:drop-shadow(0 2px 1px #526c7910)}.action.active{border-color:#c7e3d6;background:linear-gradient(145deg,#e8f6ef,#dcefe5);color:#477b68;box-shadow:0 4px 12px #82b79b20,inset 0 1px 0 #fff}
+.room{min-height:clamp(390px,54vw,520px);border:6px solid #ffffffed;border-radius:30px;box-shadow:0 22px 50px #536e791b,0 3px 8px #536e790d,inset 0 0 0 1px #ffffff88}
+.room::after{background:linear-gradient(115deg,#ffffff45,transparent 35%,transparent 75%,#ffffff1c)}
+.room-label,.weather-chip,.clock-chip,.mood-chip{border:1px solid #ffffffc9;box-shadow:0 5px 14px #536e7910,inset 0 1px 0 #fff;backdrop-filter:blur(12px)}
+.room-label{padding:7px 12px}.weather-chip{padding:7px 11px}.mood-chip{top:52px;padding:6px 10px}.clock-chip{top:84px;padding:6px 10px}
+.window{top:18%;left:7%;width:clamp(88px,13vw,130px);height:clamp(112px,17vw,158px);border:8px solid #fff;border-radius:17px;box-shadow:0 12px 24px #527e8c20,inset 0 0 0 1px #d8e8e7}
+.sun{filter:drop-shadow(0 7px 12px #eacb8b45)}.shelf{height:9px;box-shadow:0 5px 8px #7a5c4820}
+.room-prop{border:1px solid #ffffffd9;border-radius:30px;background:linear-gradient(145deg,#ffffffb8,#ffffff54);box-shadow:inset 0 2px 8px #fff9,0 14px 22px #536e791c;backdrop-filter:blur(5px)}
+.room-prop:hover{transform:translateY(-4px) rotate(-2deg)}.plant{filter:drop-shadow(0 6px 5px #476d4b22)}
+.rug{width:min(74%,450px);height:18%;background:radial-gradient(ellipse at center,var(--rug-color),transparent 72%);border:2px solid #ffffff40}
+.speech{top:58px;right:14px;max-width:min(48%,290px);padding:9px 13px;border:1px solid #ffffffd9;border-radius:17px 17px 5px 17px;color:#536c78;background:#fffffff0;box-shadow:0 9px 22px #526c7918;font-size:11px;line-height:1.65;backdrop-filter:blur(10px)}
+.room-action{top:111px;right:14px;min-height:39px;padding:8px 15px;border:1px solid #fff;border-radius:14px;color:#477562;background:linear-gradient(135deg,#fff,#f0f8f3);box-shadow:0 8px 18px #536e791c;font-size:11px}
+.pet{top:59%;width:clamp(190px,32vw,275px);height:clamp(230px,40vw,320px);filter:drop-shadow(0 16px 8px #425b6b2b)}
+.head{box-shadow:inset -7px -9px 0 #6d879014,inset 5px 6px 0 #ffffff55,0 8px 16px #526d7915}
+.eye b{background:radial-gradient(circle at 35% 28%,#7396a9 0 12%,#304b60 15% 100%)}.cheek{background:radial-gradient(ellipse,#e99badad,#ed9fb222 75%)}
+.pet-name{bottom:13%;padding:5px 17px;border:1px solid #ffffffed;background:#ffffffe0;box-shadow:0 7px 16px #536e7918;font-size:12px}
+.room-hint{bottom:4%;font-size:10px;color:#617b7e}
+.status{gap:9px}.status-card{min-height:65px;padding:11px 13px;border:1px solid #ffffffdc;border-radius:17px;background:linear-gradient(145deg,#ffffffdf,#ffffffa8);box-shadow:0 7px 18px #526c790b,inset 0 1px 0 #fff}
+.status-card>div:first-child{font-size:11px}.meter{height:8px;background:#e9efed}
+.daily-card{padding:14px 15px}.daily-heading b{font-size:12px}.daily-heading small{font-size:10px}.daily-icon{width:35px;height:35px;border-radius:13px}.daily-tag{padding:5px 10px}
+.quest-list{gap:7px}.quest{padding:9px 8px;border:1px solid #e9efea;border-radius:13px;background:#ffffffb0;font-size:10px}.quest>span:first-child{font-size:15px}.quest b{font-size:10px}.quest.done{border-color:#d6eadb;background:#edf7ef}
+footer{padding:2px 4px 5px;font-size:10px}
+.modal{border:1px solid #fff;border-radius:27px;background:linear-gradient(145deg,#fffdf8,#f8f5ef);box-shadow:0 30px 90px #263c4c45}.modal-header{padding:17px 19px 12px}.modal-content{padding:16px 18px 20px}
+.shop-item,.bag-item{border:1px solid #edf0e9;border-radius:19px;box-shadow:0 5px 14px #526c7908}.item-art{width:54px;height:54px;border-radius:17px;background:linear-gradient(145deg,#f5f8f2,#f7eff5)}
+.item-buy,.use-item,.settings-action,.game-start{border-radius:13px;transition:filter .15s,transform .15s}.item-buy:not(:disabled):active,.use-item:active,.game-start:active{transform:scale(.98);filter:brightness(.96)}
+.toast{border-radius:15px;box-shadow:0 12px 30px #253f4a35;backdrop-filter:blur(12px)}
+@media(min-width:760px){
+.app{display:grid;grid-template-columns:minmax(0,1.38fr) minmax(285px,.82fr);grid-template-areas:"header header" "progress tools" "nav nav" "room status" "room daily" "footer footer";align-content:start;align-items:start;gap:13px 16px;padding-top:20px;padding-bottom:22px}
+.topbar{grid-area:header}.progress-card{grid-area:progress;align-self:stretch}.quick-actions{grid-area:tools;align-self:stretch;grid-template-columns:repeat(2,minmax(0,1fr))}.actions{grid-area:nav}.room{grid-area:room;width:100%;min-height:590px}.status{grid-area:status;grid-template-columns:repeat(2,minmax(0,1fr));width:100%}.daily-card{grid-area:daily;width:100%;align-self:stretch}footer{grid-area:footer}.pet{top:58%;width:clamp(225px,28vw,285px);height:clamp(270px,34vw,330px)}.room-prop{right:7%;bottom:15%}
+}
+@media(max-width:759px){.app{display:flex;gap:10px}.room{min-height:clamp(365px,57vh,470px)}}
+@media(max-width:390px){
+.app{gap:8px;padding-left:10px;padding-right:10px}.brand-mark{width:40px;height:40px;border-radius:14px}.top-tools{gap:4px}
+.level-pill,.coin,.icon-button{height:35px;min-height:35px;min-width:34px;padding:4px 7px;font-size:10px}.icon-button{width:35px}
+.quick-actions{gap:5px}.quick-button{min-height:43px;gap:3px;padding:5px 3px;font-size:9px}.quick-button>span{font-size:15px}
+.actions{gap:4px;padding:4px;border-radius:15px}.action{min-height:45px;gap:3px;padding:4px 2px}.action span{font-size:17px}.action b{font-size:9px}
+.room{min-height:360px;border-radius:23px}.room-action{top:111px;right:8px;padding:7px 9px;font-size:9px}.speech{right:8px;max-width:57%;font-size:9px}
+.mood-chip{top:52px;left:8px;font-size:8px}.clock-chip{top:82px;left:8px;font-size:8px}.status-card{min-height:58px;padding:8px 9px}
+.quest{gap:4px;padding:7px 5px;font-size:8px}.quest b{font-size:8px}
+}
+@media(prefers-reduced-motion:reduce){.quick-button:hover,.room-prop:hover{transform:none}}
