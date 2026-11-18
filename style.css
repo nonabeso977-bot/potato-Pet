@@ -235,3 +235,17 @@ footer{font-size:8px;margin-top:14px}
 .music-button[aria-pressed="true"]{animation:musicPulse 2.8s ease-in-out infinite}
 @keyframes musicPulse{0%,100%{box-shadow:0 0 10px #a99bff22}50%{box-shadow:0 0 22px #a99bff77}}
 @media(prefers-reduced-motion:reduce){.music-button[aria-pressed="true"]{animation:none}}
+
+
+/* ORBIT 3.3 · persistent pilot achievements */
+.achievement-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0 18px}
+.achievement-card{display:flex;align-items:flex-start;gap:10px;min-height:78px;padding:11px;border:1px solid #ffffff18;border-radius:12px;background:linear-gradient(120deg,#172541aa,#0c162aaa)}
+.achievement-card.unlocked{border-color:#ffd77a66;background:linear-gradient(120deg,#ffd77a12,#76e4e408)}
+.achievement-icon{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;border-radius:10px;background:#ffffff0c;color:#8d9bb8;font-size:17px}
+.achievement-card.unlocked .achievement-icon{background:#ffd77a18;color:var(--gold);text-shadow:0 0 12px #ffd77a66}
+.achievement-copy{min-width:0}
+.achievement-copy strong{display:block;color:#eaf0ff;font-size:11px}
+.achievement-copy p{margin:3px 0 0;color:#8f9fbe;font-size:9px;line-height:1.65}
+.achievement-state{display:block;margin-top:5px;color:#7788aa;font-size:8px}
+.achievement-card.unlocked .achievement-state{color:var(--gold)}
+@media(max-width:650px){.achievement-grid{grid-template-columns:1fr}}
