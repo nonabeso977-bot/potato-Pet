@@ -599,3 +599,133 @@ footer{padding:2px 4px 5px;font-size:10px}
 @media(prefers-reduced-motion:reduce){
   .pet .eye,.pet .mouth{transition:none}
 }
+
+
+/* v1.7 — game-first interface: the room is the stage, not the last item */
+.app{
+  display:grid;
+  grid-template-columns:minmax(0,1.42fr) minmax(285px,.82fr);
+  grid-template-areas:
+    "header header"
+    "room status"
+    "room progress"
+    "room tools"
+    "nav nav"
+    "daily daily"
+    "footer footer";
+  align-content:start;
+  align-items:start;
+  gap:13px 17px;
+  width:min(100%,1120px);
+  padding-top:max(14px,env(safe-area-inset-top));
+}
+.topbar{grid-area:header;min-height:58px;padding:2px 4px 7px}
+.room{grid-area:room;width:100%;min-height:clamp(490px,54vw,620px);border-width:7px;border-radius:34px}
+.status{grid-area:status;width:100%;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.progress-card{grid-area:progress;width:100%;align-self:stretch}
+.quick-actions{grid-area:tools;width:100%;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.actions{grid-area:nav;width:100%;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;padding:7px}
+.daily-card{grid-area:daily;width:100%}
+footer{grid-area:footer}
+.quick-button{
+  min-height:58px;justify-content:flex-start;gap:10px;
+  padding:9px 13px;border-radius:18px;font-size:11px;
+}
+.quick-button>span{
+  width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;
+  border:1px solid #ffffffd9;border-radius:12px;
+  background:#ffffffb8;font-size:19px;
+  box-shadow:0 3px 8px #526c790c;
+}
+.quick-button i{margin-inline-start:auto}
+.action{
+  min-height:65px;flex-direction:column;gap:5px;
+  padding:8px 4px;border-radius:15px;
+}
+.action span{
+  width:32px;height:32px;display:grid;place-items:center;
+  border-radius:11px;background:#ffffff9c;font-size:19px;
+}
+.action b{font-size:10px}
+.action.active span{background:#ffffffc9;box-shadow:0 3px 8px #82b79b20}
+.status-card{min-height:74px;padding:12px 14px;border-radius:18px}
+.progress-card{padding:15px 17px;border-radius:20px}
+.room{
+  background-image:
+    radial-gradient(ellipse at 50% 85%,#ffffff22,transparent 43%),
+    linear-gradient(90deg,#ffffff08 1px,transparent 1px),
+    linear-gradient(var(--wall) 0 68%,var(--floor) 68% 100%);
+  background-size:auto,38px 100%,100% 100%;
+}
+.room::before{
+  inset:0 0 32%;
+  opacity:.28;
+  background:
+    radial-gradient(circle at 15% 20%,#fff 0 1px,transparent 2px),
+    radial-gradient(circle at 72% 38%,#fff 0 1px,transparent 2px),
+    radial-gradient(circle at 48% 75%,#fff 0 1px,transparent 2px);
+  background-size:54px 57px,71px 63px,83px 79px;
+}
+.room-label{top:13px;left:13px;padding:8px 12px;font-size:10px}
+.weather-chip{top:13px;right:13px;padding:8px 12px}
+.speech{top:66px;right:15px;max-width:min(47%,300px);padding:10px 14px;border-radius:18px 18px 5px 18px;font-size:11px}
+.room-action{top:auto;right:15px;bottom:17px;min-height:42px;padding:9px 15px;border-radius:15px}
+.room-hint{bottom:5%;font-size:10px}
+.pet{top:56%;width:clamp(210px,31vw,295px);height:clamp(255px,37vw,350px)}
+.pet-name{bottom:13%}
+.room-prop{right:7%;bottom:18%;width:clamp(78px,13vw,120px);height:clamp(78px,13vw,120px)}
+.plant{left:7%;bottom:9%;transform:scale(1.15);transform-origin:bottom left}
+.rug{bottom:5%;height:17%}
+.floor-line{bottom:19%}
+.mood-chip{top:54px}
+.clock-chip{top:91px}
+.daily-card{padding:16px 18px;border-radius:21px}
+.quest{min-height:43px;padding:9px 11px}
+.quick-button:hover,.action:hover{transform:translateY(-2px)}
+.quick-button:focus-visible,.action:focus-visible,.room-action:focus-visible{outline-offset:4px}
+@media(max-width:759px){
+  .app{
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    grid-template-areas:
+      "header"
+      "room"
+      "status"
+      "progress"
+      "tools"
+      "nav"
+      "daily"
+      "footer";
+    gap:10px;
+    padding:12px 12px max(14px,env(safe-area-inset-bottom));
+  }
+  .topbar{min-height:52px;padding:0 2px 3px}
+  .room{min-height:clamp(410px,62vh,510px);border-width:5px;border-radius:27px}
+  .pet{top:56%;width:clamp(205px,48vw,265px);height:clamp(250px,58vw,315px)}
+  .room-prop{right:5%;bottom:17%;width:78px;height:78px;font-size:43px}
+  .plant{left:5%;bottom:8%;transform:scale(1.05);transform-origin:bottom left}
+  .status{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .status-card{min-height:65px;padding:10px 11px}
+  .progress-card{padding:12px 14px}
+  .quick-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .quick-button{min-height:54px;padding:7px 10px}
+  .actions{gap:5px;padding:5px;border-radius:17px}
+  .action{min-height:61px;gap:4px;padding:6px 2px}
+  .action span{width:29px;height:29px;font-size:17px}
+  .action b{font-size:9px}
+  .daily-card{padding:13px 14px}
+}
+@media(max-width:390px){
+  .app{gap:8px;padding-left:9px;padding-right:9px}
+  .room{min-height:400px;border-radius:23px}
+  .room-action{right:9px;bottom:13px;min-height:37px;padding:7px 10px;font-size:9px}
+  .speech{right:9px;max-width:55%;font-size:9px}
+  .quick-button{min-height:50px;gap:7px;padding:6px 8px;font-size:9px}
+  .quick-button>span{width:30px;height:30px;flex-basis:30px;font-size:17px}
+  .action{min-height:56px}
+  .action span{width:26px;height:26px;font-size:16px}
+  .action b{font-size:8px}
+}
+@media(prefers-reduced-motion:reduce){
+  .quick-button:hover,.action:hover{transform:none}
+}
