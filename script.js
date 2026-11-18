@@ -35,7 +35,7 @@ function showMessage(title,body,buttonText="متابعة الرحلة"){
 }
 function start(){
  $("intro").hidden=true;$("features").hidden=true;$("gamePanel").hidden=false;
- resize();reset();state="running";$("arenaMessage").hidden=true;$("pauseButton").textContent="Ⅱ";
+ resize();reset();state="running";$("arenaMessage").hidden=true;$("exitButton").hidden=true;$("pauseButton").textContent="Ⅱ";
  $("arenaHint").style.opacity="1";last=performance.now();requestAnimationFrame(loop);
 }
 function pause(){
@@ -46,9 +46,8 @@ function resume(){
  if(state!=="paused")return;state="running";$("arenaMessage").hidden=true;$("pauseButton").textContent="Ⅱ";last=performance.now();requestAnimationFrame(loop);
 }
 function endGame(){
- state="over";if(score>best){best=score;localStorage.setItem(SAVE,String(best));setBest();}
- $("pauseButton").textContent="↻";showMessage("انتهت الرحلة","نتيجتك "+format(score)+" · "+(score>=best?"رقم قياسي جديد!":"حاولي تجاوز رقمك القياسي"),"رحلة جديدة");
- $("resumeButton").onclick=()=>{ $("resumeButton").onclick=null;start(); };
+ state="over";const newRecord=score>best;if(newRecord){best=score;localStorage.setItem(SAVE,String(best));setBest();}
+ $("pauseButton").textContent="↻";showMessage("انتهت الرحلة","نتيجتك "+format(score)+" · "+(newRecord?"رقم قياسي جديد!":"حاولي تجاوز رقمك القياسي"),"رحلة جديدة");
  $("exitButton").hidden=false;
 }
 function backToMenu(){
@@ -146,7 +145,7 @@ window.addEventListener("keydown",e=>{
 });
 $("startButton").addEventListener("click",start);
 $("pauseButton").addEventListener("click",()=>state==="running"?pause():state==="over"?start():null);
-$("resumeButton").addEventListener("click",()=>state==="paused"?resume():null);
+$("resumeButton").addEventListener("click",()=>{if(state==="paused")resume();else if(state==="over")start();});
 $("exitButton").addEventListener("click",backToMenu);
 $("soundButton").addEventListener("click",()=>{muted=!muted;$("soundButton").textContent=muted?"♪̸":"♫";$("soundButton").setAttribute("aria-label",muted?"تشغيل المؤثرات":"إيقاف المؤثرات");if(!muted)sound();});
 window.addEventListener("resize",()=>{if(!$("gamePanel").hidden){resize();draw(performance.now());}});
