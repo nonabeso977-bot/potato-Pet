@@ -205,3 +205,7 @@ footer{font-size:8px;margin-top:14px}
 .legend-stage{margin-inline-start:auto;color:#c8bcff!important;font-size:9px}
 #stageName{font-size:9px!important;color:var(--cyan)!important;white-space:nowrap}
 @media(max-width:650px){.skin-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hangar-open{flex-basis:100%}.legend-stage{margin-inline-start:0}}
+
+.pilot-name-row{display:flex;gap:8px;margin:12px 0 4px}
+.pilot-name-row input{min-width:0;flex:1;padding:10px 12px;border:1px solid #ffffff22;border-radius:10px;background:#080f24;color:#eef3ff;font:12px "Changa",sans-serif}
+.pilot-name-row button{padding:8px 14px;border:1px solid #76e4e455;border-radius:10px;background:#76e4e412;color:var(--cyan);font:11px "Changa",sans-serif;cursor:pointer}
