@@ -2,7 +2,7 @@ const SAVE_KEY = "potatoPetSave_v2";
 const today = () => new Date().toLocaleDateString("en-CA");
 
 const freshState = () => ({
-  food: 76, happy: 72, energy: 82, coins: 20, xp: 0, level: 1,
+  food: 76, happy: 72, energy: 82, bond: 0, coins: 20, xp: 0, level: 1,
   room: "lounge", skin: "skin-blue", accessory: "",
   inventory: {}, quests: { feed: 0, play: 0, pet: 0 }, questPaid: [],
   rewardDate: "", lastTick: Date.now()
@@ -35,7 +35,8 @@ const rooms = {
   lounge: { name: "غرفة الجلوس", icon: "🛋️", action: "pet", button: "داعبي لوزة ♡", welcome: "تعالي نجلس معًا قليلًا.", hint: "اضغطي على لوزة لتسمعي خرخرتها" },
   kitchen: { name: "المطبخ", icon: "🍳", action: "feed", button: "قدّمي لها وجبة 🍎", welcome: "مياو! هل أحضرتِ شيئًا لذيذًا؟", hint: "لوزة تنتظر وجبتها" },
   playroom: { name: "غرفة اللعب", icon: "🧸", action: "play", button: "ابدئي اللعب 🧶", welcome: "أحضرتِ الخيط؟ هيا نلعب!", hint: "اللعب يرفع السعادة ويستهلك الطاقة" },
-  bedroom: { name: "غرفة النوم", icon: "🛏️", action: "sleep", button: "وقت الراحة ☾", welcome: "بدأ النعاس… أريد سريري.", hint: "الراحة تعيد طاقة لوزة" }
+  bedroom: { name: "غرفة النوم", icon: "🛏️", action: "sleep", button: "وقت الراحة ☾", welcome: "بدأ النعاس… أريد سريري.", hint: "الراحة تعيد طاقة لوزة" },
+  garden: { name: "حديقة لوزة", icon: "🌷", action: "garden", button: "لنستكشف الحديقة 🌼", welcome: "الهواء هنا جميل! تعالي نتمشى.", hint: "النزهة ترفع السعادة وتستهلك قليلًا من الطاقة" }
 };
 
 const items = {
@@ -117,6 +118,11 @@ function updateUI() {
   $("xpNeeded").textContent = xpNeeded();
   $("xpBar").style.width = (state.xp / xpNeeded() * 100) + "%";
   $("levelTitle").textContent = state.level < 3 ? "مبتدئة العناية" : state.level < 6 ? "صديقة الحيوانات" : state.level < 10 ? "خبيرة لوزة" : "أسطورة القطط";
+  state.bond = clamp(state.bond || 0);
+  $("bondValue").textContent = state.bond + "%";
+  $("bondBar").style.width = state.bond + "%";
+  const mood = state.food < 25 ? "جائعة وتحتاج وجبة" : state.energy < 20 ? "متعبة وتحتاج راحة" : state.happy < 25 ? "تحتاج بعض المرح" : state.bond >= 75 ? "مرتبطة بك جدًا ♡" : state.happy >= 65 ? "سعيدة ومرحة ♡" : "هادئة";
+  $("moodChip").textContent = "مزاج لوزة: " + mood;
   const bagCount = Object.values(state.inventory).reduce((sum, count) => sum + count, 0);
   $("bagCount").textContent = bagCount;
   $("rewardButton").classList.toggle("claimed", state.rewardDate === today());
@@ -164,13 +170,13 @@ function goToRoom(id) {
   const next = rooms[id];
   if (!next) return;
   state.room = id;
-  room.classList.remove("room-lounge", "room-kitchen", "room-playroom", "room-bedroom");
+  room.classList.remove("room-lounge", "room-kitchen", "room-playroom", "room-bedroom", "room-garden");
   room.classList.add("room-" + id);
   $("roomName").textContent = next.name;
   $("roomProp").textContent = next.icon;
   $("roomAction").textContent = next.button;
   $("roomHint").textContent = next.hint;
-  $("weatherChip").textContent = id === "bedroom" ? "🌙 وقت الهدوء" : id === "playroom" ? "🎈 وقت المرح" : id === "kitchen" ? "🍓 وقت الوجبة" : "☀️ نهار لطيف";
+  $("weatherChip").textContent = id === "bedroom" ? "🌙 وقت الهدوء" : id === "playroom" ? "🎈 وقت المرح" : id === "kitchen" ? "🍓 وقت الوجبة" : id === "garden" ? "🌤️ نسيم عليل" : "☀️ نهار لطيف";
   document.querySelectorAll("[data-room]").forEach(button => {
     const active = button.dataset.room === id;
     button.classList.toggle("active", active);
@@ -193,13 +199,17 @@ function addCoins(amount) {
   state.coins += amount;
 }
 
+function addBond(amount) {
+  state.bond = clamp((state.bond || 0) + amount);
+}
+
 function performRoomAction() {
   const action = rooms[state.room].action;
   if (action === "feed") {
     if (state.food >= 96) return talk("أنا شبعانة جدًا، شكرًا ♡");
     state.food = clamp(state.food + 24);
     state.happy = clamp(state.happy + 4);
-    addCoins(2); addXP(5); completeQuest("feed");
+    addCoins(2); addXP(5); addBond(2); completeQuest("feed");
     animatePet("playing");
     talk("مممم… وجبة لذيذة! شكرًا ♡");
   } else if (action === "play") {
@@ -207,19 +217,27 @@ function performRoomAction() {
     state.happy = clamp(state.happy + 19);
     state.energy = clamp(state.energy - 16);
     state.food = clamp(state.food - 7);
-    addCoins(3); addXP(8); completeQuest("play");
+    addCoins(3); addXP(8); addBond(3); completeQuest("play");
     animatePet("playing");
     talk("يا لها من لعبة ممتعة! مرة ثانية!");
   } else if (action === "sleep") {
     if (state.energy >= 96) return talk("أنا مرتاحة ومليانة طاقة!");
     state.energy = clamp(state.energy + 28);
     state.happy = clamp(state.happy + 3);
-    addXP(4);
+    addXP(4); addBond(1);
     animatePet("sleeping");
     talk("تصبحين على خير… ززز");
+  } else if (action === "garden") {
+    if (state.energy < 12) return talk("أحتاج أن أرتاح قبل النزهة ☾");
+    state.happy = clamp(state.happy + 13);
+    state.energy = clamp(state.energy - 8);
+    state.food = clamp(state.food - 4);
+    addCoins(2); addXP(5); addBond(3);
+    animatePet("playing");
+    talk("الفراشات والزهور! أحب حديقتنا 🌷");
   } else {
     state.happy = clamp(state.happy + 12);
-    addCoins(1); addXP(3); completeQuest("pet");
+    addCoins(1); addXP(3); addBond(4); completeQuest("pet");
     animatePet("playing");
     talk("خرخرةةة… أحب المداعبة ♡");
   }
@@ -233,7 +251,7 @@ function petTap() {
     return;
   }
   state.happy = clamp(state.happy + 5);
-  addXP(1);
+  addXP(1); addBond(1);
   completeQuest("pet");
   animatePet("playing");
   updateUI();
@@ -295,11 +313,13 @@ function useItem(id) {
   if (item.type === "food") {
     if (state.food >= 98) return showToast("لوزة شبعانة، احتفظي بها لوقت لاحق.");
     state.food = clamp(state.food + item.amount);
+    addBond(1);
     talk("يا سلام! أحب هذا الطعام 🐟");
   } else if (item.type === "toy") {
     if (state.energy < 12) return showToast("لوزة متعبة وتحتاج إلى النوم.");
     state.happy = clamp(state.happy + item.amount);
     state.energy = clamp(state.energy - 7);
+    addBond(2);
     talk("هذه لعبتي الجديدة! لنلعب!");
     animatePet("playing");
   } else if (item.type === "accessory") {
