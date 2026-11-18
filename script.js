@@ -31,7 +31,7 @@ const safeReadProgress=()=>{
  try{
   const v=JSON.parse(localStorage.getItem(PROGRESS_SAVE)||"{}");
   return {stars:Number.isFinite(v.stars)?Math.max(0,v.stars):0,bank:Number.isFinite(v.bank)?Math.max(0,v.bank):(Number.isFinite(v.stars)?Math.max(0,v.stars):0),ownedSkins:Array.isArray(v.ownedSkins)?[...new Set(v.ownedSkins.filter(id=>SKINS.some(s=>s.id===id)))]:SKINS.filter(s=>!s.cost).map(s=>s.id),sectors:Array.isArray(v.sectors)?[...new Set(v.sectors.filter(n=>Number.isInteger(n)&&n>=0&&n<STAGES.length))]:[],unlocked:Array.isArray(v.unlocked)?[...new Set(v.unlocked.filter(id=>ACHIEVEMENTS.some(a=>a.id===id)))]:[]};
- }catch(_){return{stars:0,sectors:[],unlocked:[]};}
+ }catch(_){return{stars:0,bank:0,ownedSkins:SKINS.filter(s=>!s.cost).map(s=>s.id),sectors:[],unlocked:[]};}
 };
 let progress=safeReadProgress(),survivedMinute=false;
 let selectedMission=MISSIONS[0],lastMissionId="",nearMisses=0,starMilestoneAwarded=false,missionDone=false,missionShownProgress=-1,timeDilation=1,lastMusicDilation=1;
