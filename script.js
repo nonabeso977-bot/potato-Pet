@@ -10,14 +10,15 @@ const FACTS=[
  {tag:"MARS",title:"غروب أزرق",body:"بسبب طريقة تشتت الضوء في غلافه الجوي المغبر، يظهر الغروب على المريخ بلون أزرق قرب قرص الشمس."},
  {tag:"EUROPA",title:"محيط تحت الجليد",body:"تشير الأدلة إلى أن قمر المشتري أوروبا يخفي محيطًا مالحًا واسعًا تحت قشرته الجليدية."},
  {tag:"SATURN",title:"حلقات من الجليد",body:"حلقات زحل تتكون أساسًا من جليد مائي، مع كميات أقل من المواد الصخرية والغبار."},
- {tag:"THE MOON",title:"القمر يبتعد ببطء",body:"القمر يبتعد عن الأرض بمعدل يقارب 3.8 سنتيمتر كل سنة، وقد قيس ذلك باستخدام عواكس الليزر."}
+ {tag:"THE MOON",title:"القمر يبتعد ببطء",body:"القمر يبتعد عن الأرض بمعدل يقارب 3.8 سنتيمتر كل سنة، وقد قيس ذلك باستخدام عواكس الليزر."},
+ {tag:"BLACK HOLE",title:"لا شيء يفلت من الأفق",body:"الثقب الأسود منطقة في الزمكان تكون جاذبيتها شديدة جدًا، بحيث لا يستطيع الضوء الإفلات بعد تجاوز حد يُسمّى أفق الحدث. وليس ثقبًا يشفط كل ما في الكون من بعيد."}
 ];
 const safeReadAtlas=()=>{try{const v=JSON.parse(localStorage.getItem(ATLAS_SAVE)||"[]");return Array.isArray(v)?[...new Set(v.filter(n=>Number.isInteger(n)&&n>=0&&n<FACTS.length))]:[];}catch(_){return[];}};
 const safeSaveAtlas=()=>{try{localStorage.setItem(ATLAS_SAVE,JSON.stringify(discovered));}catch(_){}};
 const safeReadBest=()=>{try{return Number(localStorage.getItem(SAVE)||localStorage.getItem("orbitArcade.v1")||0)||0;}catch(_){return 0;}};
 const safeSaveBest=value=>{try{localStorage.setItem(SAVE,String(value));}catch(_){}};
 let best=safeReadBest(),discovered=safeReadAtlas(),score=0,lives=3,level=1,combo=1,comboTime=0;
-let state="menu",last=0,elapsed=0,spawnClock=0,stars=[],rocks=[],pickups=[],artifacts=[],particles=[],backgroundStars=[];
+let state="menu",last=0,elapsed=0,spawnClock=0,stars=[],rocks=[],blackHoles=[],pickups=[],artifacts=[],particles=[],backgroundStars=[];
 let discoveryToastTime=0;
 let shieldTime=0,magnetTime=0,collected=0,missionDone=false,shake=0;
 let width=0,height=0,dpr=1,player={x:0,y:0,targetX:0,targetY:0,r:13,invulnerable:0};
@@ -57,7 +58,7 @@ function resize(){
  backgroundStars=Array.from({length:Math.max(45,Math.round(width*height/6500))},()=>({x:rand(0,width),y:rand(0,height),r:rand(.4,1.7),a:rand(.2,.8),phase:rand(0,6)}));
 }
 function reset(){
- score=0;lives=3;level=1;combo=1;comboTime=0;elapsed=0;spawnClock=0;stars=[];rocks=[];pickups=[];artifacts=[];particles=[];
+ score=0;lives=3;level=1;combo=1;comboTime=0;elapsed=0;spawnClock=0;stars=[];rocks=[];blackHoles=[];pickups=[];artifacts=[];particles=[];
  shieldTime=0;magnetTime=0;collected=0;missionDone=false;shake=0;discoveryToastTime=0;
  $("discoveryToast").hidden=true;$("discoveryToast").classList.remove("show");
  player={x:width/2,y:height*.78,targetX:width/2,targetY:height*.78,r:12,invulnerable:1.5};
@@ -122,6 +123,11 @@ function spawn(){
    artifacts.push({x,y:-20,r:12,vy:rand(82,108)+level*3,spin:0,id:available[Math.floor(Math.random()*available.length)]});
    return;
  }
+ if(roll<.065&&!blackHoles.length){
+   blackHoles.push({x,y:rand(height*.2,height*.58),r:24,life:7.5,spin:rand(0,6)});
+   sound(115,.24,"sine");
+   return;
+ }
  if(roll<.12){
    pickups.push({x,y:-18,r:11,vy:rand(88,112)+level*4,spin:0,kind:Math.random()<.52?"shield":"magnet"});
    return;
@@ -173,6 +179,24 @@ function update(dt){
  if(magnetTime>0){
    for(const s of stars){const dx=player.x-s.x,dy=player.y-s.y,d=Math.hypot(dx,dy);if(d<175&&d>1){const pull=(1-d/175)*420;s.x+=dx/d*pull*dt;s.y+=dy/d*pull*dt;}}
  }
+ for(let i=blackHoles.length-1;i>=0;i--){
+   const b=blackHoles[i];b.life-=dt;b.spin+=dt*.7;
+   const dx=b.x-player.x,dy=b.y-player.y,d=Math.hypot(dx,dy);
+   if(d<180&&d>1){
+     const pull=(1-d/180)*118;
+     player.x+=dx/d*pull*dt;player.y+=dy/d*pull*dt;
+     player.targetX=clamp(player.targetX+dx/d*pull*dt*.55,player.r+7,width-player.r-7);
+     player.targetY=clamp(player.targetY+dy/d*pull*dt*.55,height*.42,height-28);
+   }
+   if(d<b.r+player.r*.72&&player.invulnerable<=0){
+     blackHoles.splice(i,1);
+     if(shieldTime>0){
+       shieldTime=0;score+=120;burst(b.x,b.y,"#c9aaff",34);sound(430,.24,"triangle");updateHUD();
+     }else{hitRock(b);if(state!=="running")return;}
+     continue;
+   }
+   if(b.life<=0)blackHoles.splice(i,1);
+ }
  for(let i=artifacts.length-1;i>=0;i--){
    const a=artifacts[i];a.y+=a.vy*dt;a.spin+=dt*1.8;
    if(circleHit(player,a)){collectArtifact(a);artifacts.splice(i,1);continue;}
@@ -216,6 +240,21 @@ function drawRock(r){
  ctx.closePath();const g=ctx.createLinearGradient(-r.r,-r.r,r.r,r.r);g.addColorStop(0,"#c18ca8");g.addColorStop(.55,"#6c668d");g.addColorStop(1,"#333c60");ctx.fillStyle=g;ctx.shadowBlur=13;ctx.shadowColor="#d58eaf55";ctx.fill();ctx.strokeStyle="#f0b7d655";ctx.lineWidth=1;ctx.stroke();
  ctx.fillStyle="#27304c88";ctx.beginPath();ctx.arc(-r.r*.2,-r.r*.12,r.r*.2,0,Math.PI*2);ctx.fill();ctx.restore();
 }
+function drawBlackHole(b,t){
+ ctx.save();ctx.translate(b.x,b.y);ctx.rotate(b.spin);
+ const glow=ctx.createRadialGradient(0,0,b.r*.45,0,0,b.r*2.5);
+ glow.addColorStop(0,"#08061200");glow.addColorStop(.48,"#9f78ff22");glow.addColorStop(1,"#9f78ff00");
+ ctx.fillStyle=glow;ctx.beginPath();ctx.arc(0,0,b.r*2.5,0,Math.PI*2);ctx.fill();
+ ctx.shadowBlur=22;ctx.shadowColor="#bd91ff";ctx.strokeStyle="#d4b7ff";ctx.lineWidth=5;
+ ctx.beginPath();ctx.ellipse(0,0,b.r*1.8,b.r*.58,-.12,0,Math.PI*2);ctx.stroke();
+ ctx.strokeStyle="#79dfe8";ctx.lineWidth=2;ctx.globalAlpha=.8;
+ ctx.beginPath();ctx.ellipse(0,0,b.r*1.48,b.r*.43,.16,0,Math.PI*2);ctx.stroke();
+ ctx.globalAlpha=1;ctx.shadowBlur=18;ctx.shadowColor="#05030a";ctx.fillStyle="#020208";
+ ctx.beginPath();ctx.arc(0,0,b.r*.82,0,Math.PI*2);ctx.fill();
+ ctx.shadowBlur=0;ctx.fillStyle="#e3d6ff";ctx.globalAlpha=.8;
+ ctx.font="bold 7px Space Grotesk, sans-serif";ctx.textAlign="center";ctx.fillText("EVENT HORIZON",0,b.r+17);
+ ctx.restore();
+}
 function drawPlayer(t){
  ctx.save();ctx.translate(player.x,player.y);
  if(player.invulnerable>0&&Math.floor(t/90)%2===0)ctx.globalAlpha=.35;
@@ -236,7 +275,7 @@ function drawPickup(p){
 function draw(t){
  ctx.save();
  if(shake>0)ctx.translate(rand(-shake,shake),rand(-shake,shake));
- drawBackground(t);stars.forEach(drawStar);pickups.forEach(drawPickup);artifacts.forEach(drawArtifact);rocks.forEach(drawRock);
+ drawBackground(t);stars.forEach(drawStar);pickups.forEach(drawPickup);artifacts.forEach(drawArtifact);rocks.forEach(drawRock);blackHoles.forEach(b=>drawBlackHole(b,t));
  for(const p of particles){ctx.globalAlpha=Math.max(0,p.life/p.max);ctx.fillStyle=p.color;ctx.shadowBlur=9;ctx.shadowColor=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();}ctx.globalAlpha=1;ctx.shadowBlur=0;
  if(state!=="menu")drawPlayer(t);
  ctx.restore();
