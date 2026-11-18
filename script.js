@@ -37,7 +37,7 @@ let state="menu",last=0,elapsed=0,spawnClock=0,stars=[],rocks=[],blackHoles=[],p
 let discoveryToastTime=0,stageIndex=0,firstRockPending=false;
 let shieldTime=0,magnetTime=0,collected=0,missionDone=false,shake=0;
 let width=0,height=0,dpr=1,player={x:0,y:0,targetX:0,targetY:0,r:13,invulnerable:0};
-let pointerDown=false,muted=false,audio=null,runId=0;
+let pointerDown=false,muted=false,audio=null,runId=0,musicOn=false,musicNodes=[];
 const rand=(a,b)=>a+Math.random()*(b-a);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function format(n){return String(Math.floor(n)).padStart(6,"0")}
@@ -162,6 +162,38 @@ function backToMenu(){
 function sound(freq=620,duration=.07,type="sine"){
  if(muted)return;
  try{audio=audio||new(window.AudioContext||window.webkitAudioContext)();if(audio.state==="suspended")audio.resume();const osc=audio.createOscillator(),gain=audio.createGain();osc.type=type;osc.frequency.value=freq;gain.gain.setValueAtTime(.045,audio.currentTime);gain.gain.exponentialRampToValueAtTime(.001,audio.currentTime+duration);osc.connect(gain);gain.connect(audio.destination);osc.start();osc.stop(audio.currentTime+duration);}catch(_){}
+}
+function startAmbient(){
+ try{
+   audio=audio||new(window.AudioContext||window.webkitAudioContext)();
+   if(audio.state==="suspended")audio.resume();
+   const master=audio.createGain(),filter=audio.createBiquadFilter();
+   filter.type="lowpass";filter.frequency.value=520;filter.Q.value=.55;
+   master.gain.setValueAtTime(.0001,audio.currentTime);
+   master.gain.exponentialRampToValueAtTime(.022,audio.currentTime+2.4);
+   filter.connect(master);master.connect(audio.destination);
+   const tones=[{f:55,type:"sine",v:.42},{f:82.41,type:"sine",v:.25},{f:110,type:"triangle",v:.10},{f:164.81,type:"sine",v:.035}];
+   const oscillators=tones.map(t=>{
+     const osc=audio.createOscillator(),gain=audio.createGain();
+     osc.type=t.type;osc.frequency.value=t.f;gain.gain.value=t.v;
+     osc.connect(gain);gain.connect(filter);osc.start();return osc;
+   });
+   musicNodes=[master,...oscillators];musicOn=true;
+   $("musicButton").textContent="♫";$("musicButton").setAttribute("aria-pressed","true");
+   $("musicButton").setAttribute("aria-label","إيقاف موسيقى الفضاء");
+ }catch(_){musicOn=false;$("musicButton").setAttribute("aria-pressed","false");}
+}
+function stopAmbient(){
+ if(!musicNodes.length){musicOn=false;return;}
+ const nodes=musicNodes.slice(),master=nodes[0];
+ try{
+   master.gain.cancelScheduledValues(audio.currentTime);
+   master.gain.setTargetAtTime(.0001,audio.currentTime,.18);
+   setTimeout(()=>{nodes.slice(1).forEach(n=>{try{n.stop();}catch(_){}});try{master.disconnect();}catch(_){}},1100);
+ }catch(_){}
+ musicNodes=[];musicOn=false;
+ $("musicButton").textContent="♪";$("musicButton").setAttribute("aria-pressed","false");
+ $("musicButton").setAttribute("aria-label","تشغيل موسيقى الفضاء");
 }
 function burst(x,y,color,count=10){
  for(let i=0;i<count;i++){const a=rand(0,Math.PI*2),speed=rand(35,180);particles.push({x,y,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,life:rand(.25,.65),max:.65,size:rand(1,3),color});}
@@ -377,6 +409,7 @@ $("pauseButton").addEventListener("click",()=>state==="running"?pause():state===
 $("resumeButton").addEventListener("click",()=>{if(state==="paused")resume();else if(state==="over")start();});
 $("exitButton").addEventListener("click",backToMenu);
 $("soundButton").addEventListener("click",()=>{muted=!muted;$("soundButton").textContent=muted?"♪̸":"♫";$("soundButton").setAttribute("aria-label",muted?"تشغيل المؤثرات":"إيقاف المؤثرات");if(!muted)sound();});
+$("musicButton").addEventListener("click",()=>musicOn?stopAmbient():startAmbient());
 window.addEventListener("resize",()=>{if(!$("gamePanel").hidden){resize();if(state==="running"||state==="paused")draw(performance.now());}});
 if("ResizeObserver" in window){
  const arenaObserver=new ResizeObserver(()=>{if(!$("gamePanel").hidden){resize();if(state==="running"||state==="paused")draw(performance.now());}});
