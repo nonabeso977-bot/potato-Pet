@@ -41,11 +41,19 @@
 
   <section class="game-panel" id="gamePanel" hidden>
     <div class="game-topline">
-      <div class="game-stat"><small>النقاط</small><strong id="score">000000</strong></div>
-      <div class="game-stat"><small>أفضل نتيجة</small><strong id="best">000000</strong></div>
+      <div class="game-stat score-stat"><small>النقاط</small><strong id="score">000000</strong></div>
+      <div class="game-stat best-stat"><small>رقمك القياسي</small><strong id="best">000000</strong></div>
       <div class="game-stat compact"><small>المرحلة</small><strong id="level">01</strong></div>
       <div class="lives" id="lives" aria-label="ثلاث فرص"><i></i><i></i><i></i></div>
       <button class="pause-button" id="pauseButton" type="button" aria-label="إيقاف مؤقت">Ⅱ</button>
+    </div>
+    <div class="run-hud">
+      <div class="run-objective">
+        <div class="objective-copy"><small>مهمة الرحلة</small><strong id="missionText">اجمعي 20 نجمة</strong></div>
+        <div class="objective-track" role="progressbar" aria-label="تقدم المهمة" aria-valuemin="0" aria-valuemax="20" aria-valuenow="0"><i id="missionFill"></i></div>
+        <span class="objective-count" id="missionCount">0 / 20</span>
+      </div>
+      <div class="power-state" id="powerState" hidden><span id="powerIcon">✧</span><span id="powerText">درع نشط</span><i id="powerTimer"></i></div>
     </div>
     <div class="arena-wrap">
       <canvas id="arena" aria-label="ساحة لعبة مدار. اسحبي المركبة لتجنب الشهب وجمع النجوم."></canvas>
@@ -59,7 +67,7 @@
       </div>
       <div class="arena-hint" id="arenaHint">اسحبي المركبة للتحرك</div>
     </div>
-    <div class="game-bottomline"><span><i class="legend-star">✦</i> اجمعي النجوم</span><span><i class="legend-rock">◆</i> تجنبي الشهب</span><span id="comboLabel">COMBO ×1</span></div>
+    <div class="game-bottomline"><span><i class="legend-star">✦</i> نجمة + نقاط</span><span><i class="legend-rock">◆</i> صخرة = خسارة فرصة</span><span class="legend-power"><i>◎</i> درع</span><span class="legend-magnet"><i>⌁</i> مغناطيس</span><span id="comboLabel">COMBO ×1</span></div>
   </section>
 
   <section class="features" id="features">
@@ -67,7 +75,7 @@
     <article><span class="feature-icon danger">◇</span><div><strong>تفادي الشهب</strong><small>ثلاث فرص فقط لكل رحلة</small></div></article>
     <article><span class="feature-icon violet">⌁</span><div><strong>تحدّي متصاعد</strong><small>السرعة تزيد مع الوقت</small></div></article>
   </section>
-  <footer><span>ORBIT / BUILD 1.0</span><span>صُممت لتُلعَب، لا لتُشاهَد فقط.</span></footer>
+  <footer><span>ORBIT / BUILD 2.0 · PULSE</span><span>صُممت لتُلعَب، لا لتُشاهَد فقط.</span></footer>
 </main>
 <script src="script.js"></script>
 </body>
