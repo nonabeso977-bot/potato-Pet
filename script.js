@@ -7,6 +7,23 @@ const ATLAS_SAVE="orbitAtlas.v1";
 const RECORDS_SAVE="orbitRecords.v1";
 const SKIN_SAVE="orbitSkin.v1";
 const SKINS=[{id:"nova",name:"نوفا",main:"#f0ffff",edge:"#76e4e4",glow:"#76e4e4"},{id:"coral",name:"مرجان",main:"#fff0f3",edge:"#ff8eaa",glow:"#ff8eaa"},{id:"nebula",name:"سديم",main:"#f4eaff",edge:"#b99aff",glow:"#b99aff"},{id:"solar",name:"شمسي",main:"#fff4c9",edge:"#ffc85c",glow:"#ffc85c"}];
+const ACHIEVEMENTS=[
+ {id:"first-flight",icon:"🚀",name:"أول إقلاع",desc:"ابدئي رحلتك الأولى."},
+ {id:"first-star",icon:"✦",name:"جامع الضوء",desc:"التقطي أول نجمة."},
+ {id:"mission-20",icon:"◎",name:"مهمة مكتملة",desc:"اجمعي 20 نجمة في رحلة واحدة."},
+ {id:"first-discovery",icon:"⌕",name:"فضول كوني",desc:"افتحي أول معلومة في دفتر الاكتشافات."},
+ {id:"minute-survivor",icon:"◷",name:"دقيقة في المدار",desc:"استمري في رحلة واحدة لمدة 60 ثانية."},
+ {id:"hundred-stars",icon:"✧",name:"مطر النجوم",desc:"اجمعي 100 نجمة عبر جميع الرحلات."},
+ {id:"all-sectors",icon:"◉",name:"رحّالة المجرة",desc:"زوري المناطق الفضائية الأربع."}
+];
+const PROGRESS_SAVE="orbitProgress.v1";
+const safeReadProgress=()=>{
+ try{
+  const v=JSON.parse(localStorage.getItem(PROGRESS_SAVE)||"{}");
+  return {stars:Number.isFinite(v.stars)?Math.max(0,v.stars):0,sectors:Array.isArray(v.sectors)?[...new Set(v.sectors.filter(n=>Number.isInteger(n)&&n>=0&&n<STAGES.length))]:[],unlocked:Array.isArray(v.unlocked)?[...new Set(v.unlocked.filter(id=>ACHIEVEMENTS.some(a=>a.id===id)))]:[]};
+ }catch(_){return{stars:0,sectors:[],unlocked:[]};}
+};
+let progress=safeReadProgress(),survivedMinute=false;
 const STAGES=[{name:"مدار الأرض",hint:"نجوم زرقاء وهواء هادئ",bg:"#10264a",glow:"#275b83",rock:"#63829b"},{name:"سهول المريخ",hint:"غبار أحمر وصخور أكثر",bg:"#3a1d2a",glow:"#a34c45",rock:"#bd7864"},{name:"حلقات زحل",hint:"غبار ذهبي وحلقات لامعة",bg:"#352b20",glow:"#a17a42",rock:"#b89a6c"},{name:"حافة السديم",hint:"سحب بنفسجية وثقوب سوداء",bg:"#251b45",glow:"#7654a8",rock:"#8c79b7"}];
 let selectedSkin=(()=>{try{return localStorage.getItem(SKIN_SAVE)||"nova";}catch(_){return"nova";}})();
 let records=(()=>{try{const v=JSON.parse(localStorage.getItem(RECORDS_SAVE)||"[]");return Array.isArray(v)?v.filter(x=>x&&typeof x.name==="string"&&Number.isFinite(x.score)).sort((a,b)=>b.score-a.score).slice(0,10):[];}catch(_){return[];}})();
@@ -57,6 +74,31 @@ function renderAtlas(){
 }
 function openAtlas(){renderAtlas();$("atlasModal").hidden=false;}
 function saveRecords(){try{localStorage.setItem(RECORDS_SAVE,JSON.stringify(records));}catch(_){}}
+function saveProgress(){try{localStorage.setItem(PROGRESS_SAVE,JSON.stringify(progress));}catch(_){}}
+function renderAchievements(){
+ const host=$("achievementGrid"),count=progress.unlocked.length;
+ $("achievementSummary").textContent=count+" من "+ACHIEVEMENTS.length+" إنجازات مفتوحة";
+ host.innerHTML=ACHIEVEMENTS.map(a=>{
+  const unlocked=progress.unlocked.includes(a.id);
+  return '<article class="achievement-card '+(unlocked?"unlocked":"locked")+'"><span class="achievement-icon">'+(unlocked?a.icon:"?")+'</span><div class="achievement-copy"><strong>'+a.name+'</strong><p>'+a.desc+'</p><small class="achievement-state">'+(unlocked?"تم فتح الإنجاز":"لم يُفتح بعد")+'</small></div></article>';
+ }).join("");
+}
+function awardAchievement(id){
+ if(progress.unlocked.includes(id))return;
+ progress.unlocked.push(id);saveProgress();
+ const achievement=ACHIEVEMENTS.find(a=>a.id===id);
+ if(achievement){sound(880,.13,"triangle");}
+}
+function markSector(index){
+ if(!progress.sectors.includes(index)){
+  progress.sectors.push(index);saveProgress();
+  if(progress.sectors.length===STAGES.length)awardAchievement("all-sectors");
+ }
+}
+function addLifetimeStar(){
+ progress.stars++;saveProgress();
+ if(progress.stars>=100)awardAchievement("hundred-stars");
+}
 function renderRecords(){
  const host=$("recordsList");
  if(!records.length){host.innerHTML="<p class=\"empty-records\">لا توجد رحلات مسجلة بعد. ابدئي أول محاولة واصنعي رقمك!</p>";return;}
@@ -71,7 +113,7 @@ function renderSkins(){
  $("skinGrid").innerHTML=SKINS.map(s=>"<button type=\"button\" class=\"skin-option "+(s.id===selectedSkin?"selected":"")+"\" data-skin=\""+s.id+"\"><i style=\"--skin-main:"+s.main+";--skin-edge:"+s.edge+";--skin-glow:"+s.glow+"\"></i><span>"+s.name+"</span>"+(s.id===selectedSkin?"<small>محدد</small>":"")+"</button>").join("");
  $("skinGrid").querySelectorAll("[data-skin]").forEach(button=>button.addEventListener("click",()=>{selectedSkin=button.dataset.skin;try{localStorage.setItem(SKIN_SAVE,selectedSkin);}catch(_){}renderSkins();}));
 }
-function openHangar(){renderSkins();renderRecords();try{$("pilotNameInput").value=localStorage.getItem("orbitPilotName")||"";}catch(_){}$("hangarModal").hidden=false;}
+function openHangar(){renderSkins();renderRecords();renderAchievements();try{$("pilotNameInput").value=localStorage.getItem("orbitPilotName")||"";}catch(_){}$("hangarModal").hidden=false;}
 function closeHangar(){$("hangarModal").hidden=true;}
 function saveRunRecord(){
  let name="رحّالة";try{name=(localStorage.getItem("orbitPilotName")||"رحّالة").trim().slice(0,16)||"رحّالة";}catch(_){}
@@ -95,7 +137,7 @@ function resize(){
 }
 function reset(){
  score=0;lives=3;level=1;stageIndex=0;combo=1;comboTime=0;elapsed=0;spawnClock=0;stars=[];rocks=[];blackHoles=[];pickups=[];artifacts=[];particles=[];firstRockPending=true;
- shieldTime=0;magnetTime=0;collected=0;missionDone=false;shake=0;discoveryToastTime=0;
+ shieldTime=0;magnetTime=0;collected=0;missionDone=false;shake=0;discoveryToastTime=0;survivedMinute=false;markSector(0);
  $("discoveryToast").hidden=true;$("discoveryToast").classList.remove("show");
  player={x:width/2,y:height*.78,targetX:width/2,targetY:height*.78,r:12,invulnerable:1.5};
  updateHUD();runId++;
@@ -125,6 +167,7 @@ function showMessage(title,body,buttonText="متابعة الرحلة"){
  $("resumeButton").innerHTML=buttonText+' <b>↗</b>';$("arenaMessage").hidden=false;
 }
 function start(){
+ awardAchievement("first-flight");
  $("intro").hidden=true;$("features").hidden=true;$("gamePanel").hidden=false;
  state="starting";$("arenaMessage").hidden=true;$("exitButton").hidden=true;$("pauseButton").textContent="Ⅱ";
  $("arenaHint").style.opacity="1";
@@ -270,9 +313,9 @@ function spawn(){
 }
 function circleHit(a,b){const dx=a.x-b.x,dy=a.y-b.y,rr=a.r+b.r;return dx*dx+dy*dy<rr*rr;}
 function collectStar(s){
- score+=10*combo;combo=Math.min(8,combo+1);comboTime=2.2;collected++;
+ score+=10*combo;combo=Math.min(8,combo+1);comboTime=2.2;collected++;addLifetimeStar();awardAchievement("first-star");
  burst(s.x,s.y,"#ffd77a",12);sound(720+combo*55,.065,"triangle");
- if(collected>=20&&!missionDone){missionDone=true;score+=150;burst(player.x,player.y,"#76e4e4",28);sound(980,.22,"triangle");}
+ if(collected>=20&&!missionDone){missionDone=true;score+=150;awardAchievement("mission-20");burst(player.x,player.y,"#76e4e4",28);sound(980,.22,"triangle");}
  updateHUD();
 }
 function collectPickup(p){
@@ -282,7 +325,7 @@ function collectPickup(p){
 }
 function collectArtifact(a){
  if(discovered.includes(a.id))return;
- discovered.push(a.id);safeSaveAtlas();score+=80;
+ discovered.push(a.id);safeSaveAtlas();score+=80;awardAchievement("first-discovery");if(discovered.length===FACTS.length)awardAchievement("atlas-master");
  burst(a.x,a.y,"#a99bff",26);sound(1040,.2,"triangle");
  showDiscovery(a.id);updateHUD();updateAtlasButton();
 }
@@ -295,7 +338,8 @@ function hitRock(r){
 function update(dt){
  elapsed+=dt;const nextLevel=1+Math.floor(elapsed/18);if(nextLevel!==level){level=nextLevel;updateHUD();}
  const nextStage=Math.floor(elapsed/35)%STAGES.length;
- if(nextStage!==stageIndex){stageIndex=nextStage;updateHUD();sound(360,.16,"sine");}spawnClock+=dt;
+ if(nextStage!==stageIndex){stageIndex=nextStage;markSector(stageIndex);updateHUD();sound(360,.16,"sine");}
+ if(elapsed>=60&&!survivedMinute){survivedMinute=true;awardAchievement("minute-survivor");}spawnClock+=dt;
  const interval=Math.max(.28,.88-level*.055);
  while(spawnClock>interval){spawnClock-=interval;spawn();}
  player.x+=(player.targetX-player.x)*Math.min(1,dt*13);
@@ -462,5 +506,5 @@ if("ResizeObserver" in window){
  arenaObserver.observe(canvas.parentElement);
 }
 document.addEventListener("visibilitychange",()=>{if(document.hidden&&state==="running")pause();});
-$("exitButton").hidden=true;setBest();updateAtlasButton();renderAtlas();renderSkins();renderRecords();resize();draw(0);
+$("exitButton").hidden=true;setBest();updateAtlasButton();renderAtlas();renderSkins();renderRecords();renderAchievements();resize();draw(0);
 })();
