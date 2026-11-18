@@ -18,7 +18,7 @@
       <span class="brand-icon"><i></i><b></b></span>
       <span><strong>مَدار</strong><small>ORBIT / ARCADE</small></span>
     </a>
-    <div class="top-meta"><span class="status-live"><i></i> SYSTEM ONLINE</span><button class="sound-button" id="soundButton" type="button" aria-label="تشغيل أو إيقاف المؤثرات">♫</button></div>
+    <div class="top-meta"><span class="status-live"><i></i> SYSTEM ONLINE</span><button class="sound-button" id="soundButton" type="button" aria-label="تشغيل أو إيقاف المؤثرات" title="المؤثرات الصوتية">♫</button><button class="sound-button music-button" id="musicButton" type="button" aria-label="تشغيل موسيقى الفضاء" aria-pressed="false" title="موسيقى الفضاء">♪</button></div>
   </header>
 
   <section class="intro" id="intro">
@@ -83,12 +83,12 @@
   <div class="atlas-overlay" id="hangarModal" hidden>
     <section class="atlas-dialog hangar-dialog" role="dialog" aria-modal="true" aria-labelledby="hangarHeading">
       <header class="atlas-header"><div><span class="eyebrow">PILOT CENTER / ORBIT</span><h2 id="hangarHeading">مركز الرحّالة</h2></div><button class="atlas-close" id="closeHangar" type="button" aria-label="إغلاق">×</button></header>
-      <p class="atlas-description">اختاري شكل مركبتك، وشاهدي أفضل الرحلات المسجلة على هذا الجهاز.</p>
+      <p class="atlas-description">اختاري شكل مركبتك، وتابعي قائمة المتصدرين لهذا الجهاز.</p>
       <div class="pilot-name-row"><label for="pilotNameInput">اسمك في سجل النتائج (اختياري)</label><input id="pilotNameInput" maxlength="16" placeholder="مثلاً: رحّالة أو هنادي" aria-label="اسم يظهر في سجل النتائج"><button id="savePilotName" type="button">حفظ الاسم</button></div>
       <h3 class="hangar-subtitle">مظهر المركبة</h3>
       <div class="skin-grid" id="skinGrid"></div>
-      <h3 class="hangar-subtitle">سجل أفضل الرحلات · هذا الجهاز</h3>
-      <p class="atlas-description">هذا الاسم سيظهر بجانب نتيجتك، وليس اسمًا للرحلة. يمكنك تركه فارغًا، وسيُستخدم اسم «رحّالة» تلقائيًا. النتائج محفوظة على جهازك فقط.</p>
+      <h3 class="hangar-subtitle">قائمة المتصدرين · هذا الجهاز</h3>
+      <p class="atlas-description">تُرتّب أفضل خمس نتائج على هذا الجهاز. القائمة ليست عالمية بعد؛ المتصدرون بين جميع اللاعبين يحتاجون إلى قاعدة بيانات مشتركة.</p>
       <div class="pilot-records" id="recordsList"></div>
     </section>
   </div>
@@ -110,7 +110,7 @@
     <article><span class="feature-icon violet">⌁</span><div><strong>قوى المدار</strong><small>درع يحميك ومغناطيس يجذب النجوم</small></div></article>
     <article><span class="feature-icon blackhole-feature">◉</span><div><strong>أفق الحدث</strong><small>قاومي جاذبية الثقب الأسود</small></div></article>
   </section>
-  <footer><span>ORBIT / BUILD 3.0 · COSMIC EXPLORER</span><span>صُممت لتُلعَب، لا لتُشاهَد فقط.</span></footer>
+  <footer><span>ORBIT / BUILD 3.1 · COSMIC EXPLORER</span><span>صُممت لتُلعَب، لا لتُشاهَد فقط.</span></footer>
 </main>
 <script src="script.js?v=3.0.2"></script>
 </body>
