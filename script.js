@@ -14,7 +14,8 @@ const ACHIEVEMENTS=[
  {id:"first-discovery",icon:"⌕",name:"فضول كوني",desc:"افتحي أول معلومة في دفتر الاكتشافات."},
  {id:"minute-survivor",icon:"◷",name:"دقيقة في المدار",desc:"استمري في رحلة واحدة لمدة 60 ثانية."},
  {id:"hundred-stars",icon:"✧",name:"مطر النجوم",desc:"اجمعي 100 نجمة عبر جميع الرحلات."},
- {id:"all-sectors",icon:"◉",name:"رحّالة المجرة",desc:"زوري المناطق الفضائية الأربع."}
+ {id:"all-sectors",icon:"◉",name:"رحّالة المجرة",desc:"زوري المناطق الفضائية الأربع."},
+ {id:"atlas-master",icon:"✧",name:"موسوعة مكتملة",desc:"اجمعي الاكتشافات الفضائية الستة عشر كلها."}
 ];
 const PROGRESS_SAVE="orbitProgress.v1";
 const safeReadProgress=()=>{
