@@ -9,7 +9,7 @@ const SKIN_SAVE="orbitSkin.v1";
 const SKINS=[{id:"nova",name:"نوفا",main:"#f0ffff",edge:"#76e4e4",glow:"#76e4e4"},{id:"coral",name:"مرجان",main:"#fff0f3",edge:"#ff8eaa",glow:"#ff8eaa"},{id:"nebula",name:"سديم",main:"#f4eaff",edge:"#b99aff",glow:"#b99aff"},{id:"solar",name:"شمسي",main:"#fff4c9",edge:"#ffc85c",glow:"#ffc85c"}];
 const STAGES=[{name:"مدار الأرض",hint:"نجوم زرقاء وهواء هادئ",bg:"#10264a",glow:"#275b83",rock:"#63829b"},{name:"سهول المريخ",hint:"غبار أحمر وصخور أكثر",bg:"#3a1d2a",glow:"#a34c45",rock:"#bd7864"},{name:"حلقات زحل",hint:"غبار ذهبي وحلقات لامعة",bg:"#352b20",glow:"#a17a42",rock:"#b89a6c"},{name:"حافة السديم",hint:"سحب بنفسجية وثقوب سوداء",bg:"#251b45",glow:"#7654a8",rock:"#8c79b7"}];
 let selectedSkin=(()=>{try{return localStorage.getItem(SKIN_SAVE)||"nova";}catch(_){return"nova";}})();
-let records=(()=>{try{const v=JSON.parse(localStorage.getItem(RECORDS_SAVE)||"[]");return Array.isArray(v)?v.filter(x=>x&&typeof x.name==="string"&&Number.isFinite(x.score)).slice(0,5):[];}catch(_){return[];}})();
+let records=(()=>{try{const v=JSON.parse(localStorage.getItem(RECORDS_SAVE)||"[]");return Array.isArray(v)?v.filter(x=>x&&typeof x.name==="string"&&Number.isFinite(x.score)).sort((a,b)=>b.score-a.score).slice(0,10):[];}catch(_){return[];}})();
 const FACTS=[
  {tag:"THE SUN",title:"ثماني دقائق من الماضي",body:"ضوء الشمس يحتاج نحو 8 دقائق و20 ثانية ليصل إلى الأرض. عندما تنظرين إليها، فأنت ترينها كما كانت قبل دقائق."},
  {tag:"VENUS",title:"يوم أطول من سنة",body:"الزهرة يدور حول محوره في نحو 243 يومًا أرضيًا، بينما يكمل دورته حول الشمس في نحو 225 يومًا."},
@@ -37,7 +37,7 @@ let state="menu",last=0,elapsed=0,spawnClock=0,stars=[],rocks=[],blackHoles=[],p
 let discoveryToastTime=0,stageIndex=0,firstRockPending=false;
 let shieldTime=0,magnetTime=0,collected=0,missionDone=false,shake=0;
 let width=0,height=0,dpr=1,player={x:0,y:0,targetX:0,targetY:0,r:13,invulnerable:0};
-let pointerDown=false,muted=false,audio=null,runId=0,musicOn=false,musicNodes=[];
+let pointerDown=false,muted=false,audio=null,runId=0,musicOn=false,musicNodes=[],musicTimer=null;
 const rand=(a,b)=>a+Math.random()*(b-a);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function format(n){return String(Math.floor(n)).padStart(6,"0")}
@@ -60,7 +60,11 @@ function saveRecords(){try{localStorage.setItem(RECORDS_SAVE,JSON.stringify(reco
 function renderRecords(){
  const host=$("recordsList");
  if(!records.length){host.innerHTML="<p class=\"empty-records\">لا توجد رحلات مسجلة بعد. ابدئي أول محاولة واصنعي رقمك!</p>";return;}
- host.innerHTML=records.map((r,i)=>"<div class=\"record-row\"><b>"+String(i+1).padStart(2,"0")+"</b><span>"+escapeText(r.name)+"</span><strong>"+format(r.score)+"</strong></div>").join("");
+ host.innerHTML=records.map((r,i)=>{
+   const date=Number.isFinite(r.when)?new Date(r.when).toLocaleDateString("ar",{day:"numeric",month:"short"}):"رحلة سابقة";
+   const rankClass=i===0?"leader-first":i===1?"leader-second":i===2?"leader-third":"";
+   return "<div class=\"record-row "+rankClass+"\"><b>"+String(i+1).padStart(2,"0")+"</b><span class=\"record-player\"><strong>"+escapeText(r.name)+"</strong><small>"+date+"</small></span><strong>"+format(r.score)+"</strong></div>";
+ }).join("");
 }
 function escapeText(value){return value.replace(/[&<>\"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[ch]));}
 function renderSkins(){
@@ -71,7 +75,7 @@ function openHangar(){renderSkins();renderRecords();try{$("pilotNameInput").valu
 function closeHangar(){$("hangarModal").hidden=true;}
 function saveRunRecord(){
  let name="رحّالة";try{name=(localStorage.getItem("orbitPilotName")||"رحّالة").trim().slice(0,16)||"رحّالة";}catch(_){}
- records.push({name,score,when:Date.now()});records.sort((a,b)=>b.score-a.score);records=records.slice(0,5);saveRecords();
+ records.push({name,score,when:Date.now()});records.sort((a,b)=>b.score-a.score);records=records.slice(0,10);saveRecords();
 }
 function closeAtlas(){$("atlasModal").hidden=true;}
 function showDiscovery(index){
@@ -164,32 +168,66 @@ function sound(freq=620,duration=.07,type="sine"){
  try{audio=audio||new(window.AudioContext||window.webkitAudioContext)();if(audio.state==="suspended")audio.resume();const osc=audio.createOscillator(),gain=audio.createGain();osc.type=type;osc.frequency.value=freq;gain.gain.setValueAtTime(.045,audio.currentTime);gain.gain.exponentialRampToValueAtTime(.001,audio.currentTime+duration);osc.connect(gain);gain.connect(audio.destination);osc.start();osc.stop(audio.currentTime+duration);}catch(_){}
 }
 function startAmbient(){
+ if(musicOn)return;
  try{
    audio=audio||new(window.AudioContext||window.webkitAudioContext)();
    if(audio.state==="suspended")audio.resume();
    const master=audio.createGain(),filter=audio.createBiquadFilter();
-   filter.type="lowpass";filter.frequency.value=520;filter.Q.value=.55;
+   filter.type="lowpass";filter.frequency.value=1120;filter.Q.value=.42;
    master.gain.setValueAtTime(.0001,audio.currentTime);
-   master.gain.exponentialRampToValueAtTime(.022,audio.currentTime+2.4);
+   master.gain.exponentialRampToValueAtTime(.055,audio.currentTime+3.5);
    filter.connect(master);master.connect(audio.destination);
-   const tones=[{f:55,type:"sine",v:.42},{f:82.41,type:"sine",v:.25},{f:110,type:"triangle",v:.10},{f:164.81,type:"sine",v:.035}];
-   const oscillators=tones.map(t=>{
+   const chordProgression=[
+     [73.42,110,130.81,164.81],
+     [58.27,116.54,146.83,174.61],
+     [87.31,130.81,174.61,220],
+     [65.41,130.81,146.83,196]
+   ];
+   const padLevels=[.12,.075,.052,.026];
+   const pads=chordProgression[0].map((frequency,index)=>{
      const osc=audio.createOscillator(),gain=audio.createGain();
-     osc.type=t.type;osc.frequency.value=t.f;gain.gain.value=t.v;
+     osc.type="sine";osc.frequency.value=frequency;gain.gain.value=padLevels[index];
      osc.connect(gain);gain.connect(filter);osc.start();return osc;
    });
-   musicNodes=[master,...oscillators];musicOn=true;
+   const lfo=audio.createOscillator(),lfoGain=audio.createGain();
+   lfo.type="sine";lfo.frequency.value=.055;lfoGain.gain.value=260;
+   lfo.connect(lfoGain);lfoGain.connect(filter.frequency);lfo.start();
+   musicNodes=[master,filter,...pads,lfo];
+   const melody=[587.33,698.46,880,1046.5,880,698.46,659.25,587.33];
+   let step=0,chord=0;
+   const playBell=()=>{
+     if(!musicOn)return;
+     const now=audio.currentTime,osc=audio.createOscillator(),gain=audio.createGain();
+     osc.type="sine";osc.frequency.setValueAtTime(melody[step%melody.length],now);
+     gain.gain.setValueAtTime(.0001,now);
+     gain.gain.exponentialRampToValueAtTime(.032,now+.22);
+     gain.gain.exponentialRampToValueAtTime(.0001,now+3.1);
+     osc.connect(gain);gain.connect(filter);osc.start(now);osc.stop(now+3.2);
+     step++;
+     if(step%4===0){
+       chord=(chord+1)%chordProgression.length;
+       pads.forEach((pad,index)=>pad.frequency.setTargetAtTime(chordProgression[chord][index],audio.currentTime,2.2));
+     }
+   };
+   musicOn=true;playBell();musicTimer=setInterval(playBell,2800);
    $("musicButton").textContent="♫";$("musicButton").setAttribute("aria-pressed","true");
    $("musicButton").setAttribute("aria-label","إيقاف موسيقى الفضاء");
- }catch(_){musicOn=false;$("musicButton").setAttribute("aria-pressed","false");}
+ }catch(_){
+   musicOn=false;if(musicTimer){clearInterval(musicTimer);musicTimer=null;}
+   $("musicButton").setAttribute("aria-pressed","false");
+ }
 }
 function stopAmbient(){
+ if(musicTimer){clearInterval(musicTimer);musicTimer=null;}
  if(!musicNodes.length){musicOn=false;return;}
- const nodes=musicNodes.slice(),master=nodes[0];
+ const nodes=musicNodes.slice(),master=nodes[0],filter=nodes[1];
  try{
    master.gain.cancelScheduledValues(audio.currentTime);
-   master.gain.setTargetAtTime(.0001,audio.currentTime,.18);
-   setTimeout(()=>{nodes.slice(1).forEach(n=>{try{n.stop();}catch(_){}});try{master.disconnect();}catch(_){}},1100);
+   master.gain.setTargetAtTime(.0001,audio.currentTime,.22);
+   setTimeout(()=>{
+     nodes.slice(2).forEach(n=>{try{n.stop();}catch(_){}});
+     try{filter.disconnect();master.disconnect();}catch(_){}
+   },1400);
  }catch(_){}
  musicNodes=[];musicOn=false;
  $("musicButton").textContent="♪";$("musicButton").setAttribute("aria-pressed","false");
