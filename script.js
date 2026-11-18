@@ -32,7 +32,7 @@ const safeReadBest=()=>{try{return Number(localStorage.getItem(SAVE)||localStora
 const safeSaveBest=value=>{try{localStorage.setItem(SAVE,String(value));}catch(_){}};
 let best=safeReadBest(),discovered=safeReadAtlas(),score=0,lives=3,level=1,combo=1,comboTime=0;
 let state="menu",last=0,elapsed=0,spawnClock=0,stars=[],rocks=[],blackHoles=[],pickups=[],artifacts=[],particles=[],backgroundStars=[];
-let discoveryToastTime=0,stageIndex=0;
+let discoveryToastTime=0,stageIndex=0,firstRockPending=false;
 let shieldTime=0,magnetTime=0,collected=0,missionDone=false,shake=0;
 let width=0,height=0,dpr=1,player={x:0,y:0,targetX:0,targetY:0,r:13,invulnerable:0};
 let pointerDown=false,muted=false,audio=null,runId=0;
@@ -88,7 +88,7 @@ function resize(){
  backgroundStars=Array.from({length:Math.max(45,Math.round(width*height/6500))},()=>({x:rand(0,width),y:rand(0,height),r:rand(.4,1.7),a:rand(.2,.8),phase:rand(0,6)}));
 }
 function reset(){
- score=0;lives=3;level=1;stageIndex=0;combo=1;comboTime=0;elapsed=0;spawnClock=0;stars=[];rocks=[];blackHoles=[];pickups=[];artifacts=[];particles=[];
+ score=0;lives=3;level=1;stageIndex=0;combo=1;comboTime=0;elapsed=0;spawnClock=0;stars=[];rocks=[];blackHoles=[];pickups=[];artifacts=[];particles=[];firstRockPending=true;
  shieldTime=0;magnetTime=0;collected=0;missionDone=false;shake=0;discoveryToastTime=0;
  $("discoveryToast").hidden=true;$("discoveryToast").classList.remove("show");
  player={x:width/2,y:height*.78,targetX:width/2,targetY:height*.78,r:12,invulnerable:1.5};
@@ -96,7 +96,7 @@ function reset(){
 }
 function updateHUD(){
  $("score").textContent=format(score);$("best").textContent=format(best);$("level").textContent=String(level).padStart(2,"0");
- $("stageName").textContent=STAGES[stageIndex].name;$("stageHint").textContent=STAGES[stageIndex].name;
+ $("stageName").textContent=STAGES[stageIndex].name;$("stageHint").textContent=STAGES[stageIndex].hint;
  $("lives").querySelectorAll("i").forEach((el,i)=>el.classList.toggle("off",i>=lives));
  $("comboLabel").textContent="COMBO ×"+combo;
  $("runAtlasCount").textContent=discovered.length+" / "+FACTS.length;
@@ -146,8 +146,12 @@ function sound(freq=620,duration=.07,type="sine"){
 function burst(x,y,color,count=10){
  for(let i=0;i<count;i++){const a=rand(0,Math.PI*2),speed=rand(35,180);particles.push({x,y,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,life:rand(.25,.65),max:.65,size:rand(1,3),color});}
 }
+function makeRock(){
+ return {x:rand(22,Math.max(23,width-22)),y:-25,r:rand(14,22),vy:rand(115,175)+level*12,vx:rand(-18,18),rot:rand(0,6),spin:rand(-2,2),sides:Math.floor(rand(7,10)),seed:rand(0,100),nearMiss:false};
+}
 function spawn(){
- const x=rand(22,width-22),roll=Math.random();
+ const x=rand(22,Math.max(23,width-22)),roll=Math.random();
+ if(firstRockPending){firstRockPending=false;rocks.push(makeRock());return;}
  const pending=artifacts.map(a=>a.id);
  const available=FACTS.map((_,i)=>i).filter(i=>!discovered.includes(i)&&!pending.includes(i));
  if(roll<.035&&available.length){
@@ -163,8 +167,8 @@ function spawn(){
    pickups.push({x,y:-18,r:11,vy:rand(88,112)+level*4,spin:0,kind:Math.random()<.52?"shield":"magnet"});
    return;
  }
- if(Math.random()<.56)stars.push({x,y:-15,r:8,vy:rand(95,145)+level*7,spin:rand(0,6),pulse:rand(0,6)});
- else rocks.push({x,y:-25,r:rand(11,20),vy:rand(115,175)+level*12,vx:rand(-18,18),rot:rand(0,6),spin:rand(-2,2),sides:Math.floor(rand(7,10)),seed:rand(0,100),nearMiss:false});
+ if(Math.random()<.48)stars.push({x,y:-15,r:8,vy:rand(95,145)+level*7,spin:rand(0,6),pulse:rand(0,6)});
+ else rocks.push(makeRock());
 }
 function circleHit(a,b){const dx=a.x-b.x,dy=a.y-b.y,rr=a.r+b.r;return dx*dx+dy*dy<rr*rr;}
 function collectStar(s){
@@ -344,7 +348,7 @@ $("startButton").addEventListener("click",start);
 $("atlasButton").addEventListener("click",openAtlas);
 $("hangarButton").addEventListener("click",openHangar);
 $("closeHangar").addEventListener("click",closeHangar);
-$("savePilotName").addEventListener("click",()=>{const name=$("pilotNameInput").value.trim().slice(0,16);try{localStorage.setItem("orbitPilotName",name||"رحّالة");}catch(_){}$("pilotNameInput").value=name;});
+$("savePilotName").addEventListener("click",()=>{const name=$("pilotNameInput").value.trim().slice(0,16)||"رحّالة";try{localStorage.setItem("orbitPilotName",name);}catch(_){}$("pilotNameInput").value=name;renderRecords();});
 $("hangarModal").addEventListener("click",e=>{if(e.target===$("hangarModal"))closeHangar();});
 $("closeAtlas").addEventListener("click",closeAtlas);
 $("atlasModal").addEventListener("click",e=>{if(e.target===$("atlasModal"))closeAtlas();});
