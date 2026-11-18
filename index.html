@@ -40,6 +40,8 @@
       <button class="action" data-room="garden" type="button" aria-pressed="false"><span>🌷</span><b>الحديقة</b></button>
     </nav>
     <section class="room room-lounge" id="room" aria-label="غرفة القطة">
+      <div class="ambient-layer" id="ambientLayer" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="fx-layer" id="fxLayer" aria-hidden="true"></div>
       <div class="room-label"><span class="live-dot"></span><span id="roomName">غرفة الجلوس</span></div>
       <div class="mood-chip" id="moodChip">مزاج لوزة: سعيدة ♡</div>
       <div class="weather-chip" id="weatherChip">☀️ نهار لطيف</div>
@@ -54,7 +56,7 @@
       <div class="zzz" id="zzz" aria-hidden="true">z z Z</div>
       <button class="room-action" id="roomAction" type="button">داعبي لوزة ♡</button>
       <button class="pet skin-blue" id="pet" type="button" aria-label="المسي لوزة للتفاعل">
-        <span class="tail"></span><span class="ear ear-left"><i></i></span><span class="ear ear-right"><i></i></span>
+        <span class="pet-aura"></span><span class="tail"></span><span class="ear ear-left"><i></i></span><span class="ear ear-right"><i></i></span>
         <span class="body"><i class="belly"></i></span>
         <span class="head"><i class="patch"></i><i class="eye eye-left"><b></b></i><i class="eye eye-right"><b></b></i><i class="cheek cheek-left"></i><i class="cheek cheek-right"></i><i class="whisker whisker-left"></i><i class="whisker whisker-right"></i><i class="nose"></i><i class="mouth"></i></span>
         <span class="paw paw-left"></span><span class="paw paw-right"></span><span class="accessory" id="accessory"></span>
@@ -77,7 +79,7 @@
         <div class="quest"><span>♡</span><span>دلّليها مرتين</span><b>0/2</b></div>
       </div>
     </section>
-    <footer>Potato Pet · إصدار 1.1 ♡ <span id="saveStatus">يُحفظ تقدمك تلقائيًا</span></footer>
+    <footer>Potato Pet · إصدار 1.2 · عالم حي ♡ <span id="saveStatus">يُحفظ تقدمك تلقائيًا</span></footer>
   </main>
   <div class="modal-backdrop" id="modalBackdrop" hidden>
     <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
