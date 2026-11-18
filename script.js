@@ -312,7 +312,7 @@ function spawn(){
    return;
  }
  if(roll<.065&&!blackHoles.length){
-   blackHoles.push({x,y:rand(height*.2,height*.58),r:24,life:7.5,spin:rand(0,6)});
+   blackHoles.push({x,y:rand(height*.2,height*.58),r:24,life:7.5,age:0,spin:rand(0,6),seed:rand(0,Math.PI*2)});
    sound(115,.24,"sine");
    return;
  }
@@ -354,7 +354,10 @@ function hitRock(r){
 }
 function update(dt){
  let nearest=Infinity;
- for(const hole of blackHoles)nearest=Math.min(nearest,Math.hypot(hole.x-player.x,hole.y-player.y));
+ for(const hole of blackHoles){
+  const appear=clamp(hole.age/.65,0,1),fade=clamp(hole.life/1.15,0,1),influence=appear*fade;
+  if(influence>.01)nearest=Math.min(nearest,Math.hypot(hole.x-player.x,hole.y-player.y)/Math.max(.35,influence));
+ }
  timeDilation=nearest<180?.34+.66*(nearest/180):1;
  if(musicOn&&musicNodes.length>1&&Math.abs(timeDilation-lastMusicDilation)>.04){
   try{
@@ -388,16 +391,17 @@ function update(dt){
    for(const s of stars){const dx=player.x-s.x,dy=player.y-s.y,d=Math.hypot(dx,dy);if(d<175&&d>1){const pull=(1-d/175)*420;s.x+=dx/d*pull*step;s.y+=dy/d*pull*step;}}
  }
  for(let i=blackHoles.length-1;i>=0;i--){
-   const b=blackHoles[i];b.life-=step;b.spin+=step*.7;
+   const b=blackHoles[i];b.age+=step;b.life-=step;b.spin+=step*.7;
+   const appear=clamp(b.age/.65,0,1),fade=clamp(b.life/1.15,0,1);
    const dx=b.x-player.x,dy=b.y-player.y,d=Math.hypot(dx,dy);
-   if(d<180&&d>1){
-     const pull=(1-d/180)*118;
+   if(!b.collapsing&&appear>.25&&fade>.25&&d<180&&d>1){
+     const pull=(1-d/180)*118*appear*fade;
      player.x+=dx/d*pull*step;player.y+=dy/d*pull*step;
      player.targetX=clamp(player.targetX+dx/d*pull*step*.55,player.r+7,width-player.r-7);
      player.targetY=clamp(player.targetY+dy/d*pull*step*.55,height*.42,height-28);
    }
-   if(d<b.r+player.r*.72&&player.invulnerable<=0){
-     blackHoles.splice(i,1);
+   if(!b.collapsing&&appear>.7&&d<b.r+player.r*.72&&player.invulnerable<=0){
+     b.collapsing=true;b.life=Math.min(b.life,.8);
      if(shieldTime>0){
        shieldTime=0;score+=120;burst(b.x,b.y,"#c9aaff",34);sound(430,.24,"triangle");updateHUD();
      }else{hitRock(b);if(state!=="running")return;}
@@ -457,29 +461,58 @@ function drawRock(r){
 function drawBlackHole(b,t){
  const distance=Math.hypot(player.x-b.x,player.y-b.y);
  const lens=clamp(1-distance/230,0,1);
- ctx.save();ctx.translate(b.x,b.y);ctx.rotate(b.spin);
- const glow=ctx.createRadialGradient(0,0,b.r*.45,0,0,b.r*2.5);
- glow.addColorStop(0,"#08061200");glow.addColorStop(.48,"#9f78ff22");glow.addColorStop(1,"#9f78ff00");
- ctx.fillStyle=glow;ctx.beginPath();ctx.arc(0,0,b.r*2.5,0,Math.PI*2);ctx.fill();
+ const appear=clamp(b.age/.65,0,1);
+ const fade=clamp(b.life/1.15,0,1);
+ const alpha=appear*fade;
+ const pulse=1+Math.sin(t*.0024+(b.seed||0))*.035;
+ ctx.save();ctx.globalAlpha=alpha;ctx.translate(b.x,b.y);ctx.rotate(b.spin);
 
- // Gravitational lensing: two faint light arcs bend around the dark center.
- ctx.save();
- ctx.globalAlpha=.12+lens*.42;
- const lensGlow=ctx.createLinearGradient(-b.r*2.5,0,b.r*2.5,0);
- lensGlow.addColorStop(0,"#79dfe8");lensGlow.addColorStop(.48,"#f2e5ff");lensGlow.addColorStop(1,"#bd91ff");
- ctx.strokeStyle=lensGlow;ctx.lineWidth=1.4+lens*1.2;ctx.shadowBlur=12+lens*16;ctx.shadowColor="#c9aaff";
- ctx.beginPath();ctx.ellipse(0,0,b.r*2.35,b.r*1.18,-.08,Math.PI*.12,Math.PI*.88);ctx.stroke();
- ctx.beginPath();ctx.ellipse(0,0,b.r*2.35,b.r*1.18,-.08,Math.PI*1.12,Math.PI*1.88);ctx.stroke();
+ // A wide, soft halo makes the hole feel like a distortion in space.
+ const halo=ctx.createRadialGradient(0,0,b.r*.35,0,0,b.r*3.1);
+ halo.addColorStop(0,"#05030b00");halo.addColorStop(.28,"#09061500");
+ halo.addColorStop(.48,"#9d79ff30");halo.addColorStop(.68,"#65dce51c");halo.addColorStop(1,"#9d79ff00");
+ ctx.fillStyle=halo;ctx.beginPath();ctx.arc(0,0,b.r*3.1,0,Math.PI*2);ctx.fill();
+
+ // Layered accretion disk: bright inner ring and cooler outer stream.
+ ctx.save();ctx.globalAlpha*=.62+lens*.25;
+ ctx.shadowBlur=24;ctx.shadowColor="#b58cff";
+ const disk=ctx.createLinearGradient(-b.r*2,-b.r*.2,b.r*2,b.r*.2);
+ disk.addColorStop(0,"#7c69ff22");disk.addColorStop(.25,"#8deaf0");disk.addColorStop(.48,"#fff0d4");
+ disk.addColorStop(.7,"#b18aff");disk.addColorStop(1,"#6fdce422");
+ ctx.strokeStyle=disk;ctx.lineWidth=5.5;
+ ctx.beginPath();ctx.ellipse(0,0,b.r*1.95*pulse,b.r*.67,-.12,0,Math.PI*2);ctx.stroke();
+ ctx.shadowBlur=12;ctx.strokeStyle="#77dfe9";ctx.lineWidth=1.5;ctx.globalAlpha*=.85;
+ ctx.beginPath();ctx.ellipse(0,0,b.r*2.28,b.r*.78,-.12,.08,Math.PI-.08);ctx.stroke();
+ ctx.strokeStyle="#d7b6ff";ctx.lineWidth=2;
+ ctx.beginPath();ctx.ellipse(0,0,b.r*1.48,b.r*.48,.12,Math.PI+.15,Math.PI*2-.15);ctx.stroke();
  ctx.restore();
 
- ctx.shadowBlur=22;ctx.shadowColor="#bd91ff";ctx.strokeStyle="#d4b7ff";ctx.lineWidth=5;
- ctx.beginPath();ctx.ellipse(0,0,b.r*1.8,b.r*.58,-.12,0,Math.PI*2);ctx.stroke();
- ctx.strokeStyle="#79dfe8";ctx.lineWidth=2;ctx.globalAlpha=.8;
- ctx.beginPath();ctx.ellipse(0,0,b.r*1.48,b.r*.43,.16,0,Math.PI*2);ctx.stroke();
- ctx.globalAlpha=1;ctx.shadowBlur=18;ctx.shadowColor="#05030a";ctx.fillStyle="#020208";
- ctx.beginPath();ctx.arc(0,0,b.r*.82,0,Math.PI*2);ctx.fill();
- ctx.shadowBlur=0;ctx.fillStyle="#e3d6ff";ctx.globalAlpha=.8;
- ctx.font="bold 7px Space Grotesk, sans-serif";ctx.textAlign="center";ctx.fillText("EVENT HORIZON",0,b.r+17);
+ // Gravitational lensing arcs brighten as the ship approaches.
+ ctx.save();ctx.globalAlpha*=.16+lens*.48;
+ const lensGlow=ctx.createLinearGradient(-b.r*2.8,0,b.r*2.8,0);
+ lensGlow.addColorStop(0,"#79dfe8");lensGlow.addColorStop(.48,"#fff0e2");lensGlow.addColorStop(1,"#bd91ff");
+ ctx.strokeStyle=lensGlow;ctx.lineWidth=1.5+lens*1.4;ctx.shadowBlur=14+lens*18;ctx.shadowColor="#c9aaff";
+ ctx.beginPath();ctx.ellipse(0,0,b.r*2.5,b.r*1.35,-.08,Math.PI*.1,Math.PI*.9);ctx.stroke();
+ ctx.beginPath();ctx.ellipse(0,0,b.r*2.5,b.r*1.35,-.08,Math.PI*1.1,Math.PI*1.9);ctx.stroke();
+ ctx.restore();
+
+ // Tiny orbiting sparks add motion without cluttering the play field.
+ for(let i=0;i<7;i++){
+  const a=t*.00055*(i%2?1:-1)+i*Math.PI*2/7+(b.seed||0);
+  const rx=b.r*(1.85+(i%3)*.24),ry=b.r*(.54+(i%3)*.1);
+  const sx=Math.cos(a)*rx,sy=Math.sin(a)*ry;
+  ctx.globalAlpha=alpha*(.35+.45*(.5+.5*Math.sin(a*2)));
+  ctx.fillStyle=i%2?"#a9f5f2":"#e6caff";ctx.shadowBlur=8;ctx.shadowColor=ctx.fillStyle;
+  ctx.beginPath();ctx.arc(sx,sy,i%3===0?1.7:1.1,0,Math.PI*2);ctx.fill();
+ }
+
+ // The event horizon stays almost perfectly black.
+ ctx.globalAlpha=alpha;ctx.shadowBlur=25;ctx.shadowColor="#05020d";
+ const core=ctx.createRadialGradient(-b.r*.22,-b.r*.25,1,0,0,b.r*.94);
+ core.addColorStop(0,"#020108");core.addColorStop(.72,"#03020a");core.addColorStop(1,"#171025");
+ ctx.fillStyle=core;ctx.beginPath();ctx.arc(0,0,b.r*.86,0,Math.PI*2);ctx.fill();
+ ctx.shadowBlur=0;ctx.strokeStyle="#d9c5ff";ctx.globalAlpha=alpha*(.42+lens*.35);ctx.lineWidth=1;
+ ctx.beginPath();ctx.arc(0,0,b.r*.91,0,Math.PI*2);ctx.stroke();
  ctx.restore();
 }
 function drawPlayer(t){
