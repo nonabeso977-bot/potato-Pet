@@ -137,3 +137,44 @@ footer{font-size:8px;margin-top:14px}
  .arena-wrap{min-height:320px}
 }
 @media(prefers-reduced-motion:reduce){.objective-track i{transition:none}}
+
+
+/* COSMIC ATLAS 2.1 */
+.intro-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.intro-actions .primary-button{min-width:178px}
+.atlas-button{display:flex;align-items:center;justify-content:space-between;gap:13px;min-width:164px;padding:11px 13px;border:1px solid #a99bff55;border-radius:13px;background:#a99bff0d;color:#d9d2ff;font-size:12px;cursor:pointer;transition:background .18s,border-color .18s}
+.atlas-button:hover{background:#a99bff19;border-color:#a99bff99}
+.atlas-button b{font:10px "Space Grotesk",sans-serif;color:var(--violet)}
+.atlas-overlay{position:fixed;z-index:20;inset:0;display:grid;place-items:center;padding:16px;background:#050916d9;backdrop-filter:blur(12px)}
+.atlas-overlay[hidden]{display:none}
+.atlas-dialog{width:min(100%,650px);max-height:min(88dvh,760px);overflow:auto;padding:clamp(17px,4vw,28px);border:1px solid #52628c88;border-radius:22px;background:radial-gradient(ellipse at 90% 0%,#39366c55,transparent 42%),#101a32;box-shadow:0 25px 90px #0009}
+.atlas-header{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.atlas-header h2{font-size:clamp(25px,5vw,34px);margin:5px 0 0}
+.atlas-close{width:35px;height:35px;flex:0 0 35px;border:1px solid #ffffff22;border-radius:11px;background:#ffffff09;color:#d9e3ff;font-size:23px;line-height:1;cursor:pointer}
+.atlas-description{margin:10px 0 16px;color:#9eacc8;font-size:12px;line-height:1.9}
+.atlas-progress-row{display:flex;align-items:center;gap:13px;margin-bottom:15px;color:var(--cyan);font-size:10px}
+.atlas-progress{height:6px;flex:1;overflow:hidden;border-radius:20px;background:#ffffff14}
+.atlas-progress i{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--violet),var(--cyan));transition:width .25s}
+.atlas-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.atlas-entry{display:flex;gap:11px;min-height:100px;padding:12px;border:1px solid #ffffff14;border-radius:14px;background:#ffffff06}
+.atlas-entry>span{display:grid;place-items:center;width:34px;height:34px;flex:0 0 34px;border-radius:10px;background:#a99bff16;color:var(--violet);font-size:17px}
+.atlas-entry strong{display:block;font-size:12px;color:#edf1ff}
+.atlas-entry small{display:block;margin-bottom:3px;color:var(--cyan);font:8px "Space Grotesk",sans-serif;letter-spacing:1px}
+.atlas-entry p{margin:5px 0 0;color:#9eacc8;font-size:10px;line-height:1.75}
+.atlas-entry.locked{opacity:.58}
+.atlas-entry.locked>span{color:#8795b5;background:#ffffff0b}
+.discovery-toast{position:absolute;z-index:2;top:13px;left:50%;width:min(calc(100% - 24px),390px);transform:translate(-50%,-12px);padding:12px 15px;border:1px solid #a99bff88;border-radius:14px;background:linear-gradient(120deg,#111b35f2,#28234df2);box-shadow:0 12px 35px #0008,0 0 22px #a99bff1a;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
+.discovery-toast.show{opacity:1;transform:translate(-50%,0)}
+.discovery-toast[hidden]{display:none}
+.discovery-kicker{display:block;color:var(--cyan);font:8px "Space Grotesk",sans-serif;letter-spacing:1.4px}
+.discovery-toast strong{display:block;margin-top:4px;color:#f0edff;font-size:14px}
+.discovery-toast p{margin:3px 0 0;color:#c0c8e0;font-size:10px;line-height:1.7}
+.discovery-toast small{display:block;margin-top:5px;color:var(--gold);font:9px "Space Grotesk",sans-serif}
+.atlas-run-count{color:var(--violet)!important;font:9px "Space Grotesk",sans-serif;letter-spacing:.4px}
+.atlas-run-count b{font-weight:600}
+@media(max-width:650px){
+ .intro-actions{gap:8px}.intro-actions .primary-button{min-width:0;flex:1}
+ .atlas-button{min-width:0;flex:1;padding:11px 9px;font-size:11px}
+ .atlas-grid{grid-template-columns:1fr}
+ .atlas-dialog{border-radius:18px}
+}
