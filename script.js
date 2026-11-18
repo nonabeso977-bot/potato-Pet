@@ -51,6 +51,10 @@ const skins = ["skin-blue", "skin-cream", "skin-orange", "skin-lilac"];
 let toastTimer;
 let speechTimer;
 let saveTimer;
+let butterflyTimer = null;
+let butterflyActive = false;
+let butterflySeconds = 12;
+let butterflyScore = 0;
 
 function saveGame() {
   state.lastTick = Date.now();
@@ -246,6 +250,9 @@ function openModal(title, html) {
 
 function closeModal() {
   modalBackdrop.hidden = true;
+  if (butterflyTimer) clearInterval(butterflyTimer);
+  butterflyTimer = null;
+  butterflyActive = false;
 }
 
 function openShop() {
@@ -305,6 +312,47 @@ function useItem(id) {
   updateUI(); saveGame(); openBag();
 }
 
+
+function openButterflyGame() {
+  openModal("صيد الفراشات", '<div class="game-intro"><span class="game-hero">🦋</span><h3>لعبة لوزة الصغيرة</h3><p>التقطي أكبر عدد من الفراشات خلال 12 ثانية. كل فراشة تمنحك عملات وخبرة!</p><div class="game-rule">⏱️ 12 ثانية · ✦ عملات · XP خبرة</div><button class="game-start" data-start-game="true" type="button">ابدئي اللعب</button></div>');
+}
+
+function moveButterfly() {
+  const target = modalContent.querySelector("[data-catch-butterfly]");
+  if (!target) return;
+  target.style.left = (8 + Math.random() * 78) + "%";
+  target.style.top = (8 + Math.random() * 66) + "%";
+  target.style.transform = "rotate(" + Math.round(Math.random() * 30 - 15) + "deg)";
+}
+
+function startButterflyRound() {
+  if (butterflyTimer) clearInterval(butterflyTimer);
+  butterflyActive = true;
+  butterflySeconds = 12;
+  butterflyScore = 0;
+  modalContent.innerHTML = '<div class="game-stats"><span>الوقت: <b id="gameTime">12</b></span><span>الفراشات: <b id="gameScore">0</b></span></div><div class="game-arena"><span class="game-flower flower-one">✿</span><span class="game-flower flower-two">✿</span><button class="butterfly-target" data-catch-butterfly="true" type="button" aria-label="التقطي الفراشة">🦋</button></div><p class="game-help">المسي الفراشة كلما ظهرت في مكان جديد!</p>';
+  moveButterfly();
+  butterflyTimer = setInterval(() => {
+    butterflySeconds -= 1;
+    const timeLabel = $("gameTime");
+    if (timeLabel) timeLabel.textContent = butterflySeconds;
+    if (butterflySeconds <= 0) finishButterflyRound();
+  }, 1000);
+}
+
+function finishButterflyRound() {
+  if (butterflyTimer) clearInterval(butterflyTimer);
+  butterflyTimer = null;
+  butterflyActive = false;
+  const reward = 3 + butterflyScore * 2;
+  state.coins += reward;
+  addXP(Math.min(12, butterflyScore));
+  updateUI();
+  saveGame();
+  talk("كانت مطاردة ممتعة! 🦋");
+  modalContent.innerHTML = '<div class="game-result"><span>🏆</span><h3>انتهى التحدي!</h3><p>التقطتِ <b>' + butterflyScore + '</b> فراشة</p><div class="game-prize">✦ +' + reward + ' عملة · +' + Math.min(12, butterflyScore) + ' XP</div><button class="game-start" data-start-game="true" type="button">العبِي مرة أخرى</button></div>';
+}
+
 function claimDailyReward() {
   if (state.rewardDate === today()) return showToast("هدية اليوم استلمتيها بالفعل. عودي غدًا!");
   state.rewardDate = today();
@@ -333,6 +381,7 @@ pet.addEventListener("click", petTap);
 $("shopButton").addEventListener("click", openShop);
 $("bagButton").addEventListener("click", openBag);
 $("rewardButton").addEventListener("click", claimDailyReward);
+$("butterflyButton").addEventListener("click", openButterflyGame);
 $("settingsButton").addEventListener("click", openSettings);
 $("closeModal").addEventListener("click", closeModal);
 modalBackdrop.addEventListener("click", event => { if (event.target === modalBackdrop) closeModal(); });
@@ -340,6 +389,8 @@ document.addEventListener("keydown", event => { if (event.key === "Escape" && !m
 modalContent.addEventListener("click", event => {
   const button = event.target.closest("button");
   if (!button) return;
+  if (button.dataset.startGame) startButterflyRound();
+  if (button.dataset.catchButterfly && butterflyActive) { butterflyScore += 1; const score = $("gameScore"); if (score) score.textContent = butterflyScore; moveButterfly(); }
   if (button.dataset.buy) buyItem(button.dataset.buy);
   if (button.dataset.use) useItem(button.dataset.use);
   if (button.dataset.removeAccessory) { state.accessory = ""; updateUI(); saveGame(); openBag(); showToast("أزلنا الزينة."); }
