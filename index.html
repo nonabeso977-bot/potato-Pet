@@ -15,21 +15,22 @@
         <h1>Potato Pet <span>♡</span></h1>
       </div>
       <div class="top-tools">
-        <button class="tool-button" id="roomButton" type="button" aria-label="تغيير الغرفة">غرفتي <span>⌂</span></button>
+        <button class="tool-button" id="homeButton" type="button" aria-label="العودة إلى غرفة الجلوس">البيت <span>⌂</span></button>
         <button class="tool-button" id="lookButton" type="button" aria-label="تغيير شكل القطة">شكلها <span>✿</span></button>
         <div class="coin"><span>✦</span><b id="coins">0</b></div>
       </div>
     </header>
 
-    <nav class="actions" aria-label="العناية بالقطة">
-      <button class="action" data-action="feed" type="button"><span>🥣</span><b>إطعام</b></button>
-      <button class="action" data-action="play" type="button"><span>🧶</span><b>لعب</b></button>
-      <button class="action" data-action="sleep" type="button"><span>💤</span><b>نوم</b></button>
-      <button class="action" data-action="pet" type="button"><span>♡</span><b>مداعبة</b></button>
+    <nav class="actions" aria-label="التنقل بين الغرف">
+      <button class="action active" data-room="kitchen" type="button" aria-pressed="true"><span>🥣</span><b>المطبخ</b></button>
+      <button class="action" data-room="playroom" type="button" aria-pressed="false"><span>🧶</span><b>غرفة اللعب</b></button>
+      <button class="action" data-room="bedroom" type="button" aria-pressed="false"><span>💤</span><b>غرفة النوم</b></button>
+      <button class="action" data-room="lounge" type="button" aria-pressed="false"><span>♡</span><b>غرفة الجلوس</b></button>
     </nav>
 
-    <section class="room room-sky" id="room" aria-label="غرفة القطة">
-      <div class="room-label" id="roomName">غرفة الغيوم</div>
+    <section class="room room-kitchen" id="room" aria-label="غرفة القطة">
+      <div class="room-label" id="roomName">المطبخ</div>
+      <div class="room-illustration" id="roomIllustration" aria-hidden="true">🍳</div>
       <div class="window"><i></i><i></i></div>
       <div class="sun"></div>
       <div class="cloud cloud-one"></div>
@@ -39,7 +40,8 @@
       <div class="shelf"><span>♡</span><span>▱</span><span>✿</span></div>
       <div class="plant"><span></span><span></span><span></span><b></b></div>
       <div class="rug"></div>
-      <div class="speech" id="speech" aria-live="polite">مياو! أهلًا بكِ ♡</div>
+      <div class="speech" id="speech" aria-live="polite">مياو! جعت؟ ♡</div>
+      <button class="room-action" id="roomAction" type="button">قدّمي لها الطعام 🍎</button>
 
       <button class="pet skin-blue" id="pet" type="button" aria-label="المسي القطة للتفاعل">
         <span class="tail"></span>
@@ -79,7 +81,7 @@
         <div class="meter"><span id="energyBar"></span></div>
       </div>
     </section>
-    <footer>اضغطي على لوزة لتتفاعل معكِ ♡</footer>
+    <footer>اختاري غرفة من الأعلى، ثم تفاعلي مع لوزة ♡</footer>
   </main>
   <script src="script.js"></script>
 </body>
