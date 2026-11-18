@@ -83,3 +83,57 @@ footer{font-size:8px;margin-top:14px}
 }
 @media(max-width:370px){.status-live{font-size:8px;letter-spacing:.7px}.game-stat{min-width:54px}.game-stat strong{font-size:15px}.lives{gap:3px}.lives i{width:7px;height:7px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+
+/* PULSE UPDATE: a quieter, clearer play HUD */
+.game-panel{padding-top:12px}
+.game-topline{gap:clamp(8px,2.3vw,24px);padding:0 4px 10px}
+.game-stat{min-width:clamp(58px,8vw,88px)}
+.game-stat strong{font-size:clamp(16px,2.2vw,21px)}
+.score-stat strong{color:var(--cyan);text-shadow:0 0 18px #76e4e433}
+.best-stat strong{color:#d8cfff}
+.game-stat.compact{min-width:38px}
+.run-hud{display:flex;align-items:center;gap:10px;margin:0 2px 12px;min-height:48px}
+.run-objective{display:grid;grid-template-columns:minmax(105px,auto) minmax(70px,1fr) auto;align-items:center;gap:12px;flex:1;padding:8px 12px;border:1px solid #ffffff12;border-radius:13px;background:linear-gradient(110deg,#14213a99,#0c162caa)}
+.objective-copy{display:flex;flex-direction:column;gap:1px}
+.objective-copy small{font-size:9px;color:var(--muted)}
+.objective-copy strong{font-size:11px;font-weight:600;color:#e6eaff}
+.objective-track{height:6px;border-radius:20px;overflow:hidden;background:#ffffff12}
+.objective-track i{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--violet),var(--cyan));box-shadow:0 0 12px #76e4e455;transition:width .2s}
+.objective-count{font:10px "Space Grotesk",sans-serif;color:var(--cyan);white-space:nowrap}
+.power-state{display:flex;align-items:center;gap:7px;min-width:124px;padding:8px 11px;border:1px solid #76e4e433;border-radius:12px;background:#76e4e40d;color:var(--cyan);font-size:10px}
+.power-state[hidden]{display:none}
+.power-state>span:first-child{font-size:16px}
+.power-state>i{height:4px;width:25px;border-radius:9px;background:currentColor;opacity:.65;margin-inline-start:auto}
+.power-state.magnet{border-color:#a99bff55;background:#a99bff12;color:var(--violet)}
+.arena-wrap{border-radius:21px;border-color:#42577d;box-shadow:0 20px 55px #0007,inset 0 0 55px #1d326055}
+#arena{cursor:grab}
+#arena:active{cursor:grabbing}
+.game-bottomline{gap:clamp(8px,1.6vw,18px);flex-wrap:wrap;padding:11px 5px}
+.legend-power{color:var(--cyan)}.legend-power i{font-style:normal;font-size:15px}
+.legend-magnet{color:var(--violet)}.legend-magnet i{font-style:normal;font-size:15px}
+.arena-message{background:linear-gradient(135deg,#080f24eF,#111a34eF)}
+.arena-message h2{letter-spacing:-.5px}
+.primary-button:active,.pause-button:active,.sound-button:active{transform:scale(.97)}
+@media(max-width:650px){
+ .game-topline{gap:8px;padding-inline:1px}
+ .game-stat{min-width:0;flex:1}
+ .game-stat.compact{flex:0 0 36px}
+ .lives{gap:4px}
+ .run-hud{align-items:stretch;gap:7px;margin-bottom:9px}
+ .run-objective{grid-template-columns:1fr auto;gap:6px 10px;padding:7px 9px}
+ .objective-track{grid-column:1/-1;grid-row:2}
+ .objective-count{grid-column:2;grid-row:1}
+ .power-state{min-width:105px;max-width:116px;padding:7px 8px;font-size:9px;gap:5px}
+ .arena-wrap{height:min(62vh,620px);min-height:340px;border-radius:17px}
+ .game-bottomline{justify-content:flex-start;column-gap:12px;row-gap:4px;font-size:9px}
+ .game-bottomline #comboLabel{margin-inline-start:auto}
+}
+@media(max-width:370px){
+ .game-stat small{font-size:7px}
+ .game-stat strong{font-size:14px}
+ .run-hud{flex-direction:column}
+ .power-state{max-width:none;width:100%;min-height:30px}
+ .arena-wrap{min-height:320px}
+}
+@media(prefers-reduced-motion:reduce){.objective-track i{transition:none}}
