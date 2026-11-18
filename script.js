@@ -135,7 +135,11 @@ function start(){
      canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);
      ctx.setTransform(dpr,0,0,dpr,0,0);
    }
-   reset();state="running";
+   reset();
+   // Seed visible objects so the arena is never empty at launch.
+   stars.push({x:width*.5,y:height*.22,r:9,vy:100,spin:0,pulse:0});
+   rocks.push(makeRock());firstRockPending=false;
+   state="running";
    last=performance.now();draw(last);requestAnimationFrame(loop);
  });
 }
@@ -373,7 +377,11 @@ $("pauseButton").addEventListener("click",()=>state==="running"?pause():state===
 $("resumeButton").addEventListener("click",()=>{if(state==="paused")resume();else if(state==="over")start();});
 $("exitButton").addEventListener("click",backToMenu);
 $("soundButton").addEventListener("click",()=>{muted=!muted;$("soundButton").textContent=muted?"♪̸":"♫";$("soundButton").setAttribute("aria-label",muted?"تشغيل المؤثرات":"إيقاف المؤثرات");if(!muted)sound();});
-window.addEventListener("resize",()=>{if(!$("gamePanel").hidden){resize();draw(performance.now());}});
+window.addEventListener("resize",()=>{if(!$("gamePanel").hidden){resize();if(state==="running"||state==="paused")draw(performance.now());}});
+if("ResizeObserver" in window){
+ const arenaObserver=new ResizeObserver(()=>{if(!$("gamePanel").hidden){resize();if(state==="running"||state==="paused")draw(performance.now());}});
+ arenaObserver.observe(canvas.parentElement);
+}
 document.addEventListener("visibilitychange",()=>{if(document.hidden&&state==="running")pause();});
 $("exitButton").hidden=true;setBest();updateAtlasButton();renderAtlas();renderSkins();renderRecords();resize();draw(0);
 })();
