@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#dff4f7">
   <title>Potato Pet</title>
   <link rel="stylesheet" href="style.css">
@@ -10,34 +10,50 @@
 <body>
   <main class="app">
     <header class="topbar">
-      <div>
+      <div class="brand">
         <p class="eyebrow">رفيقتك الصغيرة</p>
         <h1>Potato Pet <span>♡</span></h1>
       </div>
-      <div class="coin"><span>✦</span> <b id="coins">0</b></div>
+      <div class="top-tools">
+        <button class="tool-button" id="roomButton" type="button" aria-label="تغيير الغرفة">غرفتي <span>⌂</span></button>
+        <button class="tool-button" id="lookButton" type="button" aria-label="تغيير شكل القطة">شكلها <span>✿</span></button>
+        <div class="coin"><span>✦</span><b id="coins">0</b></div>
+      </div>
     </header>
 
-    <section class="room" aria-label="غرفة القطة">
+    <nav class="actions" aria-label="العناية بالقطة">
+      <button class="action" data-action="feed" type="button"><span>🥣</span><b>إطعام</b></button>
+      <button class="action" data-action="play" type="button"><span>🧶</span><b>لعب</b></button>
+      <button class="action" data-action="sleep" type="button"><span>💤</span><b>نوم</b></button>
+      <button class="action" data-action="pet" type="button"><span>♡</span><b>مداعبة</b></button>
+    </nav>
+
+    <section class="room room-sky" id="room" aria-label="غرفة القطة">
+      <div class="room-label" id="roomName">غرفة الغيوم</div>
       <div class="window"><i></i><i></i></div>
       <div class="sun"></div>
+      <div class="cloud cloud-one"></div>
+      <div class="cloud cloud-two"></div>
       <div class="wall-star star-one">✦</div>
       <div class="wall-star star-two">✧</div>
       <div class="shelf"><span>♡</span><span>▱</span><span>✿</span></div>
       <div class="plant"><span></span><span></span><span></span><b></b></div>
       <div class="rug"></div>
-
       <div class="speech" id="speech" aria-live="polite">مياو! أهلًا بكِ ♡</div>
 
-      <button class="pet" id="pet" type="button" aria-label="المسي القطة للتفاعل">
+      <button class="pet skin-blue" id="pet" type="button" aria-label="المسي القطة للتفاعل">
         <span class="tail"></span>
         <span class="ear ear-left"><i></i></span>
         <span class="ear ear-right"><i></i></span>
-        <span class="body"></span>
+        <span class="body"><i class="belly"></i></span>
         <span class="head">
-          <i class="eye eye-left"></i>
-          <i class="eye eye-right"></i>
+          <i class="patch"></i>
+          <i class="eye eye-left"><b></b></i>
+          <i class="eye eye-right"><b></b></i>
           <i class="cheek cheek-left"></i>
           <i class="cheek cheek-right"></i>
+          <i class="whisker whisker-left"></i>
+          <i class="whisker whisker-right"></i>
           <i class="nose"></i>
           <i class="mouth"></i>
         </span>
@@ -63,15 +79,7 @@
         <div class="meter"><span id="energyBar"></span></div>
       </div>
     </section>
-
-    <section class="actions" aria-label="العناية بالقطة">
-      <button class="action" data-action="feed"><span>🥣</span><b>إطعام</b></button>
-      <button class="action" data-action="play"><span>🧶</span><b>لعب</b></button>
-      <button class="action" data-action="sleep"><span>💤</span><b>نوم</b></button>
-      <button class="action" data-action="pet"><span>♡</span><b>مداعبة</b></button>
-    </section>
-
-    <footer>اضغطي على القطة لتتعرف عليكِ. هذه مجرد البداية!</footer>
+    <footer>اضغطي على لوزة لتتفاعل معكِ ♡</footer>
   </main>
   <script src="script.js"></script>
 </body>
