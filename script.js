@@ -39,7 +39,7 @@ function start(){
  $("arenaHint").style.opacity="1";last=performance.now();requestAnimationFrame(loop);
 }
 function pause(){
- if(state!=="running")return;state="paused";$("pauseButton").textContent="▶";
+ if(state!=="running")return;state="paused";$("pauseButton").textContent="▶";$("exitButton").hidden=false;
  showMessage("استراحة في المدار","النتيجة الحالية: "+format(score),"متابعة الرحلة");
 }
 function resume(){
@@ -76,7 +76,7 @@ function hitRock(r){
  if(lives<=0)endGame();
 }
 function update(dt){
- elapsed+=dt;level=1+Math.floor(elapsed/18);spawnClock+=dt;
+ elapsed+=dt;const nextLevel=1+Math.floor(elapsed/18);if(nextLevel!==level){level=nextLevel;updateHUD();}spawnClock+=dt;
  const interval=Math.max(.28,.88-level*.055);
  while(spawnClock>interval){spawnClock-=interval;spawn();}
  player.x+=(player.targetX-player.x)*Math.min(1,dt*13);
@@ -87,7 +87,6 @@ function update(dt){
  for(let i=stars.length-1;i>=0;i--){const s=stars[i];s.y+=s.vy*dt;s.spin+=dt*2.4;s.pulse+=dt*4;if(circleHit(player,s)){collectStar(s);stars.splice(i,1);updateHUD();continue;}if(s.y>height+25)stars.splice(i,1);}
  for(let i=rocks.length-1;i>=0;i--){const r=rocks[i];r.x+=r.vx*dt;r.y+=r.vy*dt;r.rot+=r.spin*dt;if(r.x<r.r||r.x>width-r.r)r.vx*=-1;if(circleHit(player,{...r,r:r.r*.83})){rocks.splice(i,1);hitRock(r);if(state!=="running")return;continue;}if(r.y>height+35)rocks.splice(i,1);}
  for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=.985;p.vy*=.985;p.life-=dt;if(p.life<=0)particles.splice(i,1);}
- updateHUD();
 }
 function drawBackground(t){
  ctx.fillStyle="#080f24";ctx.fillRect(0,0,width,height);
