@@ -158,3 +158,5 @@ footer{display:flex;justify-content:space-between;gap:8px;color:var(--muted);fon
 @media(max-width:390px){.app{padding-left:9px;padding-right:9px;gap:8px}.brand-mark{width:37px;height:37px}.top-tools{gap:4px}.level-pill,.coin,.icon-button{height:34px;min-width:34px;padding:4px 7px;font-size:10px}.icon-button{width:34px}.action{min-height:44px;gap:3px}.action span{font-size:17px}.action b{font-size:9px}.room{min-height:315px;border-radius:20px}.room-action{top:91px;right:8px;padding:7px 9px;font-size:9px}.speech{right:8px;max-width:58%;font-size:9px}.status-card{padding:7px 7px}.quest{gap:3px;padding:6px 4px;font-size:8px}.quest b{font-size:8px}}
 @media(max-height:720px){.app{gap:7px;padding-top:6px;padding-bottom:6px}.room{min-height:270px}.daily-card{padding:7px 10px}.quest-list{margin-top:6px}.status-card{padding:6px 8px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+
+.reward-button.claimed{border-color:#b8d8c4;background:#eaf5ed;color:#6d9b7e}
