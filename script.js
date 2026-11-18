@@ -65,10 +65,10 @@ function renderSkins(){
  $("skinGrid").innerHTML=SKINS.map(s=>"<button type=\"button\" class=\"skin-option "+(s.id===selectedSkin?"selected":"")+"\" data-skin=\""+s.id+"\"><i style=\"--skin-main:"+s.main+";--skin-edge:"+s.edge+";--skin-glow:"+s.glow+"\"></i><span>"+s.name+"</span>"+(s.id===selectedSkin?"<small>محدد</small>":"")+"</button>").join("");
  $("skinGrid").querySelectorAll("[data-skin]").forEach(button=>button.addEventListener("click",()=>{selectedSkin=button.dataset.skin;try{localStorage.setItem(SKIN_SAVE,selectedSkin);}catch(_){}renderSkins();}));
 }
-function openHangar(){renderSkins();renderRecords();$("hangarModal").hidden=false;}
+function openHangar(){renderSkins();renderRecords();try{$("pilotNameInput").value=localStorage.getItem("orbitPilotName")||"";}catch(_){}$("hangarModal").hidden=false;}
 function closeHangar(){$("hangarModal").hidden=true;}
 function saveRunRecord(){
- const name=(localStorage.getItem("orbitPilotName")||"رحّالة").trim().slice(0,16)||"رحّالة";
+ let name="رحّالة";try{name=(localStorage.getItem("orbitPilotName")||"رحّالة").trim().slice(0,16)||"رحّالة";}catch(_){}
  records.push({name,score,when:Date.now()});records.sort((a,b)=>b.score-a.score);records=records.slice(0,5);saveRecords();
 }
 function closeAtlas(){$("atlasModal").hidden=true;}
@@ -252,6 +252,10 @@ function drawBackground(t){
  for(const s of backgroundStars){const alpha=s.a*(.65+.35*Math.sin(t*.001+s.phase));ctx.globalAlpha=alpha;ctx.fillStyle="#c9dcff";ctx.fillRect(s.x,s.y,s.r,s.r);}ctx.globalAlpha=1;
  ctx.strokeStyle="#8ca8d00c";ctx.lineWidth=1;
  for(let y=height*.6;y<height;y+=38){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(width,y);ctx.stroke();}
+ if(stageIndex===0){ctx.strokeStyle="#8de7ff22";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(width*.76,height*.23,width*.25,18,-.25,0,Math.PI*2);ctx.stroke();}
+ if(stageIndex===1){ctx.save();ctx.globalAlpha=.16;for(let i=0;i<9;i++){const x=(i*97+elapsed*22)%(width+80)-40,y=(i*61+30)%height;ctx.strokeStyle="#ffc19b";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+rand(12,34),y-2);ctx.stroke();}ctx.restore();}
+ if(stageIndex===2){ctx.save();ctx.translate(width*.76,height*.22);ctx.rotate(-.22);ctx.strokeStyle="#f4d69a55";ctx.lineWidth=9;ctx.beginPath();ctx.ellipse(0,0,65,19,0,0,Math.PI*2);ctx.stroke();ctx.fillStyle="#c9a56b55";ctx.beginPath();ctx.arc(0,0,24,0,Math.PI*2);ctx.fill();ctx.restore();}
+ if(stageIndex===3){ctx.save();for(let i=0;i<4;i++){const x=width*(.18+i*.21),y=height*(.18+(i%2)*.2),cloud=ctx.createRadialGradient(x,y,3,x,y,65);cloud.addColorStop(0,"#bda0ff22");cloud.addColorStop(1,"#bda0ff00");ctx.fillStyle=cloud;ctx.fillRect(x-65,y-65,130,130);}ctx.restore();}
 }
 function drawStar(s){
  ctx.save();ctx.translate(s.x,s.y);ctx.rotate(s.spin);const pulse=1+Math.sin(s.pulse)*.13;
@@ -340,6 +344,7 @@ $("startButton").addEventListener("click",start);
 $("atlasButton").addEventListener("click",openAtlas);
 $("hangarButton").addEventListener("click",openHangar);
 $("closeHangar").addEventListener("click",closeHangar);
+$("savePilotName").addEventListener("click",()=>{const name=$("pilotNameInput").value.trim().slice(0,16);try{localStorage.setItem("orbitPilotName",name||"رحّالة");}catch(_){}$("pilotNameInput").value=name;});
 $("hangarModal").addEventListener("click",e=>{if(e.target===$("hangarModal"))closeHangar();});
 $("closeAtlas").addEventListener("click",closeAtlas);
 $("atlasModal").addEventListener("click",e=>{if(e.target===$("atlasModal"))closeAtlas();});
