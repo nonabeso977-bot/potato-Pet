@@ -179,3 +179,23 @@ footer{display:flex;justify-content:space-between;gap:8px;color:var(--muted);fon
 .butterfly-target:active{scale:.88}
 .game-help{margin:9px 0 0;color:var(--muted);text-align:center;font-size:10px}
 @media(max-width:390px){.quick-button{gap:3px;font-size:9px}.quick-button>span{font-size:15px}}
+
+
+/* Garden room and relationship progression */
+.bond-copy{display:flex;align-items:center;justify-content:space-between;margin:7px 0 4px;color:#9b82ad;font-size:9px;font-weight:900}
+.bond-copy b{direction:ltr;color:#9a82b0}
+.bond-track{height:6px;overflow:hidden;border-radius:99px;background:#eee8f2}
+.bond-track span{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#e9a9c5,#b69bd4);transition:width .4s}
+.mood-chip{position:absolute;z-index:7;top:48px;left:12px;max-width:58%;padding:5px 9px;border:1px solid #fff9;border-radius:99px;background:#ffffffc9;color:#6d8790;font-size:9px;font-weight:900;box-shadow:0 3px 10px #536e7910}
+.room-garden{--wall:#cde9d4;--floor:#a8ce9e;--rug-color:#82b98b99;--sun-color:#ffe8a2;background:linear-gradient(var(--wall) 0 56%,#b5d99e 56% 100%)}
+.room-garden .window{background:linear-gradient(#a6dff0,#e6f6dc)}
+.room-garden .window-view{height:62%;background:linear-gradient(145deg,#7fbd83 50%,#a9d18a 50%)}
+.room-garden .rug{width:76%;height:19%;background:radial-gradient(ellipse,#d8e9b8 0 45%,#83bd8a 46% 100%);box-shadow:inset 0 0 0 3px #ffffff65}
+.room-garden .plant{transform:scale(1.35);transform-origin:bottom left}
+.room-garden .room-prop{border-radius:50%;background:#ffffff8a}
+.room-garden .floor-line{background:#8dbd83}
+.room-garden .wall-star{color:#fff8c9}
+.room-garden .cloud{background:#ffffffc9}
+.room-garden .sun{box-shadow:0 0 0 13px #fff0b344,0 0 35px #fff0b355}
+.room-garden .pet-name{background:#f7fff0e8}
+@media(max-width:390px){.mood-chip{top:46px;left:8px;font-size:8px}.bond-copy{margin-top:5px}}
