@@ -3,10 +3,22 @@
 const $ = id => document.getElementById(id);
 const canvas=$("arena"),ctx=canvas.getContext("2d");
 const SAVE="orbitArcade.v2";
+const ATLAS_SAVE="orbitAtlas.v1";
+const FACTS=[
+ {tag:"THE SUN",title:"ثماني دقائق من الماضي",body:"ضوء الشمس يحتاج نحو 8 دقائق و20 ثانية ليصل إلى الأرض. عندما تنظرين إليها، فأنت ترينها كما كانت قبل دقائق."},
+ {tag:"VENUS",title:"يوم أطول من سنة",body:"الزهرة يدور حول محوره في نحو 243 يومًا أرضيًا، بينما يكمل دورته حول الشمس في نحو 225 يومًا."},
+ {tag:"MARS",title:"غروب أزرق",body:"بسبب طريقة تشتت الضوء في غلافه الجوي المغبر، يظهر الغروب على المريخ بلون أزرق قرب قرص الشمس."},
+ {tag:"EUROPA",title:"محيط تحت الجليد",body:"تشير الأدلة إلى أن قمر المشتري أوروبا يخفي محيطًا مالحًا واسعًا تحت قشرته الجليدية."},
+ {tag:"SATURN",title:"حلقات من الجليد",body:"حلقات زحل تتكون أساسًا من جليد مائي، مع كميات أقل من المواد الصخرية والغبار."},
+ {tag:"THE MOON",title:"القمر يبتعد ببطء",body:"القمر يبتعد عن الأرض بمعدل يقارب 3.8 سنتيمتر كل سنة، وقد قيس ذلك باستخدام عواكس الليزر."}
+];
+const safeReadAtlas=()=>{try{const v=JSON.parse(localStorage.getItem(ATLAS_SAVE)||"[]");return Array.isArray(v)?[...new Set(v.filter(n=>Number.isInteger(n)&&n>=0&&n<FACTS.length))]:[];}catch(_){return[];}};
+const safeSaveAtlas=()=>{try{localStorage.setItem(ATLAS_SAVE,JSON.stringify(discovered));}catch(_){}};
 const safeReadBest=()=>{try{return Number(localStorage.getItem(SAVE)||localStorage.getItem("orbitArcade.v1")||0)||0;}catch(_){return 0;}};
 const safeSaveBest=value=>{try{localStorage.setItem(SAVE,String(value));}catch(_){}};
-let best=safeReadBest(),score=0,lives=3,level=1,combo=1,comboTime=0;
-let state="menu",last=0,elapsed=0,spawnClock=0,stars=[],rocks=[],pickups=[],particles=[],backgroundStars=[];
+let best=safeReadBest(),discovered=safeReadAtlas(),score=0,lives=3,level=1,combo=1,comboTime=0;
+let state="menu",last=0,elapsed=0,spawnClock=0,stars=[],rocks=[],pickups=[],artifacts=[],particles=[],backgroundStars=[];
+let discoveryToastTime=0;
 let shieldTime=0,magnetTime=0,collected=0,missionDone=false,shake=0;
 let width=0,height=0,dpr=1,player={x:0,y:0,targetX:0,targetY:0,r:13,invulnerable:0};
 let pointerDown=false,muted=false,audio=null,runId=0;
@@ -14,6 +26,28 @@ const rand=(a,b)=>a+Math.random()*(b-a);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function format(n){return String(Math.floor(n)).padStart(6,"0")}
 function setBest(){ $("best").textContent=format(best);$("menuBest").textContent=format(best); }
+function updateAtlasButton(){
+ const count=discovered.length;
+ $("atlasCount").textContent=count+" / "+FACTS.length;
+ $("atlasProgressText").textContent=count+" من "+FACTS.length+" اكتشافات";
+ $("atlasProgressFill").style.width=(count/FACTS.length*100)+"%";
+}
+function renderAtlas(){
+ $("atlasGrid").innerHTML=FACTS.map((fact,index)=>{
+   const unlocked=discovered.includes(index);
+   return '<article class="atlas-entry '+(unlocked?"unlocked":"locked")+'"><span>'+(unlocked?"✦":"?")+'</span><div><small>'+fact.tag+'</small><strong>'+(unlocked?fact.title:"إشارة غير مكتشفة")+'</strong><p>'+(unlocked?fact.body:"التقطي شارة بيانات أثناء الرحلة لفتح هذه المعلومة.")+'</p></div></article>';
+ }).join("");
+ updateAtlasButton();
+}
+function openAtlas(){renderAtlas();$("atlasModal").hidden=false;}
+function closeAtlas(){$("atlasModal").hidden=true;}
+function showDiscovery(index){
+ const fact=FACTS[index],toast=$("discoveryToast");
+ $("discoveryTitle").textContent=fact.title;$("discoveryFact").textContent=fact.body;
+ toast.hidden=false;toast.classList.remove("show");
+ requestAnimationFrame(()=>toast.classList.add("show"));
+ discoveryToastTime=5.2;
+}
 function resize(){
  const rect=canvas.getBoundingClientRect();if(!rect.width||!rect.height)return;
  dpr=Math.min(window.devicePixelRatio||1,2);width=rect.width;height=rect.height;
@@ -23,8 +57,9 @@ function resize(){
  backgroundStars=Array.from({length:Math.max(45,Math.round(width*height/6500))},()=>({x:rand(0,width),y:rand(0,height),r:rand(.4,1.7),a:rand(.2,.8),phase:rand(0,6)}));
 }
 function reset(){
- score=0;lives=3;level=1;combo=1;comboTime=0;elapsed=0;spawnClock=0;stars=[];rocks=[];pickups=[];particles=[];
- shieldTime=0;magnetTime=0;collected=0;missionDone=false;shake=0;
+ score=0;lives=3;level=1;combo=1;comboTime=0;elapsed=0;spawnClock=0;stars=[];rocks=[];pickups=[];artifacts=[];particles=[];
+ shieldTime=0;magnetTime=0;collected=0;missionDone=false;shake=0;discoveryToastTime=0;
+ $("discoveryToast").hidden=true;$("discoveryToast").classList.remove("show");
  player={x:width/2,y:height*.78,targetX:width/2,targetY:height*.78,r:12,invulnerable:1.5};
  updateHUD();runId++;
 }
@@ -32,6 +67,7 @@ function updateHUD(){
  $("score").textContent=format(score);$("best").textContent=format(best);$("level").textContent=String(level).padStart(2,"0");
  $("lives").querySelectorAll("i").forEach((el,i)=>el.classList.toggle("off",i>=lives));
  $("comboLabel").textContent="COMBO ×"+combo;
+ $("runAtlasCount").textContent=discovered.length+" / "+FACTS.length;
  const count=Math.min(collected,20),fill=$("missionFill");
  fill.style.width=(count/20*100)+"%";
  $("missionCount").textContent=count+" / 20";
@@ -79,8 +115,14 @@ function burst(x,y,color,count=10){
  for(let i=0;i<count;i++){const a=rand(0,Math.PI*2),speed=rand(35,180);particles.push({x,y,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,life:rand(.25,.65),max:.65,size:rand(1,3),color});}
 }
 function spawn(){
- const x=rand(22,width-22);
- if(Math.random()<.085){
+ const x=rand(22,width-22),roll=Math.random();
+ const pending=artifacts.map(a=>a.id);
+ const available=FACTS.map((_,i)=>i).filter(i=>!discovered.includes(i)&&!pending.includes(i));
+ if(roll<.035&&available.length){
+   artifacts.push({x,y:-20,r:12,vy:rand(82,108)+level*3,spin:0,id:available[Math.floor(Math.random()*available.length)]});
+   return;
+ }
+ if(roll<.12){
    pickups.push({x,y:-18,r:11,vy:rand(88,112)+level*4,spin:0,kind:Math.random()<.52?"shield":"magnet"});
    return;
  }
@@ -98,6 +140,12 @@ function collectPickup(p){
  if(p.kind==="shield"){shieldTime=6;magnetTime=0;burst(p.x,p.y,"#76e4e4",22);sound(840,.13,"sine");}
  else{magnetTime=7;shieldTime=0;burst(p.x,p.y,"#a99bff",22);sound(920,.13,"triangle");}
  updateHUD();
+}
+function collectArtifact(a){
+ if(discovered.includes(a.id))return;
+ discovered.push(a.id);safeSaveAtlas();score+=80;
+ burst(a.x,a.y,"#a99bff",26);sound(1040,.2,"triangle");
+ showDiscovery(a.id);updateHUD();updateAtlasButton();
 }
 function hitRock(r){
  if(player.invulnerable>0)return;
@@ -118,8 +166,17 @@ function update(dt){
  shieldTime=Math.max(0,shieldTime-dt);magnetTime=Math.max(0,magnetTime-dt);shake=Math.max(0,shake-dt*24);
  if(hadPower&&!shieldTime&&!magnetTime)updateHUD();
  if(shieldTime>0||magnetTime>0)$("powerTimer").style.width=(Math.max(shieldTime,magnetTime)/7*30)+"px";
+ if(discoveryToastTime>0){
+   discoveryToastTime-=dt;
+   if(discoveryToastTime<=0){$("discoveryToast").classList.remove("show");$("discoveryToast").hidden=true;}
+ }
  if(magnetTime>0){
    for(const s of stars){const dx=player.x-s.x,dy=player.y-s.y,d=Math.hypot(dx,dy);if(d<175&&d>1){const pull=(1-d/175)*420;s.x+=dx/d*pull*dt;s.y+=dy/d*pull*dt;}}
+ }
+ for(let i=artifacts.length-1;i>=0;i--){
+   const a=artifacts[i];a.y+=a.vy*dt;a.spin+=dt*1.8;
+   if(circleHit(player,a)){collectArtifact(a);artifacts.splice(i,1);continue;}
+   if(a.y>height+25)artifacts.splice(i,1);
  }
  for(let i=stars.length-1;i>=0;i--){const s=stars[i];s.y+=s.vy*dt;s.spin+=dt*2.4;s.pulse+=dt*4;if(circleHit(player,s)){collectStar(s);stars.splice(i,1);updateHUD();continue;}if(s.y>height+25)stars.splice(i,1);}
  for(let i=pickups.length-1;i>=0;i--){const p=pickups[i];p.y+=p.vy*dt;p.spin+=dt*2.8;if(circleHit(player,p)){collectPickup(p);pickups.splice(i,1);continue;}if(p.y>height+25)pickups.splice(i,1);}
@@ -144,6 +201,14 @@ function drawStar(s){
  ctx.fillStyle="#ffe39a";ctx.beginPath();
  for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,r=i%2===0?s.r:s.r*.42;const x=Math.cos(a)*r,y=Math.sin(a)*r;i?ctx.lineTo(x,y):ctx.moveTo(x,y);}
  ctx.closePath();ctx.fill();ctx.restore();
+}
+function drawArtifact(a){
+ ctx.save();ctx.translate(a.x,a.y);ctx.rotate(a.spin);
+ ctx.shadowBlur=22;ctx.shadowColor="#a99bff";
+ ctx.fillStyle="#171b3b";ctx.strokeStyle="#c8bcff";ctx.lineWidth=2;
+ ctx.beginPath();ctx.moveTo(0,-a.r);ctx.lineTo(a.r*.82,0);ctx.lineTo(0,a.r);ctx.lineTo(-a.r*.82,0);ctx.closePath();ctx.fill();ctx.stroke();
+ ctx.fillStyle="#f1eaff";ctx.font="bold 13px sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("✧",0,1);
+ ctx.restore();
 }
 function drawRock(r){
  ctx.save();ctx.translate(r.x,r.y);ctx.rotate(r.rot);ctx.beginPath();
@@ -171,7 +236,7 @@ function drawPickup(p){
 function draw(t){
  ctx.save();
  if(shake>0)ctx.translate(rand(-shake,shake),rand(-shake,shake));
- drawBackground(t);stars.forEach(drawStar);pickups.forEach(drawPickup);rocks.forEach(drawRock);
+ drawBackground(t);stars.forEach(drawStar);pickups.forEach(drawPickup);artifacts.forEach(drawArtifact);rocks.forEach(drawRock);
  for(const p of particles){ctx.globalAlpha=Math.max(0,p.life/p.max);ctx.fillStyle=p.color;ctx.shadowBlur=9;ctx.shadowColor=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();}ctx.globalAlpha=1;ctx.shadowBlur=0;
  if(state!=="menu")drawPlayer(t);
  ctx.restore();
@@ -197,11 +262,15 @@ window.addEventListener("keydown",e=>{
  player.targetX=clamp(player.targetX,18,width-18);player.targetY=clamp(player.targetY,height*.43,height-27);
 });
 $("startButton").addEventListener("click",start);
+$("atlasButton").addEventListener("click",openAtlas);
+$("closeAtlas").addEventListener("click",closeAtlas);
+$("atlasModal").addEventListener("click",e=>{if(e.target===$("atlasModal"))closeAtlas();});
+window.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("atlasModal").hidden)closeAtlas();});
 $("pauseButton").addEventListener("click",()=>state==="running"?pause():state==="over"?start():null);
 $("resumeButton").addEventListener("click",()=>{if(state==="paused")resume();else if(state==="over")start();});
 $("exitButton").addEventListener("click",backToMenu);
 $("soundButton").addEventListener("click",()=>{muted=!muted;$("soundButton").textContent=muted?"♪̸":"♫";$("soundButton").setAttribute("aria-label",muted?"تشغيل المؤثرات":"إيقاف المؤثرات");if(!muted)sound();});
 window.addEventListener("resize",()=>{if(!$("gamePanel").hidden){resize();draw(performance.now());}});
 document.addEventListener("visibilitychange",()=>{if(document.hidden&&state==="running")pause();});
-$("exitButton").hidden=true;setBest();resize();draw(0);
+$("exitButton").hidden=true;setBest();updateAtlasButton();renderAtlas();resize();draw(0);
 })();
