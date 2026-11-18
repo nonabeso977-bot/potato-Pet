@@ -29,7 +29,8 @@
       <div class="record-line"><span>أفضل نتيجة</span><strong id="menuBest">000000</strong></div>
       <div class="intro-actions">
         <button class="primary-button" id="startButton" type="button"><span>ابدئي الرحلة</span><b>↗</b></button>
-        <button class="atlas-button" id="atlasButton" type="button"><span>دفتر الاكتشافات</span><b id="atlasCount">0 / 7</b></button>
+        <button class="atlas-button" id="atlasButton" type="button"><span>دفتر الاكتشافات</span><b id="atlasCount">0 / 15</b></button>
+        <button class="atlas-button hangar-open" id="hangarButton" type="button"><span>المركبات والسجل</span><b>✦</b></button>
       </div>
       <p class="control-note">اسحبي المركبة بإصبعك · أو استخدمي الأسهم / WASD</p>
     </div>
@@ -46,7 +47,7 @@
     <div class="game-topline">
       <div class="game-stat score-stat"><small>النقاط</small><strong id="score">000000</strong></div>
       <div class="game-stat best-stat"><small>رقمك القياسي</small><strong id="best">000000</strong></div>
-      <div class="game-stat compact"><small>المرحلة</small><strong id="level">01</strong></div>
+      <div class="game-stat compact"><small>المرحلة</small><strong id="level">01</strong><small id="stageName">مدار الأرض</small></div>
       <div class="lives" id="lives" aria-label="ثلاث فرص"><i></i><i></i><i></i></div>
       <button class="pause-button" id="pauseButton" type="button" aria-label="إيقاف مؤقت">Ⅱ</button>
     </div>
@@ -76,9 +77,20 @@
         <small>+80 نقطة</small>
       </div>
     </div>
-    <div class="game-bottomline"><span><i class="legend-star">✦</i> نجمة + نقاط</span><span><i class="legend-rock">◆</i> صخرة = خسارة فرصة</span><span class="legend-power"><i>◎</i> درع</span><span class="legend-magnet"><i>⌁</i> مغناطيس</span><span class="legend-blackhole"><i>◉</i> أفق الحدث</span><span class="atlas-run-count">DATA <b id="runAtlasCount">0 / 7</b></span><span id="comboLabel">COMBO ×1</span></div>
+    <div class="game-bottomline"><span><i class="legend-star">✦</i> نجمة + نقاط</span><span><i class="legend-rock">◆</i> صخرة = خسارة فرصة</span><span class="legend-power"><i>◎</i> درع</span><span class="legend-magnet"><i>⌁</i> مغناطيس</span><span class="legend-blackhole"><i>◉</i> أفق الحدث</span><span class="legend-stage" id="stageHint">مدار الأرض</span><span class="atlas-run-count">DATA <b id="runAtlasCount">0 / 15</b></span><span id="comboLabel">COMBO ×1</span></div>
   </section>
 
+  <div class="atlas-overlay" id="hangarModal" hidden>
+    <section class="atlas-dialog hangar-dialog" role="dialog" aria-modal="true" aria-labelledby="hangarHeading">
+      <header class="atlas-header"><div><span class="eyebrow">PILOT CENTER / ORBIT</span><h2 id="hangarHeading">مركز الرحّالة</h2></div><button class="atlas-close" id="closeHangar" type="button" aria-label="إغلاق">×</button></header>
+      <p class="atlas-description">اختاري شكل مركبتك، وشاهدي أفضل الرحلات المسجلة على هذا الجهاز.</p>
+      <h3 class="hangar-subtitle">مظهر المركبة</h3>
+      <div class="skin-grid" id="skinGrid"></div>
+      <h3 class="hangar-subtitle">سجل أفضل الرحلات · هذا الجهاز</h3>
+      <p class="atlas-description">الأسماء والنتائج محفوظة هنا على جهازك. عرض نتائج جميع اللاعبين يحتاج إلى خادم مشترك.</p>
+      <div class="pilot-records" id="recordsList"></div>
+    </section>
+  </div>
   <div class="atlas-overlay" id="atlasModal" hidden>
     <section class="atlas-dialog" role="dialog" aria-modal="true" aria-labelledby="atlasHeading">
       <header class="atlas-header">
@@ -86,7 +98,7 @@
         <button class="atlas-close" id="closeAtlas" type="button" aria-label="إغلاق دفتر الاكتشافات">×</button>
       </header>
       <p class="atlas-description">كل شارة بيانات تلتقطينها تكشف معلومة حقيقية من عالم الفضاء.</p>
-      <div class="atlas-progress-row"><span id="atlasProgressText">0 من 7 اكتشافات</span><div class="atlas-progress"><i id="atlasProgressFill"></i></div></div>
+      <div class="atlas-progress-row"><span id="atlasProgressText">0 من 15 اكتشافات</span><div class="atlas-progress"><i id="atlasProgressFill"></i></div></div>
       <div class="atlas-grid" id="atlasGrid"></div>
     </section>
   </div>
@@ -97,7 +109,7 @@
     <article><span class="feature-icon violet">⌁</span><div><strong>قوى المدار</strong><small>درع يحميك ومغناطيس يجذب النجوم</small></div></article>
     <article><span class="feature-icon blackhole-feature">◉</span><div><strong>أفق الحدث</strong><small>قاومي جاذبية الثقب الأسود</small></div></article>
   </section>
-  <footer><span>ORBIT / BUILD 2.2 · EVENT HORIZON</span><span>صُممت لتُلعَب، لا لتُشاهَد فقط.</span></footer>
+  <footer><span>ORBIT / BUILD 3.0 · COSMIC EXPLORER</span><span>صُممت لتُلعَب، لا لتُشاهَد فقط.</span></footer>
 </main>
 <script src="script.js"></script>
 </body>
