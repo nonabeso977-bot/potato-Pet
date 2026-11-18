@@ -32,6 +32,7 @@ const toastBox = $("toast");
 const modalBackdrop = $("modalBackdrop");
 const modalTitle = $("modalTitle");
 const modalContent = $("modalContent");
+const fxLayer = $("fxLayer");
 
 const rooms = {
   lounge: { name: "غرفة الجلوس", icon: "🛋️", action: "pet", button: "داعبي لوزة ♡", welcome: "تعالي نجلس معًا قليلًا.", hint: "اضغطي على لوزة لتسمعي خرخرتها" },
@@ -191,10 +192,32 @@ function completeQuest(key) {
 }
 
 function animatePet(kind) {
-  pet.classList.remove("playing", "sleeping");
+  pet.classList.remove("playing", "sleeping", "excited", "purring", "curious");
   room.classList.toggle("sleep-mode", kind === "sleeping");
   void pet.offsetWidth;
   if (kind) pet.classList.add(kind);
+}
+
+function petReaction(kind = "happy") {
+  const reactions = {
+    happy: ["♡", "✦", "♥", "✧"],
+    play: ["✦", "🎈", "♫", "✿"],
+    curious: ["?", "✧", "…"],
+    love: ["♥", "♡", "♥", "✦"]
+  };
+  const symbols = reactions[kind] || reactions.happy;
+  const count = kind === "play" ? 7 : 5;
+  for (let i = 0; i < count; i++) {
+    const particle = document.createElement("span");
+    particle.className = "pet-fx";
+    particle.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+    particle.style.left = (37 + Math.random() * 26) + "%";
+    particle.style.top = (43 + Math.random() * 20) + "%";
+    particle.style.setProperty("--drift", (Math.random() * 110 - 55) + "px");
+    particle.style.setProperty("--spin", (Math.random() * 70 - 35) + "deg");
+    fxLayer.appendChild(particle);
+    particle.addEventListener("animationend", () => particle.remove(), { once: true });
+  }
 }
 
 function goToRoom(id) {
@@ -246,7 +269,8 @@ function performRoomAction() {
     state.happy = clamp(state.happy + 4);
     state.attention = clamp(state.attention + 2);
     addCoins(2); addXP(5); addBond(2); completeQuest("feed");
-    animatePet("playing");
+    animatePet("excited");
+    petReaction("love");
     talk("مممم… وجبة لذيذة! شكرًا ♡");
   } else if (action === "play") {
     if (state.energy < 18) return talk("طاقتي خلصت تقريبًا… أحتاج راحة ☾");
@@ -256,6 +280,7 @@ function performRoomAction() {
     state.attention = clamp(state.attention + 8);
     addCoins(3); addXP(8); addBond(3); completeQuest("play");
     animatePet("playing");
+    petReaction("play");
     talk("يا لها من لعبة ممتعة! مرة ثانية!");
   } else if (action === "sleep") {
     if (state.sleeping) {
@@ -278,13 +303,15 @@ function performRoomAction() {
     state.food = clamp(state.food - 4);
     state.attention = clamp(state.attention + 5);
     addCoins(2); addXP(5); addBond(3);
-    animatePet("playing");
+    animatePet("curious");
+    petReaction("play");
     talk("الفراشات والزهور! أحب حديقتنا 🌷");
   } else {
     state.happy = clamp(state.happy + 12);
     state.attention = clamp(state.attention + 6);
     addCoins(1); addXP(3); addBond(4); completeQuest("pet");
-    animatePet("playing");
+    animatePet("purring");
+    petReaction("love");
     talk("خرخرةةة… أحب المداعبة ♡");
   }
   markInteraction();
@@ -301,7 +328,9 @@ function petTap() {
   state.attention = clamp(state.attention + 7);
   addXP(1); addBond(1);
   completeQuest("pet");
-  animatePet("playing");
+  const tapMood = state.happy > 70 ? "love" : "happy";
+  animatePet(state.happy > 75 ? "purring" : "excited");
+  petReaction(tapMood);
   updateUI();
   talk(["مياااو! انتبهي لي ♡", "خررر… هذا لطيف!", "أحب لما تلعبين معي!", "نونو! مرة ثانية!"][Math.floor(Math.random() * 4)]);
   markInteraction();
@@ -365,6 +394,8 @@ function useItem(id) {
     state.attention = clamp(state.attention + 2);
     addBond(1);
     talk("يا سلام! أحب هذا الطعام 🐟");
+    petReaction("love");
+    animatePet("excited");
   } else if (item.type === "toy") {
     if (state.energy < 12) return showToast("لوزة متعبة وتحتاج إلى النوم.");
     state.happy = clamp(state.happy + item.amount);
@@ -373,9 +404,12 @@ function useItem(id) {
     addBond(2);
     talk("هذه لعبتي الجديدة! لنلعب!");
     animatePet("playing");
+    petReaction("play");
   } else if (item.type === "accessory") {
     state.accessory = id === "hat" ? "hat" : id;
     talk("كيف أبدو بهذه الزينة؟ ✨");
+    petReaction("love");
+    animatePet("excited");
   }
   state.inventory[id] -= 1;
   if (!state.inventory[id]) delete state.inventory[id];
