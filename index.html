@@ -27,7 +27,10 @@
       <h1>المجرة لا تنتظر<span>.</span></h1>
       <p class="lead">انطلقي إلى المدار. اجمعي الضوء، تفادي الحطام، وحاولي تحطيم رقمك القياسي.</p>
       <div class="record-line"><span>أفضل نتيجة</span><strong id="menuBest">000000</strong></div>
-      <button class="primary-button" id="startButton" type="button"><span>ابدئي الرحلة</span><b>↗</b></button>
+      <div class="intro-actions">
+        <button class="primary-button" id="startButton" type="button"><span>ابدئي الرحلة</span><b>↗</b></button>
+        <button class="atlas-button" id="atlasButton" type="button"><span>دفتر الاكتشافات</span><b id="atlasCount">0 / 6</b></button>
+      </div>
       <p class="control-note">اسحبي المركبة بإصبعك · أو استخدمي الأسهم / WASD</p>
     </div>
     <div class="hero-art" aria-hidden="true">
@@ -66,16 +69,34 @@
         <button class="text-button" id="exitButton" type="button">العودة للقائمة</button>
       </div>
       <div class="arena-hint" id="arenaHint">اسحبي المركبة للتحرك</div>
+      <div class="discovery-toast" id="discoveryToast" hidden aria-live="polite">
+        <span class="discovery-kicker">COSMIC ATLAS · اكتشاف جديد</span>
+        <strong id="discoveryTitle">رسالة من الفضاء</strong>
+        <p id="discoveryFact"></p>
+        <small>+80 نقطة</small>
+      </div>
     </div>
     <div class="game-bottomline"><span><i class="legend-star">✦</i> نجمة + نقاط</span><span><i class="legend-rock">◆</i> صخرة = خسارة فرصة</span><span class="legend-power"><i>◎</i> درع</span><span class="legend-magnet"><i>⌁</i> مغناطيس</span><span id="comboLabel">COMBO ×1</span></div>
   </section>
+
+  <div class="atlas-overlay" id="atlasModal" hidden>
+    <section class="atlas-dialog" role="dialog" aria-modal="true" aria-labelledby="atlasHeading">
+      <header class="atlas-header">
+        <div><span class="eyebrow">FIELD NOTES / DEEP SPACE</span><h2 id="atlasHeading">دفتر الاكتشافات</h2></div>
+        <button class="atlas-close" id="closeAtlas" type="button" aria-label="إغلاق دفتر الاكتشافات">×</button>
+      </header>
+      <p class="atlas-description">كل شارة بيانات تلتقطينها تكشف معلومة حقيقية من عالم الفضاء.</p>
+      <div class="atlas-progress-row"><span id="atlasProgressText">0 من 6 اكتشافات</span><div class="atlas-progress"><i id="atlasProgressFill"></i></div></div>
+      <div class="atlas-grid" id="atlasGrid"></div>
+    </section>
+  </div>
 
   <section class="features" id="features">
     <article><span class="feature-icon">✦</span><div><strong>اجمعي الضوء</strong><small>كل نجمة ترفع نتيجتك</small></div></article>
     <article><span class="feature-icon danger">◇</span><div><strong>تفادي الشهب</strong><small>ثلاث فرص فقط لكل رحلة</small></div></article>
     <article><span class="feature-icon violet">⌁</span><div><strong>قوى المدار</strong><small>درع يحميك ومغناطيس يجذب النجوم</small></div></article>
   </section>
-  <footer><span>ORBIT / BUILD 2.0 · PULSE</span><span>صُممت لتُلعَب، لا لتُشاهَد فقط.</span></footer>
+  <footer><span>ORBIT / BUILD 2.1 · COSMIC ATLAS</span><span>صُممت لتُلعَب، لا لتُشاهَد فقط.</span></footer>
 </main>
 <script src="script.js"></script>
 </body>
