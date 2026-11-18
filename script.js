@@ -356,7 +356,13 @@ function update(dt){
  let nearest=Infinity;
  for(const hole of blackHoles)nearest=Math.min(nearest,Math.hypot(hole.x-player.x,hole.y-player.y));
  timeDilation=nearest<180?.34+.66*(nearest/180):1;
- if(musicOn&&musicNodes.length>1&&Math.abs(timeDilation-lastMusicDilation)>.04){try{musicNodes[1].frequency.setTargetAtTime(650+850*timeDilation,audio.currentTime,.25);lastMusicDilation=timeDilation;}catch(_){}}
+ if(musicOn&&musicNodes.length>1&&Math.abs(timeDilation-lastMusicDilation)>.04){
+  try{
+   musicNodes[1].frequency.setTargetAtTime(650+850*timeDilation,audio.currentTime,.25);
+   musicNodes[0].gain.setTargetAtTime(.72*(.35+.65*timeDilation),audio.currentTime,.4);
+   lastMusicDilation=timeDilation;
+  }catch(_){}
+ }
  const step=dt*timeDilation;
  elapsed+=step;const nextLevel=1+Math.floor(elapsed/18);if(nextLevel!==level){level=nextLevel;updateHUD();}
  const nextStage=Math.floor(elapsed/35)%STAGES.length;
@@ -382,7 +388,7 @@ function update(dt){
    for(const s of stars){const dx=player.x-s.x,dy=player.y-s.y,d=Math.hypot(dx,dy);if(d<175&&d>1){const pull=(1-d/175)*420;s.x+=dx/d*pull*step;s.y+=dy/d*pull*step;}}
  }
  for(let i=blackHoles.length-1;i>=0;i--){
-   const b=blackHoles[i];b.life-=dt;b.spin+=step*.7;
+   const b=blackHoles[i];b.life-=step;b.spin+=step*.7;
    const dx=b.x-player.x,dy=b.y-player.y,d=Math.hypot(dx,dy);
    if(d<180&&d>1){
      const pull=(1-d/180)*118;
@@ -449,10 +455,23 @@ function drawRock(r){
  ctx.fillStyle="#27304c88";ctx.beginPath();ctx.arc(-r.r*.2,-r.r*.12,r.r*.2,0,Math.PI*2);ctx.fill();ctx.restore();
 }
 function drawBlackHole(b,t){
+ const distance=Math.hypot(player.x-b.x,player.y-b.y);
+ const lens=clamp(1-distance/230,0,1);
  ctx.save();ctx.translate(b.x,b.y);ctx.rotate(b.spin);
  const glow=ctx.createRadialGradient(0,0,b.r*.45,0,0,b.r*2.5);
  glow.addColorStop(0,"#08061200");glow.addColorStop(.48,"#9f78ff22");glow.addColorStop(1,"#9f78ff00");
  ctx.fillStyle=glow;ctx.beginPath();ctx.arc(0,0,b.r*2.5,0,Math.PI*2);ctx.fill();
+
+ // Gravitational lensing: two faint light arcs bend around the dark center.
+ ctx.save();
+ ctx.globalAlpha=.12+lens*.42;
+ const lensGlow=ctx.createLinearGradient(-b.r*2.5,0,b.r*2.5,0);
+ lensGlow.addColorStop(0,"#79dfe8");lensGlow.addColorStop(.48,"#f2e5ff");lensGlow.addColorStop(1,"#bd91ff");
+ ctx.strokeStyle=lensGlow;ctx.lineWidth=1.4+lens*1.2;ctx.shadowBlur=12+lens*16;ctx.shadowColor="#c9aaff";
+ ctx.beginPath();ctx.ellipse(0,0,b.r*2.35,b.r*1.18,-.08,Math.PI*.12,Math.PI*.88);ctx.stroke();
+ ctx.beginPath();ctx.ellipse(0,0,b.r*2.35,b.r*1.18,-.08,Math.PI*1.12,Math.PI*1.88);ctx.stroke();
+ ctx.restore();
+
  ctx.shadowBlur=22;ctx.shadowColor="#bd91ff";ctx.strokeStyle="#d4b7ff";ctx.lineWidth=5;
  ctx.beginPath();ctx.ellipse(0,0,b.r*1.8,b.r*.58,-.12,0,Math.PI*2);ctx.stroke();
  ctx.strokeStyle="#79dfe8";ctx.lineWidth=2;ctx.globalAlpha=.8;
