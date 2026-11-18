@@ -167,54 +167,62 @@ function sound(freq=620,duration=.07,type="sine"){
  if(muted)return;
  try{audio=audio||new(window.AudioContext||window.webkitAudioContext)();if(audio.state==="suspended")audio.resume();const osc=audio.createOscillator(),gain=audio.createGain();osc.type=type;osc.frequency.value=freq;gain.gain.setValueAtTime(.045,audio.currentTime);gain.gain.exponentialRampToValueAtTime(.001,audio.currentTime+duration);osc.connect(gain);gain.connect(audio.destination);osc.start();osc.stop(audio.currentTime+duration);}catch(_){}
 }
-function startAmbient(){
+async function startAmbient(){
  if(musicOn)return;
  try{
    audio=audio||new(window.AudioContext||window.webkitAudioContext)();
-   if(audio.state==="suspended")audio.resume();
+   if(audio.state!=="running")await audio.resume();
+   if(audio.state!=="running")throw new Error("Audio context is not running");
    const master=audio.createGain(),filter=audio.createBiquadFilter();
-   filter.type="lowpass";filter.frequency.value=1120;filter.Q.value=.42;
+   filter.type="lowpass";filter.frequency.value=1500;filter.Q.value=.35;
    master.gain.setValueAtTime(.0001,audio.currentTime);
-   master.gain.exponentialRampToValueAtTime(.055,audio.currentTime+3.5);
+   master.gain.linearRampToValueAtTime(.24,audio.currentTime+1.4);
    filter.connect(master);master.connect(audio.destination);
    const chordProgression=[
-     [73.42,110,130.81,164.81],
-     [58.27,116.54,146.83,174.61],
-     [87.31,130.81,174.61,220],
-     [65.41,130.81,146.83,196]
+     [146.83,220,261.63,293.66],
+     [116.54,174.61,233.08,261.63],
+     [130.81,196,261.63,329.63],
+     [98,164.81,196,246.94]
    ];
-   const padLevels=[.12,.075,.052,.026];
    const pads=chordProgression[0].map((frequency,index)=>{
      const osc=audio.createOscillator(),gain=audio.createGain();
-     osc.type="sine";osc.frequency.value=frequency;gain.gain.value=padLevels[index];
+     osc.type=index===3?"triangle":"sine";osc.frequency.value=frequency;
+     gain.gain.value=[.18,.12,.085,.045][index];
      osc.connect(gain);gain.connect(filter);osc.start();return osc;
    });
    const lfo=audio.createOscillator(),lfoGain=audio.createGain();
-   lfo.type="sine";lfo.frequency.value=.055;lfoGain.gain.value=260;
+   lfo.type="sine";lfo.frequency.value=.07;lfoGain.gain.value=180;
    lfo.connect(lfoGain);lfoGain.connect(filter.frequency);lfo.start();
    musicNodes=[master,filter,...pads,lfo];
-   const melody=[587.33,698.46,880,1046.5,880,698.46,659.25,587.33];
+   const melody=[587.33,698.46,880,783.99,698.46,587.33,523.25,659.25];
    let step=0,chord=0;
+   musicOn=true;
    const playBell=()=>{
-     if(!musicOn)return;
+     if(!musicOn||audio.state!=="running")return;
      const now=audio.currentTime,osc=audio.createOscillator(),gain=audio.createGain();
      osc.type="sine";osc.frequency.setValueAtTime(melody[step%melody.length],now);
      gain.gain.setValueAtTime(.0001,now);
-     gain.gain.exponentialRampToValueAtTime(.032,now+.22);
-     gain.gain.exponentialRampToValueAtTime(.0001,now+3.1);
-     osc.connect(gain);gain.connect(filter);osc.start(now);osc.stop(now+3.2);
+     gain.gain.linearRampToValueAtTime(.16,now+.12);
+     gain.gain.exponentialRampToValueAtTime(.0001,now+1.8);
+     osc.connect(gain);gain.connect(filter);osc.start(now);osc.stop(now+1.9);
      step++;
      if(step%4===0){
        chord=(chord+1)%chordProgression.length;
-       pads.forEach((pad,index)=>pad.frequency.setTargetAtTime(chordProgression[chord][index],audio.currentTime,2.2));
+       pads.forEach((pad,index)=>pad.frequency.setTargetAtTime(chordProgression[chord][index],audio.currentTime,1.4));
      }
    };
-   musicOn=true;playBell();musicTimer=setInterval(playBell,2800);
-   $("musicButton").textContent="♫";$("musicButton").setAttribute("aria-pressed","true");
+   playBell();musicTimer=setInterval(playBell,900);
+   $("musicButton").textContent="♫";
+   $("musicButton").setAttribute("aria-pressed","true");
    $("musicButton").setAttribute("aria-label","إيقاف موسيقى الفضاء");
- }catch(_){
-   musicOn=false;if(musicTimer){clearInterval(musicTimer);musicTimer=null;}
+ }catch(error){
+   musicOn=false;
+   if(musicTimer){clearInterval(musicTimer);musicTimer=null;}
+   musicNodes=[];
+   $("musicButton").textContent="♪";
    $("musicButton").setAttribute("aria-pressed","false");
+   $("musicButton").setAttribute("aria-label","تعذر تشغيل الموسيقى، اضغطي للمحاولة مجددًا");
+   console.warn("Orbit ambient audio:",error);
  }
 }
 function stopAmbient(){
