@@ -260,9 +260,8 @@ footer{display:flex;justify-content:space-between;gap:8px;color:var(--muted);fon
 
 
 /* v1.3 — local time changes the atmosphere */
-.clock-chip{position:absolute;z-index:6;top:42px;left:11px;padding:4px 9px;border:1px solid #fff9;border-radius:99px;background:#ffffffa8;color:#66808d;font-size:9px;font-weight:900;direction:rtl;backdrop-filter:blur(8px)}
+.clock-chip{position:absolute;z-index:6;top:76px;left:11px;padding:4px 9px;border:1px solid #fff9;border-radius:99px;background:#ffffffa8;color:#66808d;font-size:9px;font-weight:900;direction:rtl;backdrop-filter:blur(8px)}
 .room-time-dawn{--wall:#f0d9d5;--floor:#e9cbbd;--sun-color:#ffd3a0}
-.room-time-day{--wall:#d7eae0;--floor:#ead8c5}
 .room-time-evening{--wall:#d9c9df;--floor:#cbb6ad;--sun-color:#f4b58f}
 .room-time-night{--wall:#7886a8;--floor:#655f83;--rug-color:#8f80b488;--sun-color:#dce5ff;background:linear-gradient(var(--wall) 0 68%,var(--floor) 68% 100%)}
 .room-time-night .sun{opacity:.18;box-shadow:0 0 0 12px #e2e8ff18,0 0 28px #dce5ff35}
@@ -285,4 +284,4 @@ footer{display:flex;justify-content:space-between;gap:8px;color:var(--muted);fon
 .plant:active{transform:scale(1.12) rotate(5deg);transform-origin:bottom left}
 .room-time-night .plant b{background:#c18e9c}
 .room-time-night .plant span{background:#6f9c87}
-@media(max-width:390px){.clock-chip{top:68px;left:8px;font-size:8px}}
+@media(max-width:390px){.clock-chip{top:70px;left:8px;font-size:8px}}
