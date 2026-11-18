@@ -5,20 +5,45 @@ const speech = document.getElementById("speech");
 const coins = document.getElementById("coins");
 const room = document.getElementById("room");
 const roomName = document.getElementById("roomName");
+const roomIllustration = document.getElementById("roomIllustration");
+const roomAction = document.getElementById("roomAction");
+const petName = document.getElementById("petName");
 
-const rooms = [
-  { className: "room-sky", name: "غرفة الغيوم", message: "يبدو الجو لطيفًا هنا ☁" },
-  { className: "room-garden", name: "غرفة الحديقة", message: "أحب النباتات والهواء المنعش!" },
-  { className: "room-night", name: "غرفة النجوم", message: "ليلة هادئة تحت النجوم ✦" },
-  { className: "room-candy", name: "غرفة الحلوى", message: "كل شيء هنا بلون الحلوى!" }
-];
+const rooms = {
+  kitchen: {
+    name: "المطبخ", icon: "🍳", className: "room-kitchen",
+    action: "feed", button: "قدّمي لها الطعام 🍎",
+    welcome: "مياو! جعت؟ المطبخ مكاني المفضل.",
+    done: "مممم… لذيذ! شكرًا على الطعام ♡"
+  },
+  playroom: {
+    name: "غرفة اللعب", icon: "🧸", className: "room-playroom",
+    action: "play", button: "العبي معها 🧶",
+    welcome: "أحضرتِ الخيط؟ هيا نلعب!",
+    done: "يا لها من لعبة ممتعة! مرة ثانية!"
+  },
+  bedroom: {
+    name: "غرفة النوم", icon: "🛏️", className: "room-bedroom",
+    action: "sleep", button: "دعِيها تنام ☾",
+    welcome: "بدأ النعاس… أريد سريري.",
+    done: "تصبحين على خير… ززز"
+  },
+  lounge: {
+    name: "غرفة الجلوس", icon: "🛋️", className: "room-lounge",
+    action: "pet", button: "داعبي لوزة ♡",
+    welcome: "تعالي اجلسي معي قليلًا.",
+    done: "خرخرةةة… أحب المداعبة ♡"
+  }
+};
+
 const skins = [
   { className: "skin-blue", name: "لوزة الزرقاء" },
   { className: "skin-cream", name: "لوزة الكريمية" },
   { className: "skin-orange", name: "لوزة المشمش" },
   { className: "skin-lilac", name: "لوزة البنفسجية" }
 ];
-let roomIndex = 0;
+
+let currentRoom = "kitchen";
 let skinIndex = 0;
 
 function updateBars() {
@@ -33,7 +58,7 @@ function talk(message) {
   speech.textContent = message;
   speech.classList.remove("hide");
   clearTimeout(speechTimer);
-  speechTimer = setTimeout(() => speech.classList.add("hide"), 2200);
+  speechTimer = setTimeout(() => speech.classList.add("hide"), 2400);
 }
 
 function animatePet(className) {
@@ -42,30 +67,43 @@ function animatePet(className) {
   if (className) pet.classList.add(className);
 }
 
-function changeRoom() {
-  roomIndex = (roomIndex + 1) % rooms.length;
-  room.classList.remove(...rooms.map(item => item.className));
-  room.classList.add(rooms[roomIndex].className);
-  roomName.textContent = rooms[roomIndex].name;
-  talk(rooms[roomIndex].message);
+function goToRoom(roomId) {
+  const nextRoom = rooms[roomId];
+  if (!nextRoom) return;
+
+  currentRoom = roomId;
+  room.classList.remove(...Object.values(rooms).map(item => item.className));
+  room.classList.add(nextRoom.className);
+  roomName.textContent = nextRoom.name;
+  roomIllustration.textContent = nextRoom.icon;
+  roomAction.textContent = nextRoom.button;
+  animatePet("");
+  talk(nextRoom.welcome);
+
+  document.querySelectorAll("[data-room]").forEach(button => {
+    const selected = button.dataset.room === roomId;
+    button.classList.toggle("active", selected);
+    button.setAttribute("aria-pressed", String(selected));
+  });
 }
 
 function changeLook() {
   skinIndex = (skinIndex + 1) % skins.length;
   pet.classList.remove(...skins.map(item => item.className));
   pet.classList.add(skins[skinIndex].className);
-  document.getElementById("petName").textContent = skins[skinIndex].name;
+  petName.textContent = skins[skinIndex].name;
   talk("كيف صار شكلي؟ ✿");
 }
 
-function doAction(action) {
+function performRoomAction() {
+  const action = rooms[currentRoom].action;
+
   if (action === "feed") {
     if (state.food >= 96) return talk("أنا شبعانة! شكرًا ♡");
     state.food = Math.min(100, state.food + 24);
     state.happy = Math.min(100, state.happy + 4);
     state.coins += 2;
-    animatePet("");
-    talk("مممم… لذيذ! 🍎");
+    animatePet("playing");
   } else if (action === "play") {
     if (state.energy < 18) return talk("تعبانة شوي… خليني أرتاح ☾");
     state.happy = Math.min(100, state.happy + 19);
@@ -73,25 +111,27 @@ function doAction(action) {
     state.food = Math.max(0, state.food - 7);
     state.coins += 3;
     animatePet("playing");
-    talk("امسكي الخيط! 🧶");
   } else if (action === "sleep") {
+    if (state.energy >= 96) return talk("أنا مرتاحة ومليانة طاقة!");
     state.energy = Math.min(100, state.energy + 27);
     animatePet("sleeping");
-    talk("تصبحين على خير… zZ");
   } else if (action === "pet") {
     state.happy = Math.min(100, state.happy + 12);
     state.coins += 1;
-    animatePet("");
-    talk("خرخرةةة… أحب المداعبة ♡");
+    animatePet("playing");
   }
+
   updateBars();
+  talk(rooms[currentRoom].done);
 }
 
-document.querySelectorAll("[data-action]").forEach(button => {
-  button.addEventListener("click", () => doAction(button.dataset.action));
+document.querySelectorAll("[data-room]").forEach(button => {
+  button.addEventListener("click", () => goToRoom(button.dataset.room));
 });
-document.getElementById("roomButton").addEventListener("click", changeRoom);
+
+document.getElementById("homeButton").addEventListener("click", () => goToRoom("lounge"));
 document.getElementById("lookButton").addEventListener("click", changeLook);
+roomAction.addEventListener("click", performRoomAction);
 
 pet.addEventListener("click", () => {
   state.happy = Math.min(100, state.happy + 5);
@@ -107,4 +147,5 @@ setInterval(() => {
   updateBars();
 }, 15000);
 
+goToRoom("kitchen");
 updateBars();
