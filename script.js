@@ -2,8 +2,8 @@ const SAVE_KEY = "potatoPetSave_v2";
 const today = () => new Date().toLocaleDateString("en-CA");
 
 const freshState = () => ({
-  food: 76, happy: 72, energy: 82, bond: 0, coins: 20, xp: 0, level: 1,
-  room: "lounge", skin: "skin-blue", accessory: "",
+  food: 76, happy: 72, energy: 82, bond: 0, attention: 70, coins: 20, xp: 0, level: 1,
+  room: "lounge", skin: "skin-blue", accessory: "", sleeping: false,
   inventory: {}, quests: { feed: 0, play: 0, pet: 0 }, questPaid: [],
   rewardDate: "", lastTick: Date.now()
 });
@@ -14,6 +14,8 @@ try {
   if (saved && typeof saved === "object") {
     state = { ...freshState(), ...saved };
     state.inventory = saved.inventory && typeof saved.inventory === "object" ? saved.inventory : {};
+    state.attention = Number.isFinite(Number(saved.attention)) ? clamp(saved.attention) : 70;
+    state.sleeping = Boolean(saved.sleeping);
     state.quests = saved.quests && saved.questDate === today() ? saved.quests : { feed: 0, play: 0, pet: 0 };
     state.questPaid = saved.questDate === today() && Array.isArray(saved.questPaid) ? saved.questPaid : [];
     if (saved.questDate !== today()) state.questDate = today();
@@ -56,6 +58,28 @@ let butterflyTimer = null;
 let butterflyActive = false;
 let butterflySeconds = 12;
 let butterflyScore = 0;
+let lastInteractionAt = Date.now();
+let lastIdleAt = 0;
+
+function markInteraction() {
+  lastInteractionAt = Date.now();
+}
+
+function idleThought() {
+  const now = Date.now();
+  if (!modalBackdrop.hidden || state.sleeping || now - lastInteractionAt < 45000 ||
+      now - lastIdleAt < 90000 || !speech.classList.contains("hide")) return;
+  lastIdleAt = now;
+  let thoughts;
+  if (state.food < 28) thoughts = ["بطني تصدر أصواتًا… هل اقترب موعد الطعام؟", "أفكر في وجبة سمك صغيرة."];
+  else if (state.energy < 22) thoughts = ["بدأت أتثاءب… أحتاج إلى قيلولة.", "أشعر أنني أحتاج إلى بعض الراحة."];
+  else if (state.attention < 28) thoughts = ["اشتقت إلى اللعب معك قليلًا.", "هل ما زلتِ هنا؟ أريد بعض الونس."];
+  else if (state.room === "garden") thoughts = ["أراقب الفراشة، أظنها تراقبني أيضًا.", "هذه الزهرة تستحق شمّة أخرى."];
+  else if (state.room === "playroom") thoughts = ["أين اختبأت كرة الخيط؟", "لدي طاقة لحركة مرحة صغيرة!"];
+  else if (state.room === "kitchen") thoughts = ["رائحة المطبخ تجعلني فضولية.", "هل هذه سمكة؟ أرجوك قولي إنها سمكة."];
+  else thoughts = ["أتساءل ماذا يوجد خلف النافذة.", "الجلوس بجانبك لطيف.", "مياو… لدي أفكار كثيرة اليوم."];
+  talk(thoughts[Math.floor(Math.random() * thoughts.length)]);
+}
 
 function saveGame() {
   state.lastTick = Date.now();
@@ -112,6 +136,9 @@ function updateUI() {
   $("foodValue").textContent = state.food + "%";
   $("happyValue").textContent = state.happy + "%";
   $("energyValue").textContent = state.energy + "%";
+  state.attention = clamp(state.attention ?? 70);
+  $("attentionBar").style.width = state.attention + "%";
+  $("attentionValue").textContent = state.attention + "%";
   $("coins").textContent = state.coins;
   $("level").textContent = state.level;
   $("xpText").textContent = state.xp;
@@ -121,8 +148,11 @@ function updateUI() {
   state.bond = clamp(state.bond || 0);
   $("bondValue").textContent = state.bond + "%";
   $("bondBar").style.width = state.bond + "%";
-  const mood = state.food < 25 ? "جائعة وتحتاج وجبة" : state.energy < 20 ? "متعبة وتحتاج راحة" : state.happy < 25 ? "تحتاج بعض المرح" : state.bond >= 75 ? "مرتبطة بك جدًا ♡" : state.happy >= 65 ? "سعيدة ومرحة ♡" : "هادئة";
+  const mood = state.food < 25 ? "جائعة وتحتاج وجبة" : state.energy < 20 ? "متعبة وتحتاج راحة" : state.attention < 25 ? "تشتاق إلى الونس" : state.happy < 25 ? "تحتاج بعض المرح" : state.bond >= 75 ? "مرتبطة بك جدًا ♡" : state.happy >= 65 ? "سعيدة ومرحة ♡" : "هادئة";
   $("moodChip").textContent = "مزاج لوزة: " + mood;
+  $("roomAction").textContent = state.room === "bedroom" && state.sleeping ? "إيقاظ لوزة ☀️" : rooms[state.room].button;
+  pet.classList.toggle("sleeping", state.room === "bedroom" && state.sleeping);
+  room.classList.toggle("sleep-mode", state.room === "bedroom" && state.sleeping);
   const bagCount = Object.values(state.inventory).reduce((sum, count) => sum + count, 0);
   $("bagCount").textContent = bagCount;
   $("rewardButton").classList.toggle("claimed", state.rewardDate === today());
@@ -169,6 +199,7 @@ function animatePet(kind) {
 function goToRoom(id) {
   const next = rooms[id];
   if (!next) return;
+  if (state.room === "bedroom" && id !== "bedroom") state.sleeping = false;
   state.room = id;
   room.classList.remove("room-lounge", "room-kitchen", "room-playroom", "room-bedroom", "room-garden");
   room.classList.add("room-" + id);
@@ -182,8 +213,11 @@ function goToRoom(id) {
     button.classList.toggle("active", active);
     button.setAttribute("aria-pressed", String(active));
   });
-  animatePet("");
-  talk(next.welcome);
+  animatePet(state.sleeping && id === "bedroom" ? "sleeping" : "");
+  updateUI();
+  if (state.sleeping && id === "bedroom") talk("لوزة نائمة الآن… ششش ☾");
+  else talk(next.welcome);
+  markInteraction();
   saveGame();
 }
 
@@ -209,6 +243,7 @@ function performRoomAction() {
     if (state.food >= 96) return talk("أنا شبعانة جدًا، شكرًا ♡");
     state.food = clamp(state.food + 24);
     state.happy = clamp(state.happy + 4);
+    state.attention = clamp(state.attention + 2);
     addCoins(2); addXP(5); addBond(2); completeQuest("feed");
     animatePet("playing");
     talk("مممم… وجبة لذيذة! شكرًا ♡");
@@ -217,30 +252,41 @@ function performRoomAction() {
     state.happy = clamp(state.happy + 19);
     state.energy = clamp(state.energy - 16);
     state.food = clamp(state.food - 7);
+    state.attention = clamp(state.attention + 8);
     addCoins(3); addXP(8); addBond(3); completeQuest("play");
     animatePet("playing");
     talk("يا لها من لعبة ممتعة! مرة ثانية!");
   } else if (action === "sleep") {
-    if (state.energy >= 96) return talk("أنا مرتاحة ومليانة طاقة!");
-    state.energy = clamp(state.energy + 28);
-    state.happy = clamp(state.happy + 3);
-    addXP(4); addBond(1);
-    animatePet("sleeping");
-    talk("تصبحين على خير… ززز");
+    if (state.sleeping) {
+      state.sleeping = false;
+      animatePet("");
+      talk("صحيت! كان نومًا مريحًا ☀️");
+    } else {
+      if (state.energy >= 96) return talk("أنا مرتاحة ومليانة طاقة!");
+      state.sleeping = true;
+      state.energy = clamp(state.energy + 12);
+      state.happy = clamp(state.happy + 3);
+      addXP(4); addBond(1);
+      animatePet("sleeping");
+      talk("تصبحين على خير… ززز");
+    }
   } else if (action === "garden") {
     if (state.energy < 12) return talk("أحتاج أن أرتاح قبل النزهة ☾");
     state.happy = clamp(state.happy + 13);
     state.energy = clamp(state.energy - 8);
     state.food = clamp(state.food - 4);
+    state.attention = clamp(state.attention + 5);
     addCoins(2); addXP(5); addBond(3);
     animatePet("playing");
     talk("الفراشات والزهور! أحب حديقتنا 🌷");
   } else {
     state.happy = clamp(state.happy + 12);
+    state.attention = clamp(state.attention + 6);
     addCoins(1); addXP(3); addBond(4); completeQuest("pet");
     animatePet("playing");
     talk("خرخرةةة… أحب المداعبة ♡");
   }
+  markInteraction();
   updateUI();
   saveGame();
 }
@@ -251,11 +297,13 @@ function petTap() {
     return;
   }
   state.happy = clamp(state.happy + 5);
+  state.attention = clamp(state.attention + 7);
   addXP(1); addBond(1);
   completeQuest("pet");
   animatePet("playing");
   updateUI();
   talk(["مياااو! انتبهي لي ♡", "خررر… هذا لطيف!", "أحب لما تلعبين معي!", "نونو! مرة ثانية!"][Math.floor(Math.random() * 4)]);
+  markInteraction();
   saveGame();
 }
 
@@ -313,12 +361,14 @@ function useItem(id) {
   if (item.type === "food") {
     if (state.food >= 98) return showToast("لوزة شبعانة، احتفظي بها لوقت لاحق.");
     state.food = clamp(state.food + item.amount);
+    state.attention = clamp(state.attention + 2);
     addBond(1);
     talk("يا سلام! أحب هذا الطعام 🐟");
   } else if (item.type === "toy") {
     if (state.energy < 12) return showToast("لوزة متعبة وتحتاج إلى النوم.");
     state.happy = clamp(state.happy + item.amount);
     state.energy = clamp(state.energy - 7);
+    state.attention = clamp(state.attention + 6);
     addBond(2);
     talk("هذه لعبتي الجديدة! لنلعب!");
     animatePet("playing");
@@ -391,7 +441,9 @@ function applyOfflineTime() {
   const elapsed = Math.max(0, Math.min(4 * 60 * 60, Date.now() - (state.lastTick || Date.now())));
   const minutes = elapsed / 60000;
   state.food = clamp(state.food - minutes * 0.35);
-  state.energy = clamp(state.energy - minutes * 0.2);
+  state.attention = clamp(state.attention - minutes * 0.12);
+  state.energy = clamp(state.energy + (state.sleeping ? minutes * 1.8 : -minutes * 0.2));
+  if (state.energy >= 100) state.sleeping = false;
   if (state.food < 20) state.happy = clamp(state.happy - minutes * 0.12);
 }
 
@@ -405,7 +457,8 @@ $("butterflyButton").addEventListener("click", openButterflyGame);
 $("settingsButton").addEventListener("click", openSettings);
 $("closeModal").addEventListener("click", closeModal);
 modalBackdrop.addEventListener("click", event => { if (event.target === modalBackdrop) closeModal(); });
-document.addEventListener("keydown", event => { if (event.key === "Escape" && !modalBackdrop.hidden) closeModal(); });
+document.addEventListener("keydown", event => { if (event.key !== "Escape") markInteraction(); if (event.key === "Escape" && !modalBackdrop.hidden) closeModal(); });
+document.addEventListener("pointerdown", markInteraction, { passive: true });
 modalContent.addEventListener("click", event => {
   const button = event.target.closest("button");
   if (!button) return;
@@ -429,10 +482,21 @@ updateUI();
 goToRoom(rooms[state.room] ? state.room : "lounge");
 setInterval(() => {
   state.food = clamp(state.food - 0.35);
-  state.energy = clamp(state.energy - (state.room === "bedroom" ? -0.25 : 0.2));
+  state.attention = clamp(state.attention - 0.12);
+  if (state.room === "bedroom" && state.sleeping) {
+    state.energy = clamp(state.energy + 1.8);
+    if (state.energy >= 100) {
+      state.sleeping = false;
+      animatePet("");
+      talk("استيقظت لوزة بعد قيلولة مريحة ☀️");
+    }
+  } else {
+    state.energy = clamp(state.energy - 0.2);
+  }
   if (state.food < 20) state.happy = clamp(state.happy - 0.2);
   updateUI();
   saveGame();
 }, 60000);
+setInterval(idleThought, 15000);
 window.addEventListener("beforeunload", saveGame);
 saveGame();
