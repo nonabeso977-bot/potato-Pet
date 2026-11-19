@@ -250,3 +250,25 @@ footer{font-size:8px;margin-top:14px}
 .achievement-state{display:block;margin-top:5px;color:#7788aa;font-size:8px}
 .achievement-card.unlocked .achievement-state{color:var(--gold)}
 @media(max-width:650px){.achievement-grid{grid-template-columns:1fr}}
+
+
+/* ORBIT 3.8 · workshop, journey log and rare cosmic events */
+.upgrade-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:10px 0 18px}
+.upgrade-card{padding:12px;border:1px solid #76e4e42b;border-radius:13px;background:linear-gradient(145deg,#172541bb,#0b1428bb);min-width:0}
+.upgrade-top{display:flex;align-items:center;justify-content:space-between;gap:5px;color:var(--cyan);font-size:9px}
+.upgrade-top i{font-style:normal;font-size:20px}
+.upgrade-card>strong{display:block;margin-top:6px;font-size:11px}
+.upgrade-card p{min-height:32px;margin:4px 0 9px;color:#8f9fbe;font-size:9px;line-height:1.6}
+.upgrade-track{height:5px;overflow:hidden;border-radius:8px;background:#ffffff12;margin-bottom:9px}
+.upgrade-track i{display:block;height:100%;border-radius:8px;background:linear-gradient(90deg,#76e4e4,#a99bff)}
+.upgrade-card button{width:100%;padding:7px 5px;border:1px solid #76e4e455;border-radius:9px;background:#76e4e410;color:var(--cyan);font:10px "Changa",sans-serif;cursor:pointer}
+.upgrade-card button:disabled{border-color:#ffffff12;color:#71809e;background:#ffffff06;cursor:default}
+.journey-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:10px 0}
+.journey-stat{padding:10px;border:1px solid #ffffff14;border-radius:11px;background:#ffffff07;min-width:0}
+.journey-stat small{display:block;color:#8f9fbe;font-size:9px}
+.journey-stat strong{display:block;margin-top:3px;color:var(--gold);font:600 14px "Space Grotesk","Changa",sans-serif;overflow-wrap:anywhere}
+.secret-list{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 18px}
+.secret-chip{padding:7px 10px;border:1px dashed #ffffff24;border-radius:20px;color:#7888a7;font-size:9px;background:#ffffff05}
+.secret-chip.found{border-style:solid;border-color:#a99bff66;color:#d2c7ff;background:#a99bff12}
+.event-banner{position:absolute;z-index:2;top:12px;left:50%;transform:translateX(-50%);width:max-content;max-width:calc(100% - 24px);padding:8px 13px;border:1px solid #a99bff77;border-radius:20px;background:#11152dcc;box-shadow:0 5px 24px #0006;color:#e6ddff;font-size:10px;text-align:center;backdrop-filter:blur(8px);pointer-events:none}
+@media(max-width:650px){.upgrade-grid{grid-template-columns:1fr}.upgrade-card{padding:10px}.upgrade-card p{min-height:0}.journey-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.event-banner{top:8px;font-size:9px;line-height:1.5}}
