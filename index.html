@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Changa:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=4.5.0">
+<link rel="stylesheet" href="style.css?v=4.6.0">
 </head>
 <body>
 <main class="shell">
@@ -77,6 +77,24 @@
         <button class="text-button" id="exitButton" type="button">العودة للقائمة</button>
       </div>
       <div class="arena-hint" id="arenaHint">اسحبي المركبة للتحرك</div>
+      <div class="finale-screen" id="finaleScreen" hidden aria-live="polite" role="status">
+        <div class="finale-earth-scene" id="finaleEarth">
+          <span class="finale-kicker">ORBIT CONTROL · SIGNAL RESTORED</span>
+          <div class="finale-earth-globe" aria-hidden="true"></div>
+          <p>بعد كل هذه المسافة... ها هي الأرض.</p>
+        </div>
+        <div class="finale-credits" id="finaleCredits" hidden>
+          <div class="finale-title">POTATO</div>
+          <p class="finale-subtitle">A JOURNEY BEYOND THE KNOWN</p>
+          <div class="finale-notes">
+            <span>DEVELOPMENT NOTES</span>
+            <p>The journey was never just about distance.</p>
+            <small>ORBIT ARCADE · FINAL UPDATE 4.6.0 · 2026</small>
+          </div>
+          <div class="finale-signal" id="finaleSignal" hidden>UNKNOWN TRANSMISSION · 001<br><small>NO SOURCE IDENTIFIED</small></div>
+          <button class="primary-button small" id="finaleReturn" type="button" hidden>العودة إلى مدار</button>
+        </div>
+      </div>
       <div class="discovery-toast" id="discoveryToast" hidden aria-live="polite">
         <span class="discovery-kicker">COSMIC ATLAS · اكتشاف جديد</span>
         <strong id="discoveryTitle">رسالة من الفضاء</strong>
@@ -150,7 +168,7 @@
   </section>
   <footer><span>ORBIT / BUILD 4.5 · PILOT BACKUP</span><span>صُممت لتُلعَب، لا لتُشاهَد فقط.</span></footer>
 </main>
-<script src="script.js?v=4.5.0"></script>
-<script src="./pwa.js?v=4.5.0"></script>
+<script src="script.js?v=4.6.0"></script>
+<script src="./pwa.js?v=4.6.0"></script>
 </body>
 </html>
