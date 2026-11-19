@@ -308,3 +308,16 @@ footer{font-size:8px;margin-top:14px}
 .top-meta{gap:7px}
 @media(max-width:650px){.top-meta{gap:5px}.pwa-action{min-height:32px;padding:0 7px;font-size:9px}.top-meta .status-live{display:none}}
 @media(display-mode:standalone){body{overscroll-behavior-y:none} .shell{padding-top:max(18px,env(safe-area-inset-top));padding-bottom:max(18px,env(safe-area-inset-bottom))}}
+
+
+/* ORBIT 4.3 · pilot data backup */
+.backup-panel{display:grid;gap:10px;padding:13px;margin:14px 0 18px;border:1px solid #74caff38;border-radius:14px;background:linear-gradient(130deg,#10223b,#11172e)}
+.backup-panel h3{margin:0;color:#d9edff;font-size:12px}
+.backup-panel p{margin:4px 0 0;color:#9eacc8;font-size:10px;line-height:1.7}
+.backup-actions{display:flex;flex-wrap:wrap;gap:8px}
+.backup-actions button{flex:1;min-width:145px;padding:10px;border:1px solid #74caff66;border-radius:10px;background:#74caff12;color:#c9efff;font:600 10px "Changa",sans-serif;cursor:pointer}
+.backup-actions button+button{border-color:#a99bff66;background:#a99bff12;color:#e0d9ff}
+.backup-actions button:active{transform:scale(.98)}
+#backupStatus{display:block;min-height:18px;color:#91a9c7;font-size:9px;line-height:1.7}
+#backupStatus.error{color:#ffb1bf}
+@media(max-width:420px){.backup-actions{flex-direction:column}.backup-actions button{width:100%}}
