@@ -296,3 +296,15 @@ footer{font-size:8px;margin-top:14px}
 
 /* 4.1 · map discoveries */
 .map-discover-button{display:block;width:100%;margin-top:10px;padding:9px 12px;border:1px solid #74caff66;border-radius:10px;background:linear-gradient(100deg,#173a58,#29264f);color:#b9edff;font:600 10px Changa,sans-serif;cursor:pointer}.map-discover-button:active{transform:scale(.99)}.map-fact-saved{display:block;margin-top:7px;color:#76e4e4!important}
+
+
+/* ORBIT 4.2 · installable app shell */
+.pwa-action{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:34px;padding:0 10px;border:1px solid #76e4e455;border-radius:10px;background:#76e4e40d;color:#c8f7f2;font:600 10px "Changa",sans-serif;white-space:nowrap;cursor:pointer}
+.pwa-action span{font:700 15px "Space Grotesk",sans-serif;color:var(--cyan)}
+.share-action{border-color:#a99bff55;background:#a99bff0d;color:#ded7ff}
+.share-action span{color:var(--violet)}
+.pwa-action:active{transform:scale(.97)}
+.pwa-action[hidden]{display:none}
+.top-meta{gap:7px}
+@media(max-width:650px){.top-meta{gap:5px}.pwa-action{min-height:32px;padding:0 7px;font-size:9px}.top-meta .status-live{display:none}}
+@media(display-mode:standalone){body{overscroll-behavior-y:none} .shell{padding-top:max(18px,env(safe-area-inset-top));padding-bottom:max(18px,env(safe-area-inset-bottom))}}
