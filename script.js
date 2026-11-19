@@ -69,7 +69,7 @@ const FACTS=[
  {tag:"TITAN",title:"بحيرات ليست من الماء",body:"قمر زحل تيتان لديه بحيرات وأنهار من الميثان والإيثان السائلين، لأن سطحه شديد البرودة."},
  {tag:"TRAPPIST-1",title:"سبعة عوالم متقاربة",body:"حول النجم TRAPPIST-1 سبعة كواكب بحجم قريب من الأرض، وبعض مداراتها تسمح بوجود ماء سائل إذا توافرت الظروف المناسبة."},
  {tag:"NEBULA",title:"مهد النجوم",body:"السدم سحب من الغاز والغبار. في بعض أجزائها تنهار المادة بفعل الجاذبية، فتبدأ نجوم جديدة بالتكوّن."},
- {tag:"EUROPA",title:"محيط تحت الجليد",body:"قمر أوروبا حول المشتري مغطى بالجليد، وتشير القياسات إلى وجود محيط مالح تحته. لذلك يهتم العلماء بدراسة هذا العالم."},
+ {tag:"ENCELADUS",title:"نافورات جليدية",body:"قمر إنسيلادوس حول زحل يطلق نفاثات من بخار الماء وقطع الجليد من شقوق قرب قطبه الجنوبي. وقد تساعد هذه المواد العلماء على دراسة محيطه الداخلي."},
  {tag:"LIGHT IN SPACE",title:"الضوء يعبر الفراغ",body:"الصوت يحتاج إلى مادة لينتقل، لذلك لا نسمعه في فراغ الفضاء. أما الضوء فيستطيع السفر عبره بسرعة تقارب 300 ألف كيلومتر في الثانية."}
 ];
 const safeReadAtlas=()=>{try{const v=JSON.parse(localStorage.getItem(ATLAS_SAVE)||"[]");return Array.isArray(v)?[...new Set(v.filter(n=>Number.isInteger(n)&&n>=0&&n<FACTS.length))]:[];}catch(_){return[];}};
@@ -319,7 +319,7 @@ function start(){
    // Seed visible objects so the arena is never empty at launch.
    stars.push({x:width*.5,y:height*.22,r:9,vy:100,spin:0,pulse:0});
    rocks.push(makeRock());firstRockPending=false;
-   state="running";
+   state="running";updateHUD();
    last=performance.now();draw(last);requestAnimationFrame(loop);
  });
 }
