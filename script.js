@@ -331,7 +331,7 @@ function resume(){
  if(state!=="paused")return;state="running";$("arenaMessage").hidden=true;$("pauseButton").textContent="Ⅱ";last=performance.now();requestAnimationFrame(loop);
 }
 function endGame(){
- state="over";if(!runStatsSaved){runStatsSaved=true;progress.stats.runs++;progress.stats.totalScore+=score;progress.stats.longest=Math.max(progress.stats.longest,elapsed);progress.stats.blackHoles+=runBlackHoles;saveProgress();renderJourneyStats();}saveRunRecord();const newRecord=score>best;if(newRecord){best=score;safeSaveBest(best);setBest();}
+ state="over";$("rescueButton").hidden=true;$("resumeButton").hidden=false;if(!runStatsSaved){runStatsSaved=true;progress.stats.runs++;progress.stats.totalScore+=score;progress.stats.longest=Math.max(progress.stats.longest,elapsed);progress.stats.blackHoles+=runBlackHoles;saveProgress();renderJourneyStats();}saveRunRecord();const newRecord=score>best;if(newRecord){best=score;safeSaveBest(best);setBest();}
  $("pauseButton").textContent="↻";showMessage("انتهت الرحلة","نتيجتك "+format(score)+" · "+(newRecord?"رقم قياسي جديد!":"حاولي تجاوز رقمك القياسي"),"رحلة جديدة");
  $("exitButton").hidden=false;
 }
@@ -507,7 +507,7 @@ function hitRock(r){
  if(player.invulnerable>0||boostTime>0)return;
  lives--;player.invulnerable=1.35;combo=1;comboTime=0;shake=9;
  burst(player.x,player.y,"#ff9fcb",20);sound(150,.2,"sawtooth");updateHUD();
- if(lives<=0)endGame();
+ if(lives<=0){if(progress.bank>=80&&!runRescueUsed){state="rescue";$("resumeButton").hidden=true;$("rescueButton").hidden=false;$("exitButton").hidden=false;showMessage("فرصة أخيرة","بقيت لك فرصة واحدة. يمكنك إنقاذ الرحلة مقابل 80 نجمة.","شراء فرصة");}else endGame();}
 }
 function update(dt){
  let nearest=Infinity;
@@ -685,6 +685,8 @@ function drawBlackHole(b,t){
 }
 function drawPlayer(t){
  ctx.save();ctx.translate(player.x,player.y);
+ const trail=TRAILS.find(x=>x.id===progress.selectedTrail)||TRAILS[0];ctx.save();ctx.globalAlpha=.58;ctx.strokeStyle=trail.color;ctx.shadowBlur=13;ctx.shadowColor=trail.color;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-4,10);ctx.lineTo(0,25+Math.sin(t*.02)*4);ctx.lineTo(4,10);ctx.stroke();ctx.restore();
+ if(boostTime>0){ctx.save();ctx.globalAlpha=.7;ctx.strokeStyle="#8ce7ff";ctx.lineWidth=2;ctx.shadowBlur=24;ctx.shadowColor="#74caff";ctx.beginPath();ctx.arc(0,0,player.r+15+Math.sin(t*.025)*3,0,Math.PI*2);ctx.stroke();ctx.restore();}
  if(player.invulnerable>0&&Math.floor(t/90)%2===0)ctx.globalAlpha=.35;
  if(shieldTime>0||magnetTime>0){ctx.save();ctx.globalAlpha=.7;ctx.strokeStyle=shieldTime>0?"#76e4e4":"#a99bff";ctx.lineWidth=2;ctx.shadowBlur=18;ctx.shadowColor=ctx.strokeStyle;ctx.beginPath();ctx.arc(0,0,player.r+10+Math.sin(t*.009)*2,0,Math.PI*2);ctx.stroke();ctx.restore();}
  const skin=SKINS.find(s=>s.id===selectedSkin)||SKINS[0];
@@ -743,6 +745,8 @@ $("closeAtlas").addEventListener("click",closeAtlas);
 $("atlasModal").addEventListener("click",e=>{if(e.target===$("atlasModal"))closeAtlas();});
 window.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("atlasModal").hidden)closeAtlas();if(e.key==="Escape"&&!$("hangarModal").hidden)closeHangar();});
 $("pauseButton").addEventListener("click",()=>state==="running"?pause():state==="over"?start():null);
+$("boostButton").addEventListener("click",activateBoost);
+$("rescueButton").addEventListener("click",()=>{if(state!=="rescue"||runRescueUsed||progress.bank<80)return;progress.bank-=80;runRescueUsed=true;lives=1;player.invulnerable=2.8;state="running";$("arenaMessage").hidden=true;$("rescueButton").hidden=true;$("resumeButton").hidden=false;$("exitButton").hidden=true;updateHUD();last=performance.now();requestAnimationFrame(loop);});
 $("resumeButton").addEventListener("click",()=>{if(state==="paused")resume();else if(state==="over")start();});
 $("exitButton").addEventListener("click",backToMenu);
 $("soundButton").addEventListener("click",()=>{muted=!muted;$("soundButton").textContent=muted?"♪̸":"♫";$("soundButton").setAttribute("aria-label",muted?"تشغيل المؤثرات":"إيقاف المؤثرات");if(!muted)sound();});
