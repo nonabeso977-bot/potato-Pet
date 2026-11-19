@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Changa:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=3.8.0">
+<link rel="stylesheet" href="style.css?v=3.9.0">
 </head>
 <body>
 <main class="shell">
@@ -29,7 +29,7 @@
       <div class="record-line"><span>أفضل نتيجة</span><strong id="menuBest">000000</strong></div>
       <div class="intro-actions">
         <button class="primary-button" id="startButton" type="button"><span>ابدئي الرحلة</span><b>↗</b></button>
-        <button class="atlas-button" id="atlasButton" type="button"><span>دفتر الاكتشافات</span><b id="atlasCount">0 / 16</b></button>
+        <button class="atlas-button" id="atlasButton" type="button"><span>دفتر الاكتشافات</span><b id="atlasCount">0 / 16</b></button><button class="atlas-button map-open" id="mapButton" type="button"><span>خريطة المجرة</span><b>◎</b></button>
         <button class="atlas-button hangar-open" id="hangarButton" type="button"><span>المركبات والسجل</span><b>✦</b></button>
       </div>
       <p class="control-note">اسحبي المركبة بإصبعك · أو استخدمي الأسهم / WASD</p>
@@ -99,6 +99,21 @@
       <div class="pilot-records" id="recordsList"></div>
     </section>
   </div>
+  <div class="atlas-overlay" id="mapModal" hidden>
+    <section class="atlas-dialog map-dialog" role="dialog" aria-modal="true" aria-labelledby="mapHeading">
+      <header class="atlas-header"><div><span class="eyebrow">GALACTIC ROUTE / EXPLORER</span><h2 id="mapHeading">خريطة المجرة</h2></div><button class="atlas-close" id="closeMap" type="button" aria-label="إغلاق الخريطة">×</button></header>
+      <p class="atlas-description">كل رحلة تفتح لك جزءًا جديدًا من الطريق. اختاري أي منطقة لتعرفي ما ينتظرك فيها.</p>
+      <div class="galaxy-map" id="galaxyMap">
+        <div class="map-route"></div>
+        <button class="map-node visited" type="button" data-sector="0"><i>◉</i><strong>مدار الأرض</strong><small>نقطة البداية</small></button>
+        <button class="map-node" type="button" data-sector="1"><i>◈</i><strong>سهول المريخ</strong><small>منطقة حمراء</small></button>
+        <button class="map-node" type="button" data-sector="2"><i>✧</i><strong>حلقات زحل</strong><small>عالم من الجليد</small></button>
+        <button class="map-node" type="button" data-sector="3"><i>✦</i><strong>حافة السديم</strong><small>سحب بعيدة</small></button>
+      </div>
+      <div class="map-detail" id="mapDetail" aria-live="polite"><strong>مدار الأرض</strong><p>هنا تبدأ الرحلة، ومنها تنطلقين لاستكشاف بقية المناطق.</p></div>
+      <div class="map-progress"><span>المناطق التي زرتها</span><strong id="mapProgress">1 / 4</strong></div>
+    </section>
+  </div>
   <div class="atlas-overlay" id="atlasModal" hidden>
     <section class="atlas-dialog" role="dialog" aria-modal="true" aria-labelledby="atlasHeading">
       <header class="atlas-header">
@@ -117,8 +132,8 @@
     <article><span class="feature-icon violet">⌁</span><div><strong>قوى المدار</strong><small>درع يحميك ومغناطيس يجذب النجوم</small></div></article>
     <article><span class="feature-icon blackhole-feature">◉</span><div><strong>أفق الحدث</strong><small>قاومي جاذبية الثقب الأسود</small></div></article>
   </section>
-  <footer><span>ORBIT / BUILD 3.8 · COSMIC EXPLORER</span><span>صُممت لتُلعَب، لا لتُشاهَد فقط.</span></footer>
+  <footer><span>ORBIT / BUILD 3.9 · GALACTIC EXPLORER</span><span>صُممت لتُلعَب، لا لتُشاهَد فقط.</span></footer>
 </main>
-<script src="script.js?v=3.8.0"></script>
+<script src="script.js?v=3.9.0"></script>
 </body>
 </html>
