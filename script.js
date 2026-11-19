@@ -31,7 +31,7 @@ const clampLevel=n=>Number.isInteger(n)?Math.max(0,Math.min(3,n)):0;
 const safeReadProgress=()=>{
  try{
   const v=JSON.parse(localStorage.getItem(PROGRESS_SAVE)||"{}");
-  return {stars:Number.isFinite(v.stars)?Math.max(0,v.stars):0,bank:Number.isFinite(v.bank)?Math.max(0,v.bank):(Number.isFinite(v.stars)?Math.max(0,v.stars):0),ownedSkins:Array.isArray(v.ownedSkins)?[...new Set(v.ownedSkins.filter(id=>SKINS.some(s=>s.id===id)))]:SKINS.filter(s=>!s.cost).map(s=>s.id),sectors:Array.isArray(v.sectors)?[...new Set(v.sectors.filter(n=>Number.isInteger(n)&&n>=0&&n<STAGES.length))]:[],unlocked:Array.isArray(v.unlocked)?[...new Set(v.unlocked.filter(id=>ACHIEVEMENTS.some(a=>a.id===id)))]:[],upgrades:{engine:clampLevel(v.upgrades?.engine),shield:clampLevel(v.upgrades?.shield),magnet:clampLevel(v.upgrades?.magnet)},secrets:Array.isArray(v.secrets)?[...new Set(v.secrets.filter(id=>["aurora","eclipse","supernova","meteor"].includes(id)))]:[],stats:{runs:Math.max(0,Number(v.stats?.runs)||0),totalScore:Math.max(0,Number(v.stats?.totalScore)||0),longest:Math.max(0,Number(v.stats?.longest)||0),blackHoles:Math.max(0,Number(v.stats?.blackHoles)||0),missions:Math.max(0,Number(v.stats?.missions)||0),stars:Math.max(0,Number(v.stats?.stars)||0)}};
+  return {stars:Number.isFinite(v.stars)?Math.max(0,v.stars):0,bank:Number.isFinite(v.bank)?Math.max(0,v.bank):(Number.isFinite(v.stars)?Math.max(0,v.stars):0),ownedSkins:Array.isArray(v.ownedSkins)?[...new Set(v.ownedSkins.filter(id=>SKINS.some(s=>s.id===id)))]:SKINS.filter(s=>!s.cost).map(s=>s.id),sectors:Array.isArray(v.sectors)?[...new Set(v.sectors.filter(n=>Number.isInteger(n)&&n>=0&&n<STAGES.length))]:[],unlocked:Array.isArray(v.unlocked)?[...new Set(v.unlocked.filter(id=>ACHIEVEMENTS.some(a=>a.id===id)))]:[],upgrades:{engine:clampLevel(v.upgrades?.engine),shield:clampLevel(v.upgrades?.shield),magnet:clampLevel(v.upgrades?.magnet)},secrets:Array.isArray(v.secrets)?[...new Set(v.secrets.filter(id=>["aurora","eclipse","supernova","meteor","starfall"].includes(id)))]:[],stats:{runs:Math.max(0,Number(v.stats?.runs)||0),totalScore:Math.max(0,Number(v.stats?.totalScore)||0),longest:Math.max(0,Number(v.stats?.longest)||0),blackHoles:Math.max(0,Number(v.stats?.blackHoles)||0),missions:Math.max(0,Number(v.stats?.missions)||0),stars:Math.max(0,Number(v.stats?.stars)||0)}};
  }catch(_){return{stars:0,bank:0,ownedSkins:SKINS.filter(s=>!s.cost).map(s=>s.id),sectors:[],unlocked:[],upgrades:{engine:0,shield:0,magnet:0},secrets:[],stats:{runs:0,totalScore:0,longest:0,blackHoles:0,missions:0,stars:0}};}
 };
 let progress=safeReadProgress(),survivedMinute=false,activeEvent=null,nextEventAt=32,eventSpawnClock=0,runStatsSaved=false,runBlackHoles=0;
@@ -84,6 +84,33 @@ function renderAtlas(){
  updateAtlasButton();
 }
 function openAtlas(){renderAtlas();$("atlasModal").hidden=false;}
+const MAP_DETAILS=[
+ ["مدار الأرض","نقطة البداية. هنا تبدئين جمع النجوم والتعرّف إلى الطريق."],
+ ["سهول المريخ","عالم أحمر تغطيه سهول واسعة وغبار دقيق. راقبي الصخور المتحركة."],
+ ["حلقات زحل","حلقات زحل تتكوّن أساسًا من قطع جليدية وصخرية تدور حول الكوكب."],
+ ["حافة السديم","سحب ضخمة من الغاز والغبار، وهي مناطق يمكن أن تولد فيها نجوم جديدة."]
+];
+function renderMap(){
+ const visited=progress.sectors;
+ $("mapProgress").textContent=visited.length+" / "+STAGES.length;
+ $("galaxyMap").querySelectorAll("[data-sector]").forEach(button=>{
+  const index=Number(button.dataset.sector),seen=visited.includes(index);
+  button.classList.toggle("visited",seen);
+  button.classList.toggle("current",index===stageIndex&&state==="running");
+  button.querySelector("small").textContent=seen?"تمت زيارتها":"لم تُزر بعد";
+ });
+}
+function openMap(){
+ renderMap();$("mapModal").hidden=false;
+ const index=progress.sectors.includes(0)?0:progress.sectors[0]||0;
+ showMapDetail(index);
+}
+function showMapDetail(index){
+ const [name,description]=MAP_DETAILS[index];
+ const seen=progress.sectors.includes(index);
+ $("mapDetail").innerHTML="<strong>"+name+"</strong><p>"+description+"</p><small>"+(seen?"سُجلت هذه المنطقة في رحلاتك.":"ستُسجل عند الوصول إليها أثناء اللعب.")+"</small>";
+}
+function closeMap(){$("mapModal").hidden=true;}
 function saveRecords(){try{localStorage.setItem(RECORDS_SAVE,JSON.stringify(records));}catch(_){}}
 function saveProgress(){try{localStorage.setItem(PROGRESS_SAVE,JSON.stringify(progress));}catch(_){}}
 function renderAchievements(){
@@ -102,12 +129,12 @@ function awardAchievement(id){
 }
 function markSector(index){
  if(!progress.sectors.includes(index)){
-  progress.sectors.push(index);saveProgress();
+  progress.sectors.push(index);saveProgress();renderMap();
   if(progress.sectors.length===STAGES.length)awardAchievement("all-sectors");
  }
 }
-function addLifetimeStar(){
- progress.stars++;progress.bank++;progress.stats.stars++;saveProgress();
+function addLifetimeStar(amount=1){
+ progress.stars+=amount;progress.bank+=amount;progress.stats.stars+=amount;saveProgress();
  if(progress.stars>=100)awardAchievement("hundred-stars");
 }
 function renderRecords(){
@@ -144,13 +171,13 @@ function renderJourneyStats(){
  $("journeyStats").innerHTML=[
   ["الرحلات",st.runs],["مجموع النقاط",format(st.totalScore)],["أطول نجاة",Math.floor(st.longest)+" ث"],["ثقوب سوداء",st.blackHoles],["مهمات مكتملة",st.missions],["نجوم جُمعت",st.stars]
  ].map(x=>'<div class="journey-stat"><small>'+x[0]+'</small><strong>'+x[1]+'</strong></div>').join("");
- const labels={aurora:"الشفق القطبي",meteor:"زخة النيازك",eclipse:"الكسوف",supernova:"الانفجار النجمي"};
+ const labels={aurora:"الشفق القطبي",meteor:"زخة النيازك",eclipse:"الكسوف",supernova:"الانفجار النجمي",starfall:"مطر النجوم"};
  $("secretList").innerHTML=Object.entries(labels).map(([id,name])=>'<span class="secret-chip '+(progress.secrets.includes(id)?"found":"")+'">'+(progress.secrets.includes(id)?"✦ ":"? ")+name+'</span>').join("");
 }
 function unlockSecret(id){
  if(progress.secrets.includes(id))return;
  progress.secrets.push(id);saveProgress();renderJourneyStats();
- const names={aurora:"الشفق القطبي",meteor:"زخة النيازك",eclipse:"الكسوف",supernova:"الانفجار النجمي"};
+ const names={aurora:"الشفق القطبي",meteor:"زخة النيازك",eclipse:"الكسوف",supernova:"الانفجار النجمي",starfall:"مطر النجوم"};
  $("discoveryTitle").textContent="اكتشاف سري: "+names[id];
  $("discoveryFact").textContent="رصدتِ حدثًا نادرًا في الفضاء. عاد هذا الاكتشاف إلى سجل رحلاتك.";
  $("discoveryToast").hidden=false;$("discoveryToast").classList.remove("show");
@@ -373,23 +400,28 @@ function spawn(){
    pickups.push({x,y:-18,r:11,vy:rand(88,112)+level*4,spin:0,kind:Math.random()<.52?"shield":"magnet"});
    return;
  }
- if(Math.random()<.48)stars.push({x,y:-15,r:8,vy:rand(95,145)+level*7,spin:rand(0,6),pulse:rand(0,6)});
+ if(Math.random()<.48)stars.push({x,y:-15,r:8,vy:rand(95,145)+level*7,spin:rand(0,6),pulse:rand(0,6),kind:Math.random()<.13?"blue":"normal"});
  else rocks.push(makeRock());
 }
 function triggerCosmicEvent(){
- const types=["aurora","meteor","eclipse","supernova"];
+ const types=["aurora","meteor","eclipse","supernova","starfall"];
  const type=types[Math.floor(Math.random()*types.length)];
- activeEvent={type,time:0,duration:type==="supernova"?5.5:9};
+ activeEvent={type,time:0,duration:type==="supernova"?5.5:type==="starfall"?8:9};
  const data={
   aurora:["الشفق القطبي","النجوم تمنح نقاطًا مضاعفة"],
   meteor:["زخة النيازك","موجة صخور إضافية، تحركي بحذر"],
   eclipse:["الكسوف","يخفت الضوء قليلًا ويتغير صوت الفضاء"],
-  supernova:["انفجار نجمي","تجمّع نجوم نادر ظهر أمامك"]
+  supernova:["انفجار نجمي","تجمّع نجوم نادر ظهر أمامك"],
+  starfall:["مطر النجوم","التقطي النجوم الزرقاء النادرة، فقيمتها أعلى"]
  }[type];
  $("eventBanner").textContent="حدث نادر · "+data[0]+" · "+data[1];$("eventBanner").hidden=false;
  if(type==="supernova"){
-  for(let i=0;i<9;i++)stars.push({x:rand(24,width-24),y:rand(height*.12,height*.52),r:9,vy:rand(55,85),spin:rand(0,6),pulse:rand(0,6)});
+  for(let i=0;i<9;i++)stars.push({x:rand(24,width-24),y:rand(height*.12,height*.52),r:9,vy:rand(55,85),spin:rand(0,6),pulse:rand(0,6),kind:"normal"});
   burst(width*.5,height*.3,"#ffd77a",55);
+ }
+ if(type==="starfall"){
+  for(let i=0;i<12;i++)stars.push({x:rand(24,width-24),y:rand(height*.08,height*.5),r:i%4===0?10:8,vy:rand(65,100),spin:rand(0,6),pulse:rand(0,6),kind:i%4===0?"blue":"normal"});
+  burst(width*.5,height*.25,"#74caff",42);
  }
  sound(type==="meteor"?260:type==="eclipse"?180:880,.2,type==="meteor"?"sawtooth":"sine");
 }
@@ -410,8 +442,10 @@ function checkMission(){
  }
 }
 function collectStar(s){
- score+=(activeEvent?.type==="aurora"?20:10)*combo;combo=Math.min(8,combo+1);comboTime=2.2;collected++;addLifetimeStar();awardAchievement("first-star");checkMission();
- burst(s.x,s.y,"#ffd77a",12);sound(720+combo*55,.065,"triangle");
+ const rare=s.kind==="blue";
+ score+=(rare?60:(activeEvent?.type==="aurora"?20:10))*combo;
+ combo=Math.min(8,combo+1);comboTime=2.2;collected++;addLifetimeStar(rare?5:1);awardAchievement("first-star");checkMission();
+ burst(s.x,s.y,rare?"#74caff":"#ffd77a",rare?22:12);sound(rare?1180:720+combo*55,.09,"triangle");
  if(collected>=20&&!starMilestoneAwarded){starMilestoneAwarded=true;awardAchievement("mission-20");}
  updateHUD();
 }
@@ -521,14 +555,16 @@ function drawBackground(t){
  if(stageIndex===0){ctx.strokeStyle="#8de7ff22";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(width*.76,height*.23,width*.25,18,-.25,0,Math.PI*2);ctx.stroke();}
  if(stageIndex===1){ctx.save();ctx.globalAlpha=.16;for(let i=0;i<9;i++){const x=(i*97+elapsed*22)%(width+80)-40,y=(i*61+30)%height;ctx.strokeStyle="#ffc19b";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+rand(12,34),y-2);ctx.stroke();}ctx.restore();}
  if(stageIndex===2){ctx.save();ctx.translate(width*.76,height*.22);ctx.rotate(-.22);ctx.strokeStyle="#f4d69a55";ctx.lineWidth=9;ctx.beginPath();ctx.ellipse(0,0,65,19,0,0,Math.PI*2);ctx.stroke();ctx.fillStyle="#c9a56b55";ctx.beginPath();ctx.arc(0,0,24,0,Math.PI*2);ctx.fill();ctx.restore();}
+ if(activeEvent?.type==="starfall"){ctx.save();ctx.globalAlpha=.12+.06*Math.sin(t*.003);ctx.fillStyle="#75cfff";ctx.fillRect(0,0,width,height);ctx.restore();}
  if(activeEvent?.type==="aurora"){ctx.save();ctx.globalAlpha=.2+.12*Math.sin(t*.002);const aurora=ctx.createLinearGradient(0,height*.12,width,height*.55);aurora.addColorStop(0,"#67f4d000");aurora.addColorStop(.45,"#67f4d055");aurora.addColorStop(1,"#b28cff00");ctx.fillStyle=aurora;ctx.fillRect(0,0,width,height);ctx.restore();}
  if(activeEvent?.type==="eclipse"){ctx.fillStyle="#05030b88";ctx.fillRect(0,0,width,height);}
  if(stageIndex===3){ctx.save();for(let i=0;i<4;i++){const x=width*(.18+i*.21),y=height*(.18+(i%2)*.2),cloud=ctx.createRadialGradient(x,y,3,x,y,65);cloud.addColorStop(0,"#bda0ff22");cloud.addColorStop(1,"#bda0ff00");ctx.fillStyle=cloud;ctx.fillRect(x-65,y-65,130,130);}ctx.restore();}
 }
 function drawStar(s){
+ const rare=s.kind==="blue",color=rare?"#74caff":"#ffd77a";
  ctx.save();ctx.translate(s.x,s.y);ctx.rotate(s.spin);const pulse=1+Math.sin(s.pulse)*.13;
- ctx.scale(pulse,pulse);ctx.shadowBlur=18;ctx.shadowColor="#ffd77a";
- ctx.fillStyle="#ffe39a";ctx.beginPath();
+ ctx.scale(pulse,pulse);ctx.shadowBlur=rare?25:18;ctx.shadowColor=color;
+ ctx.fillStyle=rare?"#c7efff":"#ffe39a";ctx.beginPath();
  for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,r=i%2===0?s.r:s.r*.42;const x=Math.cos(a)*r,y=Math.sin(a)*r;i?ctx.lineTo(x,y):ctx.moveTo(x,y);}
  ctx.closePath();ctx.fill();ctx.restore();
 }
@@ -652,6 +688,10 @@ window.addEventListener("keydown",e=>{
 });
 $("startButton").addEventListener("click",start);
 $("atlasButton").addEventListener("click",openAtlas);
+$("mapButton").addEventListener("click",openMap);
+$("closeMap").addEventListener("click",closeMap);
+$("mapModal").addEventListener("click",e=>{if(e.target===$("mapModal"))closeMap();});
+$("galaxyMap").querySelectorAll("[data-sector]").forEach(button=>button.addEventListener("click",()=>showMapDetail(Number(button.dataset.sector))));
 $("hangarButton").addEventListener("click",openHangar);
 $("closeHangar").addEventListener("click",closeHangar);
 $("savePilotName").addEventListener("click",()=>{const name=$("pilotNameInput").value.trim().slice(0,16)||"رحّالة";try{localStorage.setItem("orbitPilotName",name);}catch(_){}$("pilotNameInput").value=name;renderRecords();});
@@ -670,5 +710,5 @@ if("ResizeObserver" in window){
  arenaObserver.observe(canvas.parentElement);
 }
 document.addEventListener("visibilitychange",()=>{if(document.hidden&&state==="running")pause();});
-$("exitButton").hidden=true;setBest();updateAtlasButton();renderAtlas();renderSkins();renderRecords();renderAchievements();resize();draw(0);
+$("exitButton").hidden=true;setBest();updateAtlasButton();renderAtlas();renderSkins();renderRecords();renderAchievements();renderMap();resize();draw(0);
 })();
