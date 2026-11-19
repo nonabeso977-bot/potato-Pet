@@ -27,11 +27,14 @@ const MISSIONS=[
  {id:"saturn",title:"زوري حلقات زحل",target:1,unit:"/ 1",reward:260,starReward:26}
 ];
 const PROGRESS_SAVE="orbitProgress.v1";
+function localDateKey(date=new Date()){
+ return date.getFullYear()+"-"+String(date.getMonth()+1).padStart(2,"0")+"-"+String(date.getDate()).padStart(2,"0");
+}
 const clampLevel=n=>Number.isInteger(n)?Math.max(0,Math.min(3,n)):0;
 const safeReadProgress=()=>{
  try{
   const v=JSON.parse(localStorage.getItem(PROGRESS_SAVE)||"{}");
-  const today=new Date().toLocaleDateString("en-CA");
+  const today=localDateKey();
   const daily=v.daily&&v.daily.day===today?{day:today,progress:Math.max(0,Number(v.daily.progress)||0),claimed:!!v.daily.claimed}:{day:today,progress:0,claimed:false};
   return {stars:Number.isFinite(v.stars)?Math.max(0,v.stars):0,bank:Number.isFinite(v.bank)?Math.max(0,v.bank):(Number.isFinite(v.stars)?Math.max(0,v.stars):0),
    ownedSkins:Array.isArray(v.ownedSkins)?[...new Set(v.ownedSkins.filter(id=>SKINS.some(s=>s.id===id)))]:SKINS.filter(s=>!s.cost).map(s=>s.id),
@@ -43,7 +46,7 @@ const safeReadProgress=()=>{
    ownedBoost:!!v.ownedBoost,trailsOwned:Array.isArray(v.trailsOwned)?[...new Set(v.trailsOwned.filter(id=>["blue","gold","violet"].includes(id)))]:["blue"],
    selectedTrail:["blue","gold","violet"].includes(v.selectedTrail)?v.selectedTrail:"blue",daily,
    stats:{runs:Math.max(0,Number(v.stats?.runs)||0),totalScore:Math.max(0,Number(v.stats?.totalScore)||0),longest:Math.max(0,Number(v.stats?.longest)||0),blackHoles:Math.max(0,Number(v.stats?.blackHoles)||0),missions:Math.max(0,Number(v.stats?.missions)||0),stars:Math.max(0,Number(v.stats?.stars)||0)}};
- }catch(_){return{stars:0,bank:0,ownedSkins:SKINS.filter(s=>!s.cost).map(s=>s.id),sectors:[],hiddenPlaces:[],unlocked:[],upgrades:{engine:0,shield:0,magnet:0},secrets:[],ownedBoost:false,trailsOwned:["blue"],selectedTrail:"blue",daily:{day:new Date().toLocaleDateString("en-CA"),progress:0,claimed:false},stats:{runs:0,totalScore:0,longest:0,blackHoles:0,missions:0,stars:0}};}
+ }catch(_){return{stars:0,bank:0,ownedSkins:SKINS.filter(s=>!s.cost).map(s=>s.id),sectors:[],hiddenPlaces:[],unlocked:[],upgrades:{engine:0,shield:0,magnet:0},secrets:[],ownedBoost:false,trailsOwned:["blue"],selectedTrail:"blue",daily:{day:localDateKey(),progress:0,claimed:false},stats:{runs:0,totalScore:0,longest:0,blackHoles:0,missions:0,stars:0}};}
 };
 let progress=safeReadProgress(),survivedMinute=false,activeEvent=null,nextEventAt=32,eventSpawnClock=0,runStatsSaved=false,runBlackHoles=0;
 let selectedMission=MISSIONS[0],lastMissionId="",nearMisses=0,starMilestoneAwarded=false,missionDone=false,missionShownProgress=-1,timeDilation=1,lastMusicDilation=1;
@@ -163,6 +166,73 @@ function showMapDetail(index){
 function closeMap(){$("mapModal").hidden=true;}
 function saveRecords(){try{localStorage.setItem(RECORDS_SAVE,JSON.stringify(records));}catch(_){}}
 function saveProgress(){try{localStorage.setItem(PROGRESS_SAVE,JSON.stringify(progress));}catch(_){}}
+const BACKUP_KEYS=[SAVE,ATLAS_SAVE,RECORDS_SAVE,SKIN_SAVE,PROGRESS_SAVE,"orbitPilotName"];
+function setBackupStatus(message,error=false){
+ const status=$("backupStatus");
+ if(!status)return;
+ status.textContent=message;
+ status.classList.toggle("error",error);
+}
+function exportPilotBackup(){
+ try{
+  const data={};
+  for(const key of BACKUP_KEYS){
+   const value=localStorage.getItem(key);
+   if(value!==null)data[key]=value;
+  }
+  const backup={app:"orbit-arcade",format:1,createdAt:new Date().toISOString(),data};
+  const file=new File([JSON.stringify(backup,null,2)],"orbit-arcade-backup.json",{type:"application/json"});
+  if(navigator.canShare?.({files:[file]})&&navigator.share){
+   navigator.share({files:[file],title:"نسخة احتياطية من مدار",text:"احفظي هذا الملف لاستعادة تقدمك لاحقًا."}).catch(error=>{
+    if(error?.name!=="AbortError")setBackupStatus("تعذرت المشاركة. جرّبي تنزيل النسخة من المتصفح.",true);
+   });
+   setBackupStatus("اختاري حفظ الملف في جهازك أو في ملفاتك.");
+   return;
+  }
+  const blob=new Blob([JSON.stringify(backup,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob),link=document.createElement("a");
+  link.href=url;link.download="orbit-arcade-backup-"+localDateKey()+".json";
+  document.body.appendChild(link);link.click();link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+  setBackupStatus("جهزنا النسخة الاحتياطية. احتفظي بملف JSON في مكان آمن.");
+ }catch(error){
+  setBackupStatus("تعذر إنشاء النسخة الاحتياطية على هذا الجهاز.",true);
+ }
+}
+async function importPilotBackup(file){
+ if(!file)return;
+ if(file.size>512*1024){setBackupStatus("حجم الملف أكبر من الحد المسموح.",true);return;}
+ try{
+  const backup=JSON.parse(await file.text());
+  if(backup?.app!=="orbit-arcade"||backup?.format!==1||!backup.data||typeof backup.data!=="object"||Array.isArray(backup.data))throw new Error("invalid backup");
+  const source=backup.data,clean={};
+  if(typeof source[SAVE]==="string"&&Number.isFinite(Number(source[SAVE]))&&Number(source[SAVE])>=0)clean[SAVE]=String(Math.floor(Number(source[SAVE])));
+  if(typeof source[ATLAS_SAVE]==="string"){
+   const atlas=JSON.parse(source[ATLAS_SAVE]);
+   if(!Array.isArray(atlas))throw new Error("invalid atlas");
+   clean[ATLAS_SAVE]=JSON.stringify([...new Set(atlas.filter(n=>Number.isInteger(n)&&n>=0&&n<FACTS.length))]);
+  }
+  if(typeof source[RECORDS_SAVE]==="string"){
+   const list=JSON.parse(source[RECORDS_SAVE]);
+   if(!Array.isArray(list))throw new Error("invalid records");
+   clean[RECORDS_SAVE]=JSON.stringify(list.filter(r=>r&&typeof r.name==="string"&&Number.isFinite(Number(r.score))&&Number(r.score)>=0).map(r=>({name:r.name.slice(0,16),score:Math.floor(Number(r.score)),when:Number.isFinite(Number(r.when))?Number(r.when):Date.now()})).sort((a,b)=>b.score-a.score).slice(0,10));
+  }
+  if(typeof source[SKIN_SAVE]==="string"&&SKINS.some(s=>s.id===source[SKIN_SAVE]))clean[SKIN_SAVE]=source[SKIN_SAVE];
+  if(typeof source[PROGRESS_SAVE]==="string"){
+   const progressData=JSON.parse(source[PROGRESS_SAVE]);
+   if(!progressData||typeof progressData!=="object"||Array.isArray(progressData))throw new Error("invalid progress");
+   clean[PROGRESS_SAVE]=JSON.stringify(progressData);
+  }
+  if(typeof source.orbitPilotName==="string")clean.orbitPilotName=source.orbitPilotName.trim().slice(0,16);
+  if(!Object.keys(clean).length)throw new Error("empty backup");
+  if(!window.confirm("ستُستبدل البيانات الموجودة بالبيانات الموجودة في الملف. هل تريدين المتابعة؟"))return;
+  for(const [key,value] of Object.entries(clean))localStorage.setItem(key,value);
+  setBackupStatus("تمت استعادة البيانات. جارٍ إعادة تشغيل مدار…");
+  setTimeout(()=>location.reload(),700);
+ }catch(error){
+  setBackupStatus("الملف غير صالح أو تالف. لم نغيّر بياناتك الحالية.",true);
+ }
+}
 function renderAchievements(){
  const host=$("achievementGrid"),count=progress.unlocked.length;
  $("achievementSummary").textContent=count+" من "+ACHIEVEMENTS.length+" إنجازات مفتوحة";
@@ -500,7 +570,7 @@ function checkMission(){
 function collectStar(s){
  const rare=s.kind==="blue";
  score+=(rare?60:(activeEvent?.type==="aurora"?20:10))*combo;
- combo=Math.min(8,combo+1);comboTime=2.2;collected++;addLifetimeStar(rare?5:1);if(progress.daily.day!==new Date().toLocaleDateString("en-CA"))progress.daily={day:new Date().toLocaleDateString("en-CA"),progress:0,claimed:false};progress.daily.progress+=rare?5:1;saveProgress();if(!$("hangarModal").hidden)renderDaily();awardAchievement("first-star");checkMission();
+ combo=Math.min(8,combo+1);comboTime=2.2;collected++;addLifetimeStar(rare?5:1);if(progress.daily.day!==localDateKey())progress.daily={day:localDateKey(),progress:0,claimed:false};progress.daily.progress+=rare?5:1;saveProgress();if(!$("hangarModal").hidden)renderDaily();awardAchievement("first-star");checkMission();
  burst(s.x,s.y,rare?"#74caff":"#ffd77a",rare?22:12);sound(rare?1180:720+combo*55,.09,"triangle");
  if(collected>=20&&!starMilestoneAwarded){starMilestoneAwarded=true;awardAchievement("mission-20");}
  updateHUD();
@@ -760,6 +830,13 @@ $("galaxyMap").querySelectorAll("[data-sector],[data-place]").forEach(button=>bu
 $("hangarButton").addEventListener("click",openHangar);
 $("closeHangar").addEventListener("click",closeHangar);
 $("savePilotName").addEventListener("click",()=>{const name=$("pilotNameInput").value.trim().slice(0,16)||"رحّالة";try{localStorage.setItem("orbitPilotName",name);}catch(_){}$("pilotNameInput").value=name;renderRecords();});
+$("exportPilotBackup").addEventListener("click",exportPilotBackup);
+$("importPilotBackup").addEventListener("click",()=>$("backupFileInput").click());
+$("backupFileInput").addEventListener("change",async event=>{
+ const file=event.target.files?.[0];
+ if(file)await importPilotBackup(file);
+ event.target.value="";
+});
 $("hangarModal").addEventListener("click",e=>{if(e.target===$("hangarModal"))closeHangar();});
 $("closeAtlas").addEventListener("click",closeAtlas);
 $("atlasModal").addEventListener("click",e=>{if(e.target===$("atlasModal"))closeAtlas();});
