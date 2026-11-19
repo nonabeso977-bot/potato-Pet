@@ -18,6 +18,6 @@ html = html
   .replace(/<button class="pwa-action share-action"[^>]*>[\s\S]*?<\/button>/i, "")
   .replace(/\s*<script src="\.\/pwa\.js[^"]*"><\/script>/i, "")
   .replace("SYSTEM ONLINE", "OFFLINE READY")
-  .replace("ORBIT / BUILD 4.3 · PILOT BACKUP", "ORBIT / ANDROID EDITION");
+  .replace(/ORBIT \/ BUILD [\d.]+ · PILOT BACKUP/, "ORBIT / ANDROID EDITION");
 await writeFile(new URL("index.html", web), html, "utf8");
 console.log("Prepared bundled offline web assets in www/");
