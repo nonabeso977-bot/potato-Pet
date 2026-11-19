@@ -263,7 +263,7 @@ function resume(){
  if(state!=="paused")return;state="running";$("arenaMessage").hidden=true;$("pauseButton").textContent="Ⅱ";last=performance.now();requestAnimationFrame(loop);
 }
 function endGame(){
- state="over";if(!runStatsSaved){runStatsSaved=true;progress.stats.runs++;progress.stats.totalScore+=score;progress.stats.longest=Math.max(progress.stats.longest,elapsed);progress.stats.blackHoles+=runBlackHoles;if(missionDone)progress.stats.missions++;saveProgress();renderJourneyStats();}saveRunRecord();const newRecord=score>best;if(newRecord){best=score;safeSaveBest(best);setBest();}
+ state="over";if(!runStatsSaved){runStatsSaved=true;progress.stats.runs++;progress.stats.totalScore+=score;progress.stats.longest=Math.max(progress.stats.longest,elapsed);progress.stats.blackHoles+=runBlackHoles;saveProgress();renderJourneyStats();}saveRunRecord();const newRecord=score>best;if(newRecord){best=score;safeSaveBest(best);setBest();}
  $("pauseButton").textContent="↻";showMessage("انتهت الرحلة","نتيجتك "+format(score)+" · "+(newRecord?"رقم قياسي جديد!":"حاولي تجاوز رقمك القياسي"),"رحلة جديدة");
  $("exitButton").hidden=false;
 }
@@ -405,7 +405,7 @@ function missionValue(){
 function checkMission(){
  if(missionDone)return;
  if(missionValue()>=selectedMission.target){
-  missionDone=true;score+=selectedMission.reward;progress.bank+=selectedMission.starReward;progress.stats.missions++;saveProgress();
+  missionDone=true;score+=selectedMission.reward;progress.bank+=selectedMission.starReward;progress.stats.missions++;saveProgress();renderJourneyStats();
   burst(player.x,player.y,"#76e4e4",30);sound(980,.24,"triangle");updateHUD();
  }
 }
