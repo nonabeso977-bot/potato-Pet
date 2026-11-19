@@ -323,3 +323,25 @@ footer{font-size:8px;margin-top:14px}
 @media(max-width:420px){.backup-actions{flex-direction:column}.backup-actions button{width:100%}}
 
 .map-node[data-sector="6"]{border-color:#ffd77a55;background:linear-gradient(145deg,#172b48,#17243a)}.map-node[data-sector="6"] i{color:#ffd77a;background:#ffd77a18}
+
+/* ORBIT 4.6 · final arrival sequence */
+.finale-screen{position:absolute;z-index:9;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:22px;background:radial-gradient(ellipse at 50% 42%,#102a4a 0%,#07101f 48%,#02050c 100%);color:#e9f1ff;text-align:center;}
+.finale-screen[hidden],.finale-screen [hidden]{display:none!important}
+.finale-earth-scene,.finale-credits{width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:17px;animation:finaleReveal 2s ease both;}
+.finale-kicker{font:600 9px "Space Grotesk",sans-serif;letter-spacing:.2em;color:#8bb9e8;}
+.finale-earth-globe{position:relative;width:min(43vw,220px);min-width:142px;aspect-ratio:1;border-radius:50%;overflow:hidden;background:radial-gradient(circle at 31% 25%,#a9edff 0%,#398fca 31%,#15538d 65%,#061a3d 100%);box-shadow:0 0 35px #4da9ff88,0 0 110px #2c83d455,inset -18px -16px 35px #020a20aa;animation:earthDrift 7s ease-in-out infinite;}
+.finale-earth-globe:before{content:"";position:absolute;inset:8% 12%;border-radius:48% 38% 53% 43%;background:radial-gradient(ellipse at 27% 30%,#78c68c 0 13%,transparent 14%),radial-gradient(ellipse at 58% 62%,#7acb91 0 16%,transparent 17%),radial-gradient(ellipse at 73% 24%,#83d19a 0 9%,transparent 10%),radial-gradient(ellipse at 43% 82%,#5fae83 0 8%,transparent 9%);filter:blur(1px);}
+.finale-earth-scene p{margin:0;color:#d2e3f6;font-size:clamp(12px,2.7vw,16px);letter-spacing:.04em;}
+.finale-title{font:700 clamp(39px,11vw,68px) "Space Grotesk",sans-serif;letter-spacing:.32em;padding-left:.32em;color:#f2f5ff;text-shadow:0 0 30px #8dbdff55;animation:finaleTitle 2s ease both;}
+.finale-subtitle{margin:-8px 0 12px;color:#879bb8;font:500 9px "Space Grotesk",sans-serif;letter-spacing:.2em;}
+.finale-notes{width:min(100%,340px);padding:15px 12px;border-top:1px solid #8fb9df35;border-bottom:1px solid #8fb9df35;background:#0b162788;}
+.finale-notes span{font:600 9px "Space Grotesk",sans-serif;letter-spacing:.18em;color:#9dbfe4;}
+.finale-notes p{margin:9px 0;color:#c5d1e2;font-size:12px;}
+.finale-notes small{color:#7488a5;font:500 8px "Space Grotesk",sans-serif;letter-spacing:.1em;}
+.finale-signal{margin:4px 0 0;color:#9ec8ee;font:600 9px/1.9 "Space Grotesk",sans-serif;letter-spacing:.16em;animation:signalFlicker 1.8s steps(2,end) infinite;}
+.finale-signal small{color:#607b9c;font-size:8px;}
+@keyframes finaleReveal{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes earthDrift{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-8px) rotate(3deg)}}
+@keyframes finaleTitle{0%{opacity:0;letter-spacing:.65em;filter:blur(5px)}100%{opacity:1;letter-spacing:.32em;filter:blur(0)}}
+@keyframes signalFlicker{0%,18%,22%,62%,100%{opacity:1}20%,60%{opacity:.35}}
+@media(prefers-reduced-motion:reduce){.finale-earth-scene,.finale-credits,.finale-earth-globe,.finale-title,.finale-signal{animation:none}}
