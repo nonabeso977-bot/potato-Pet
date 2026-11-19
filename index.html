@@ -4,12 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#080d20">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="مدار">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./icon.svg">
 <meta name="description" content="مدار: اجمع النجوم، تفادَ الشهب، واصنع رقمك القياسي.">
 <title>مدار | ORBIT</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Changa:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=4.1.0">
+<link rel="stylesheet" href="style.css?v=4.2.0">
 </head>
 <body>
 <main class="shell">
@@ -18,7 +25,7 @@
       <span class="brand-icon"><i></i><b></b></span>
       <span><strong>مَدار</strong><small>ORBIT / ARCADE</small></span>
     </a>
-    <div class="top-meta"><span class="status-live"><i></i> SYSTEM ONLINE</span><button class="sound-button" id="soundButton" type="button" aria-label="تشغيل أو إيقاف المؤثرات" title="المؤثرات الصوتية">♫</button><button class="sound-button music-button" id="musicButton" type="button" aria-label="تشغيل موسيقى الفضاء" aria-pressed="false" title="موسيقى الفضاء">♪</button></div>
+    <div class="top-meta"><button class="pwa-action install-action" id="installAppButton" type="button"><span>＋</span> تثبيت</button><button class="pwa-action share-action" id="shareAppButton" type="button"><span>↗</span> مشاركة</button><span class="status-live"><i></i> SYSTEM ONLINE</span><button class="sound-button" id="soundButton" type="button" aria-label="تشغيل أو إيقاف المؤثرات" title="المؤثرات الصوتية">♫</button><button class="sound-button music-button" id="musicButton" type="button" aria-label="تشغيل موسيقى الفضاء" aria-pressed="false" title="موسيقى الفضاء">♪</button></div>
   </header>
 
   <section class="intro" id="intro">
@@ -135,5 +142,6 @@
   <footer><span>ORBIT / BUILD 4.1 · GALACTIC EXPLORER</span><span>صُممت لتُلعَب، لا لتُشاهَد فقط.</span></footer>
 </main>
 <script src="script.js?v=4.1.0"></script>
+<script src="./pwa.js?v=4.2.0"></script>
 </body>
 </html>
