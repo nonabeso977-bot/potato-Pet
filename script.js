@@ -36,7 +36,7 @@ const safeReadProgress=()=>{
   return {stars:Number.isFinite(v.stars)?Math.max(0,v.stars):0,bank:Number.isFinite(v.bank)?Math.max(0,v.bank):(Number.isFinite(v.stars)?Math.max(0,v.stars):0),
    ownedSkins:Array.isArray(v.ownedSkins)?[...new Set(v.ownedSkins.filter(id=>SKINS.some(s=>s.id===id)))]:SKINS.filter(s=>!s.cost).map(s=>s.id),
    sectors:Array.isArray(v.sectors)?[...new Set(v.sectors.filter(n=>Number.isInteger(n)&&n>=0&&n<STAGES.length))]:[],
-   hiddenPlaces:Array.isArray(v.hiddenPlaces)?[...new Set(v.hiddenPlaces.filter(id=>["europa","titan"].includes(id)))]:[],
+   hiddenPlaces:Array.isArray(v.hiddenPlaces)?[...new Set(v.hiddenPlaces.filter(id=>["europa","titan","enceladus"].includes(id)))]:[],
    unlocked:Array.isArray(v.unlocked)?[...new Set(v.unlocked.filter(id=>ACHIEVEMENTS.some(a=>a.id===id)))]:[],
    upgrades:{engine:clampLevel(v.upgrades?.engine),shield:clampLevel(v.upgrades?.shield),magnet:clampLevel(v.upgrades?.magnet)},
    secrets:Array.isArray(v.secrets)?[...new Set(v.secrets.filter(id=>["aurora","eclipse","supernova","meteor","starfall"].includes(id)))]:[],
@@ -70,7 +70,12 @@ const FACTS=[
  {tag:"TRAPPIST-1",title:"سبعة عوالم متقاربة",body:"حول النجم TRAPPIST-1 سبعة كواكب بحجم قريب من الأرض، وبعض مداراتها تسمح بوجود ماء سائل إذا توافرت الظروف المناسبة."},
  {tag:"NEBULA",title:"مهد النجوم",body:"السدم سحب من الغاز والغبار. في بعض أجزائها تنهار المادة بفعل الجاذبية، فتبدأ نجوم جديدة بالتكوّن."},
  {tag:"ENCELADUS",title:"نافورات جليدية",body:"قمر إنسيلادوس حول زحل يطلق نفاثات من بخار الماء وقطع الجليد من شقوق قرب قطبه الجنوبي. وقد تساعد هذه المواد العلماء على دراسة محيطه الداخلي."},
- {tag:"LIGHT IN SPACE",title:"الضوء يعبر الفراغ",body:"الصوت يحتاج إلى مادة لينتقل، لذلك لا نسمعه في فراغ الفضاء. أما الضوء فيستطيع السفر عبره بسرعة تقارب 300 ألف كيلومتر في الثانية."}
+ {tag:"LIGHT IN SPACE",title:"الضوء يعبر الفراغ",body:"الصوت يحتاج إلى مادة لينتقل، لذلك لا نسمعه في فراغ الفضاء. أما الضوء فيستطيع السفر عبره بسرعة تقارب 300 ألف كيلومتر في الثانية."},
+ {tag:"AURORA",title:"ستائر الضوء القطبي",body:"تظهر الأضواء القطبية عندما تصطدم جسيمات قادمة من الشمس بغازات الغلاف الجوي، فتضيء السماء بألوان متحركة."},
+ {tag:"METEOR SHOWER",title:"نجوم لا تسقط فعلًا",body:"الشهب خطوط ضوئية تظهر عندما تدخل قطع صغيرة من الغبار والصخور الغلاف الجوي وتحترق فيه. ليست نجومًا حقيقية."},
+ {tag:"ECLIPSE",title:"حين يحجب القمر الشمس",body:"يحدث كسوف الشمس عندما يمر القمر بين الأرض والشمس ويحجب ضوءها عن أجزاء من الأرض. لا تنظري إلى الشمس مباشرة أثناء الكسوف."},
+ {tag:"SUPERNOVA",title:"انفجار يصنع عناصر جديدة",body:"المستعر الأعظم انفجار هائل يحدث في نهاية حياة بعض النجوم. ينثر عناصر كيميائية في الفضاء تدخل لاحقًا في تكوين نجوم وكواكب جديدة."},
+ {tag:"METEOR STREAM",title:"أثر المذنبات",body:"بعض زخات الشهب تحدث عندما تمر الأرض عبر الغبار الذي تركه مذنب في مداره، فتظهر شهب كثيرة في السماء خلال وقت قصير."}
 ];
 const safeReadAtlas=()=>{try{const v=JSON.parse(localStorage.getItem(ATLAS_SAVE)||"[]");return Array.isArray(v)?[...new Set(v.filter(n=>Number.isInteger(n)&&n>=0&&n<FACTS.length))]:[];}catch(_){return[];}};
 const safeSaveAtlas=()=>{try{localStorage.setItem(ATLAS_SAVE,JSON.stringify(discovered));}catch(_){}};
@@ -106,10 +111,11 @@ const MAP_DETAILS=[
  ["حلقات زحل","حلقات زحل تتكوّن أساسًا من قطع جليدية وصخرية تدور حول الكوكب."],
  ["حافة السديم","سحب ضخمة من الغاز والغبار، وهي مناطق يمكن أن تولد فيها نجوم جديدة."],
  ["أوروبا","قمر جليدي يدور حول المشتري. تشير الأدلة إلى وجود محيط مالح تحت سطحه."],
- ["تيتان","أكبر أقمار زحل. له غلاف جوي كثيف وبحيرات من الميثان السائل."]
+ ["تيتان","أكبر أقمار زحل. له غلاف جوي كثيف وبحيرات من الميثان السائل."],
+ ["إنسيلادوس","قمر صغير حول زحل، يطلق نافورات من بخار الماء والجليد من شقوق قرب قطبه الجنوبي."]
 ];
 const TRAILS=[{id:"blue",name:"نبض أزرق",color:"#74caff",cost:0},{id:"gold",name:"غبار ذهبي",color:"#ffd77a",cost:120},{id:"violet",name:"شفق بنفسجي",color:"#b49aff",cost:180}];
-function syncHiddenPlaces(){const unlocked=[];if(progress.sectors.length>=STAGES.length)unlocked.push("europa");if(progress.secrets.length>=3)unlocked.push("titan");let changed=false;for(const id of unlocked)if(!progress.hiddenPlaces.includes(id)){progress.hiddenPlaces.push(id);changed=true;}if(changed)saveProgress();}
+function syncHiddenPlaces(){const unlocked=[];if(progress.sectors.length>=STAGES.length)unlocked.push("europa");if(progress.secrets.length>=3)unlocked.push("titan");if(progress.secrets.length>=5)unlocked.push("enceladus");let changed=false;for(const id of unlocked)if(!progress.hiddenPlaces.includes(id)){progress.hiddenPlaces.push(id);changed=true;}if(changed)saveProgress();}
 function renderDaily(){
  const d=progress.daily,done=d.progress>=25;
  $("dailyCard").innerHTML='<strong>جامع النجوم اليومي</strong><p>اجمعي 25 نجمة اليوم.</p><div class="daily-progress"><i style="width:'+Math.min(100,d.progress/25*100)+'%"></i></div><small>'+Math.min(25,d.progress)+' / 25 · المكافأة 35 ✦</small><br><button id="claimDaily" type="button" '+(!done||d.claimed?"disabled":"")+'>'+(d.claimed?"تم الاستلام":done?"استلام 35 نجمة":"واصلي الجمع")+'</button>';
@@ -127,7 +133,7 @@ function renderAbilityShop(){
 function renderMap(){
  syncHiddenPlaces();
  const visited=progress.sectors;
- $("mapProgress").textContent=visited.length+" / "+STAGES.length+" · أسرار "+progress.hiddenPlaces.length+" / 2";
+ $("mapProgress").textContent=visited.length+" / "+STAGES.length+" · مواقع سرية "+progress.hiddenPlaces.length+" / 3";
  $("galaxyMap").querySelectorAll("[data-sector]").forEach(button=>{
   const index=Number(button.dataset.sector),seen=visited.includes(index);
   button.classList.toggle("visited",seen);button.classList.toggle("current",index===stageIndex&&state==="running");
@@ -145,10 +151,14 @@ function openMap(){
  showMapDetail(index);
 }
 function showMapDetail(index){
- const hidden=typeof index==="string",placeIndex=hidden?(index==="europa"?4:5):index;
+ const hidden=typeof index==="string",placeIndexes={europa:4,titan:5,enceladus:6},factIndexes={europa:3,titan:16,enceladus:19};
+ const placeIndex=hidden?placeIndexes[index]:index;
  const [name,description]=MAP_DETAILS[placeIndex];
  const seen=hidden?progress.hiddenPlaces.includes(index):progress.sectors.includes(index);
- $("mapDetail").innerHTML="<strong>"+name+"</strong><p>"+description+"</p><small>"+(seen?"تم فتح هذا الموقع في سجل المجرة.":"ستُفتح هذه المنطقة بعد إكمال شروط الاستكشاف.")+"</small>";
+ const factIndex=hidden?factIndexes[index]:-1,known=factIndex>=0&&discovered.includes(factIndex);
+ $("mapDetail").innerHTML="<strong>"+name+"</strong><p>"+description+"</p><small>"+(seen?"تم فتح هذا الموقع في سجل المجرة.":"ستُفتح هذه المنطقة بعد إكمال شروط الاستكشاف.")+"</small>"+(seen&&factIndex>=0&&!known?'<button class="map-discover-button" type="button" data-discover-fact="'+factIndex+'">تسجيل اكتشاف الموقع في الدفتر ✦</button>':known?'<small class="map-fact-saved">تم تسجيل معلومة هذا الموقع في دفتر الاكتشافات.</small>':"");
+ const discoverButton=$("mapDetail").querySelector("[data-discover-fact]");
+ if(discoverButton)discoverButton.addEventListener("click",()=>{recordFact(Number(discoverButton.dataset.discoverFact));showMapDetail(index);});
 }
 function closeMap(){$("mapModal").hidden=true;}
 function saveRecords(){try{localStorage.setItem(RECORDS_SAVE,JSON.stringify(records));}catch(_){}}
@@ -217,11 +227,16 @@ function renderJourneyStats(){
 function unlockSecret(id){
  if(progress.secrets.includes(id))return;
  progress.secrets.push(id);syncHiddenPlaces();saveProgress();renderJourneyStats();renderMap();
- const names={aurora:"الشفق القطبي",meteor:"زخة النيازك",eclipse:"الكسوف",supernova:"الانفجار النجمي",starfall:"مطر النجوم"};
- $("discoveryTitle").textContent="اكتشاف سري: "+names[id];
- $("discoveryFact").textContent="رصدتِ حدثًا نادرًا في الفضاء. عاد هذا الاكتشاف إلى سجل رحلاتك.";
- $("discoveryToast").hidden=false;$("discoveryToast").classList.remove("show");
- requestAnimationFrame(()=>$("discoveryToast").classList.add("show"));discoveryToastTime=4.2;
+ const eventFacts={aurora:21,meteor:22,eclipse:23,supernova:24,starfall:25};
+ const factIndex=eventFacts[id];
+ if(Number.isInteger(factIndex)&&recordFact(factIndex,false)){showDiscovery(factIndex);}
+ else{
+  const names={aurora:"الشفق القطبي",meteor:"زخة النيازك",eclipse:"الكسوف",supernova:"الانفجار النجمي",starfall:"مطر النجوم"};
+  $("discoveryTitle").textContent="اكتشاف سري: "+names[id];
+  $("discoveryFact").textContent="رصدتِ حدثًا نادرًا في الفضاء. عاد هذا الاكتشاف إلى سجل رحلاتك.";
+  $("discoveryToast").hidden=false;$("discoveryToast").classList.remove("show");
+  requestAnimationFrame(()=>$("discoveryToast").classList.add("show"));discoveryToastTime=4.2;
+ }
 }
 function renderSkins(){
  $("starBalance").textContent=String(progress.bank);
@@ -497,11 +512,16 @@ function collectPickup(p){
  else{magnetTime=7+(progress.upgrades.magnet||0)*1.3;shieldTime=0;burst(p.x,p.y,"#a99bff",22);sound(920,.13,"triangle");}
  updateHUD();
 }
+function recordFact(index,toast=true){
+ if(!Number.isInteger(index)||index<0||index>=FACTS.length||discovered.includes(index))return false;
+ discovered.push(index);safeSaveAtlas();score+=80;awardAchievement("first-discovery");
+ if(discovered.length===FACTS.length)awardAchievement("atlas-master");
+ if(toast)showDiscovery(index);
+ updateHUD();updateAtlasButton();return true;
+}
 function collectArtifact(a){
- if(discovered.includes(a.id))return;
- discovered.push(a.id);safeSaveAtlas();score+=80;awardAchievement("first-discovery");if(discovered.length===FACTS.length)awardAchievement("atlas-master");
- burst(a.x,a.y,"#a99bff",26);sound(1040,.2,"triangle");
- showDiscovery(a.id);updateHUD();updateAtlasButton();
+ if(!recordFact(a.id,false))return;
+ burst(a.x,a.y,"#a99bff",26);sound(1040,.2,"triangle");showDiscovery(a.id);
 }
 function hitRock(r){
  if(player.invulnerable>0||boostTime>0)return;
