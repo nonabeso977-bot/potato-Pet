@@ -1,0 +1,9 @@
+{
+  "appId": "com.orbitarcade.madar",
+  "appName": "مدار",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "android": {
+    "allowMixedContent": false
+  }
+}
