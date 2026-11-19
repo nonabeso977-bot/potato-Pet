@@ -1,0 +1,23 @@
+{
+  "id": "./",
+  "name": "مدار | ORBIT ARCADE",
+  "short_name": "مدار",
+  "description": "رحلة أركيد فضائية: اجمع النجوم واكتشف أسرار المجرة.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#080d20",
+  "theme_color": "#080d20",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
