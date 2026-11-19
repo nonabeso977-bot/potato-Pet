@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Changa:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=3.9.0">
+<link rel="stylesheet" href="style.css?v=4.0.0">
 </head>
 <body>
 <main class="shell">
@@ -29,7 +29,7 @@
       <div class="record-line"><span>أفضل نتيجة</span><strong id="menuBest">000000</strong></div>
       <div class="intro-actions">
         <button class="primary-button" id="startButton" type="button"><span>ابدئي الرحلة</span><b>↗</b></button>
-        <button class="atlas-button" id="atlasButton" type="button"><span>دفتر الاكتشافات</span><b id="atlasCount">0 / 16</b></button><button class="atlas-button map-open" id="mapButton" type="button"><span>خريطة المجرة</span><b>◎</b></button>
+        <button class="atlas-button" id="atlasButton" type="button"><span>دفتر الاكتشافات</span><b id="atlasCount">0 / 20</b></button><button class="atlas-button map-open" id="mapButton" type="button"><span>خريطة المجرة</span><b>◎</b></button>
         <button class="atlas-button hangar-open" id="hangarButton" type="button"><span>المركبات والسجل</span><b>✦</b></button>
       </div>
       <p class="control-note">اسحبي المركبة بإصبعك · أو استخدمي الأسهم / WASD</p>
@@ -57,7 +57,7 @@
         <div class="objective-track" id="missionTrack" role="progressbar" aria-label="تقدم المهمة" aria-valuemin="0" aria-valuemax="20" aria-valuenow="0"><i id="missionFill"></i></div>
         <span class="objective-count" id="missionCount">0 / 20</span>
       </div>
-      <div class="power-state" id="powerState" hidden><span id="powerIcon">✧</span><span id="powerText">درع نشط</span><i id="powerTimer"></i></div>
+      <button class="boost-button" id="boostButton" type="button" disabled>اندفاع · SPACE</button><div class="power-state" id="powerState" hidden><span id="powerIcon">✧</span><span id="powerText">درع نشط</span><i id="powerTimer"></i></div>
     </div>
     <div class="arena-wrap">
       <canvas id="arena" aria-label="ساحة لعبة مدار. اسحبي المركبة لتجنب الشهب وجمع النجوم."></canvas>
@@ -66,7 +66,7 @@
         <span class="message-kicker">ORBIT CONTROL</span>
         <h2 id="messageTitle">توقفت الرحلة</h2>
         <p id="messageText">خذي نفسًا، المدار ينتظرك.</p>
-        <button class="primary-button small" id="resumeButton" type="button">متابعة الرحلة <b>↗</b></button>
+        <button class="primary-button small" id="resumeButton" type="button">متابعة الرحلة <b>↗</b></button><button class="primary-button small rescue-button" id="rescueButton" type="button" hidden>شراء فرصة · 80 ✦</button>
         <button class="text-button" id="exitButton" type="button">العودة للقائمة</button>
       </div>
       <div class="arena-hint" id="arenaHint">اسحبي المركبة للتحرك</div>
@@ -88,7 +88,7 @@
       <h3 class="hangar-subtitle">مظهر المركبة</h3>
       <div class="star-wallet"><span>رصيد النجوم</span><strong><b id="starBalance">0</b> ✦</strong></div>
       <p class="atlas-description skin-shop-note" id="skinShopNotice" aria-live="polite">اجمعي النجوم أثناء الرحلات، أو أكملي المهمات لتحصلي على مكافآت إضافية.</p>
-      <div class="skin-grid" id="skinGrid"></div>
+      <div class="skin-grid" id="skinGrid"></div><h3 class="hangar-subtitle">آثار المركبة</h3><div class="trail-grid" id="trailGrid"></div><h3 class="hangar-subtitle">قدرة الاندفاع</h3><div class="ability-shop" id="abilityShop"></div><h3 class="hangar-subtitle">تحدي اليوم</h3><div class="daily-card" id="dailyCard"></div>
       <h3 class="hangar-subtitle">ورشة تطوير المركبة</h3><p class="atlas-description">طوّري قدراتك بالنجوم. كل ترقية لها ثلاثة مستويات.</p><div class="upgrade-grid" id="upgradeGrid"></div>
       <h3 class="hangar-subtitle">سجل الرحلات والاستكشافات السرية</h3><div class="journey-stats" id="journeyStats"></div><div class="secret-list" id="secretList"></div>
       <h3 class="hangar-subtitle">سجل الإنجازات</h3>
@@ -108,7 +108,7 @@
         <button class="map-node visited" type="button" data-sector="0"><i>◉</i><strong>مدار الأرض</strong><small>نقطة البداية</small></button>
         <button class="map-node" type="button" data-sector="1"><i>◈</i><strong>سهول المريخ</strong><small>منطقة حمراء</small></button>
         <button class="map-node" type="button" data-sector="2"><i>✧</i><strong>حلقات زحل</strong><small>عالم من الجليد</small></button>
-        <button class="map-node" type="button" data-sector="3"><i>✦</i><strong>حافة السديم</strong><small>سحب بعيدة</small></button>
+        <button class="map-node" type="button" data-sector="3"><i>✦</i><strong>حافة السديم</strong><small>سحب بعيدة</small></button><button class="map-node hidden-node" type="button" data-place="europa" disabled><i>❄</i><strong>أوروبا</strong><small>موقع مخفي</small></button><button class="map-node hidden-node" type="button" data-place="titan" disabled><i>◉</i><strong>تيتان</strong><small>موقع مخفي</small></button>
       </div>
       <div class="map-detail" id="mapDetail" aria-live="polite"><strong>مدار الأرض</strong><p>هنا تبدأ الرحلة، ومنها تنطلقين لاستكشاف بقية المناطق.</p></div>
       <div class="map-progress"><span>المناطق التي زرتها</span><strong id="mapProgress">1 / 4</strong></div>
@@ -132,8 +132,8 @@
     <article><span class="feature-icon violet">⌁</span><div><strong>قوى المدار</strong><small>درع يحميك ومغناطيس يجذب النجوم</small></div></article>
     <article><span class="feature-icon blackhole-feature">◉</span><div><strong>أفق الحدث</strong><small>قاومي جاذبية الثقب الأسود</small></div></article>
   </section>
-  <footer><span>ORBIT / BUILD 3.9 · GALACTIC EXPLORER</span><span>صُممت لتُلعَب، لا لتُشاهَد فقط.</span></footer>
+  <footer><span>ORBIT / BUILD 4.0 · GALACTIC EXPLORER</span><span>صُممت لتُلعَب، لا لتُشاهَد فقط.</span></footer>
 </main>
-<script src="script.js?v=3.9.0"></script>
+<script src="script.js?v=4.0.0"></script>
 </body>
 </html>
