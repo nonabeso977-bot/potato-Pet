@@ -272,3 +272,21 @@ footer{font-size:8px;margin-top:14px}
 .secret-chip.found{border-style:solid;border-color:#a99bff66;color:#d2c7ff;background:#a99bff12}
 .event-banner{position:absolute;z-index:2;top:12px;left:50%;transform:translateX(-50%);width:max-content;max-width:calc(100% - 24px);padding:8px 13px;border:1px solid #a99bff77;border-radius:20px;background:#11152dcc;box-shadow:0 5px 24px #0006;color:#e6ddff;font-size:10px;text-align:center;backdrop-filter:blur(8px);pointer-events:none}
 @media(max-width:650px){.upgrade-grid{grid-template-columns:1fr}.upgrade-card{padding:10px}.upgrade-card p{min-height:0}.journey-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.event-banner{top:8px;font-size:9px;line-height:1.5}}
+
+
+/* ORBIT 3.9 · galaxy map and rare blue stars */
+.map-open{border-color:#74caff55;background:#74caff0d;color:#c5eaff}
+.map-open b{color:#74caff;font-size:15px}
+.map-dialog{width:min(100%,700px)}
+.galaxy-map{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:16px 24px;padding:22px 12px;margin:10px 0 14px;min-height:245px;border:1px solid #74caff22;border-radius:18px;background:radial-gradient(ellipse at 50% 50%,#243b6c66,transparent 65%),#08152a}
+.map-route{position:absolute;inset:18% 15%;border:1px dashed #74caff55;border-radius:50%;transform:rotate(-22deg);pointer-events:none}
+.map-node{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:90px;padding:9px;border:1px solid #ffffff1a;border-radius:14px;background:#101d38;color:#dce8ff;cursor:pointer}
+.map-node i{display:grid;place-items:center;width:31px;height:31px;border-radius:50%;background:#74caff15;color:#74caff;font-style:normal;font-size:17px}
+.map-node strong{font-size:11px}.map-node small{font-size:9px;color:#899bbb}
+.map-node.visited{border-color:#76e4e466;background:#102b3b}.map-node.visited i{background:#76e4e422;color:#76e4e4;box-shadow:0 0 18px #76e4e422}
+.map-node.current{box-shadow:0 0 0 2px #ffd77a66,0 0 25px #ffd77a22}
+.map-node:active{transform:scale(.98)}
+.map-detail{padding:12px 14px;border:1px solid #a99bff33;border-radius:13px;background:#a99bff0b}
+.map-detail strong{font-size:13px;color:#e9e4ff}.map-detail p{margin:4px 0;color:#aebbd5;font-size:11px;line-height:1.8}.map-detail small{color:#76e4e4;font-size:9px}
+.map-progress{display:flex;justify-content:space-between;align-items:center;margin-top:12px;color:#91a0bf;font-size:10px}.map-progress strong{color:#76e4e4;font:600 12px "Space Grotesk",sans-serif}
+@media(max-width:650px){.map-open{flex-basis:100%}.galaxy-map{gap:10px;padding:14px 8px;min-height:220px}.map-node{min-height:88px}}
