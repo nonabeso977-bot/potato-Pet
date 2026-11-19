@@ -14,7 +14,7 @@ on:
       - ".github/workflows/build-android.yml"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -58,10 +58,25 @@ jobs:
         working-directory: android
         run: ./gradlew assembleDebug
 
-      - name: Upload APK
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: orbit-arcade-android-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 30
+
+      - name: Publish APK release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v4.2.0-android
+          name: "مدار | Orbit Arcade 4.2.0 Android"
+          body: |
+            نسخة أندرويد قابلة للتثبيت من لعبة مدار (Orbit Arcade).
+
+            - تعمل اللعبة الأساسية دون اتصال بالإنترنت.
+            - نزّل ملف APK وثبّته على جهاز Android.
+            - هذه نسخة تجريبية موقّعة بمفتاح Debug، وليست إصدار متجر نهائيًا.
+          files: android/app/build/outputs/apk/debug/app-debug.apk
+          fail_on_unmatched_files: true
+          make_latest: true
