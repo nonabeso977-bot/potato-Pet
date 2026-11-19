@@ -1,0 +1,11 @@
+{
+  "name": "orbit-arcade-android",
+  "version": "4.2.0",
+  "private": true,
+  "description": "Android package build for مدار | ORBIT ARCADE",
+  "scripts": {
+    "prepare:web": "node scripts/prepare-android.mjs",
+    "android:sync": "npm run prepare:web && cap sync android",
+    "android:debug": "npm run android:sync && cd android && ./gradlew assembleDebug"
+  }
+}
