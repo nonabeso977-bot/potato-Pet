@@ -104,8 +104,26 @@ const MAP_DETAILS=[
  ["مدار الأرض","نقطة البداية. هنا تبدئين جمع النجوم والتعرّف إلى الطريق."],
  ["سهول المريخ","عالم أحمر تغطيه سهول واسعة وغبار دقيق. راقبي الصخور المتحركة."],
  ["حلقات زحل","حلقات زحل تتكوّن أساسًا من قطع جليدية وصخرية تدور حول الكوكب."],
- ["حافة السديم","سحب ضخمة من الغاز والغبار، وهي مناطق يمكن أن تولد فيها نجوم جديدة."]
+ ["حافة السديم","سحب ضخمة من الغاز والغبار، وهي مناطق يمكن أن تولد فيها نجوم جديدة."],
+ ["أوروبا","قمر جليدي يدور حول المشتري. تشير الأدلة إلى وجود محيط مالح تحت سطحه."],
+ ["تيتان","أكبر أقمار زحل. له غلاف جوي كثيف وبحيرات من الميثان السائل."]
 ];
+const TRAILS=[{id:"blue",name:"نبض أزرق",color:"#74caff",cost:0},{id:"gold",name:"غبار ذهبي",color:"#ffd77a",cost:120},{id:"violet",name:"شفق بنفسجي",color:"#b49aff",cost:180}];
+function syncHiddenPlaces(){const unlocked=[];if(progress.sectors.length>=STAGES.length)unlocked.push("europa");if(progress.secrets.length>=3)unlocked.push("titan");let changed=false;for(const id of unlocked)if(!progress.hiddenPlaces.includes(id)){progress.hiddenPlaces.push(id);changed=true;}if(changed)saveProgress();}
+function renderDaily(){
+ const d=progress.daily,done=d.progress>=25;
+ $("dailyCard").innerHTML='<strong>جامع النجوم اليومي</strong><p>اجمعي 25 نجمة اليوم.</p><div class="daily-progress"><i style="width:'+Math.min(100,d.progress/25*100)+'%"></i></div><small>'+Math.min(25,d.progress)+' / 25 · المكافأة 35 ✦</small><br><button id="claimDaily" type="button" '+(!done||d.claimed?"disabled":"")+'>'+(d.claimed?"تم الاستلام":done?"استلام 35 نجمة":"واصلي الجمع")+'</button>';
+ const claim=$("claimDaily");
+ if(claim)claim.addEventListener("click",()=>{if(progress.daily.claimed||progress.daily.progress<25)return;progress.daily.claimed=true;progress.bank+=35;saveProgress();renderDaily();renderSkins();renderWorkshop();sound(1060,.18,"triangle");});
+}
+function renderTrails(){
+ $("trailGrid").innerHTML=TRAILS.map(t=>{const owned=progress.trailsOwned.includes(t.id),selected=progress.selectedTrail===t.id;return '<button class="trail-option '+(selected?"selected":"")+'" data-trail="'+t.id+'" type="button"><i style="color:'+t.color+'"></i><span>'+t.name+'</span><small>'+(selected?"محدد":owned?"اختيار":t.cost+" ✦")+'</small></button>';}).join("");
+ $("trailGrid").querySelectorAll("[data-trail]").forEach(b=>b.addEventListener("click",()=>{const t=TRAILS.find(x=>x.id===b.dataset.trail);if(!t)return;if(!progress.trailsOwned.includes(t.id)){if(progress.bank<t.cost)return;progress.bank-=t.cost;progress.trailsOwned.push(t.id);}progress.selectedTrail=t.id;saveProgress();renderTrails();renderSkins();}));
+}
+function renderAbilityShop(){
+ $("abilityShop").innerHTML='<article class="ability-card"><strong>اندفاع فضائي</strong><p>حماية لمدة 3 ثوانٍ، ثم إعادة شحن 16 ثانية.</p><button id="buyBoost" type="button" '+(progress.ownedBoost?"disabled":progress.bank<160?"disabled":"")+'>'+(progress.ownedBoost?"تم فتح القدرة":"فتح القدرة · 160 ✦")+'</button></article>';
+ const b=$("buyBoost");b?.addEventListener("click",()=>{if(progress.ownedBoost||progress.bank<160)return;progress.bank-=160;progress.ownedBoost=true;saveProgress();renderAbilityShop();renderSkins();sound(1040,.2,"triangle");});
+}
 function renderMap(){
  const visited=progress.sectors;
  $("mapProgress").textContent=visited.length+" / "+STAGES.length;
