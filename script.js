@@ -240,7 +240,7 @@ function renderSkins(){
   selectedSkin=skin.id;try{localStorage.setItem(SKIN_SAVE,selectedSkin);}catch(_){}renderSkins();
  }));
 }
-function openHangar(){renderSkins();renderWorkshop();renderJourneyStats();renderRecords();renderAchievements();try{$("pilotNameInput").value=localStorage.getItem("orbitPilotName")||"";}catch(_){}$("hangarModal").hidden=false;}
+function openHangar(){renderSkins();renderWorkshop();renderTrails();renderAbilityShop();renderDaily();renderJourneyStats();renderRecords();renderAchievements();try{$("pilotNameInput").value=localStorage.getItem("orbitPilotName")||"";}catch(_){}$("hangarModal").hidden=false;}
 function closeHangar(){$("hangarModal").hidden=true;}
 function saveRunRecord(){
  let name="رحّالة";try{name=(localStorage.getItem("orbitPilotName")||"رحّالة").trim().slice(0,16)||"رحّالة";}catch(_){}
@@ -484,7 +484,7 @@ function checkMission(){
 function collectStar(s){
  const rare=s.kind==="blue";
  score+=(rare?60:(activeEvent?.type==="aurora"?20:10))*combo;
- combo=Math.min(8,combo+1);comboTime=2.2;collected++;addLifetimeStar(rare?5:1);awardAchievement("first-star");checkMission();
+ combo=Math.min(8,combo+1);comboTime=2.2;collected++;addLifetimeStar(rare?5:1);progress.daily.progress+=rare?5:1;saveProgress();if(!$("hangarModal").hidden)renderDaily();awardAchievement("first-star");checkMission();
  burst(s.x,s.y,rare?"#74caff":"#ffd77a",rare?22:12);sound(rare?1180:720+combo*55,.09,"triangle");
  if(collected>=20&&!starMilestoneAwarded){starMilestoneAwarded=true;awardAchievement("mission-20");}
  updateHUD();
@@ -750,5 +750,5 @@ if("ResizeObserver" in window){
  arenaObserver.observe(canvas.parentElement);
 }
 document.addEventListener("visibilitychange",()=>{if(document.hidden&&state==="running")pause();});
-$("exitButton").hidden=true;setBest();updateAtlasButton();renderAtlas();renderSkins();renderRecords();renderAchievements();renderMap();resize();draw(0);
+$("exitButton").hidden=true;setBest();updateAtlasButton();renderAtlas();renderSkins();renderRecords();renderAchievements();renderMap();renderTrails();renderAbilityShop();renderDaily();resize();draw(0);
 })();
