@@ -49,8 +49,17 @@ jobs:
       - name: Install Capacitor
         run: npm install --no-audit --no-fund @capacitor/core@6.2.1 @capacitor/cli@6.2.1 @capacitor/android@6.2.1
 
+      - name: Restore stable debug signing key
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: orbit-arcade-debug-keystore-v1
+
       - name: Generate Android project
         run: npx cap add android
+
+      - name: Set Android version metadata
+        run: node scripts/set-android-version.mjs
 
       - name: Bundle the game for offline use
         run: npm run prepare:web && npx cap sync android
