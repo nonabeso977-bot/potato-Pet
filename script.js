@@ -31,8 +31,19 @@ const clampLevel=n=>Number.isInteger(n)?Math.max(0,Math.min(3,n)):0;
 const safeReadProgress=()=>{
  try{
   const v=JSON.parse(localStorage.getItem(PROGRESS_SAVE)||"{}");
-  return {stars:Number.isFinite(v.stars)?Math.max(0,v.stars):0,bank:Number.isFinite(v.bank)?Math.max(0,v.bank):(Number.isFinite(v.stars)?Math.max(0,v.stars):0),ownedSkins:Array.isArray(v.ownedSkins)?[...new Set(v.ownedSkins.filter(id=>SKINS.some(s=>s.id===id)))]:SKINS.filter(s=>!s.cost).map(s=>s.id),sectors:Array.isArray(v.sectors)?[...new Set(v.sectors.filter(n=>Number.isInteger(n)&&n>=0&&n<STAGES.length))]:[],unlocked:Array.isArray(v.unlocked)?[...new Set(v.unlocked.filter(id=>ACHIEVEMENTS.some(a=>a.id===id)))]:[],upgrades:{engine:clampLevel(v.upgrades?.engine),shield:clampLevel(v.upgrades?.shield),magnet:clampLevel(v.upgrades?.magnet)},secrets:Array.isArray(v.secrets)?[...new Set(v.secrets.filter(id=>["aurora","eclipse","supernova","meteor","starfall"].includes(id)))]:[],stats:{runs:Math.max(0,Number(v.stats?.runs)||0),totalScore:Math.max(0,Number(v.stats?.totalScore)||0),longest:Math.max(0,Number(v.stats?.longest)||0),blackHoles:Math.max(0,Number(v.stats?.blackHoles)||0),missions:Math.max(0,Number(v.stats?.missions)||0),stars:Math.max(0,Number(v.stats?.stars)||0)}};
- }catch(_){return{stars:0,bank:0,ownedSkins:SKINS.filter(s=>!s.cost).map(s=>s.id),sectors:[],unlocked:[],upgrades:{engine:0,shield:0,magnet:0},secrets:[],stats:{runs:0,totalScore:0,longest:0,blackHoles:0,missions:0,stars:0}};}
+  const today=new Date().toLocaleDateString("en-CA");
+  const daily=v.daily&&v.daily.day===today?{day:today,progress:Math.max(0,Number(v.daily.progress)||0),claimed:!!v.daily.claimed}:{day:today,progress:0,claimed:false};
+  return {stars:Number.isFinite(v.stars)?Math.max(0,v.stars):0,bank:Number.isFinite(v.bank)?Math.max(0,v.bank):(Number.isFinite(v.stars)?Math.max(0,v.stars):0),
+   ownedSkins:Array.isArray(v.ownedSkins)?[...new Set(v.ownedSkins.filter(id=>SKINS.some(s=>s.id===id)))]:SKINS.filter(s=>!s.cost).map(s=>s.id),
+   sectors:Array.isArray(v.sectors)?[...new Set(v.sectors.filter(n=>Number.isInteger(n)&&n>=0&&n<STAGES.length))]:[],
+   hiddenPlaces:Array.isArray(v.hiddenPlaces)?[...new Set(v.hiddenPlaces.filter(id=>["europa","titan"].includes(id)))]:[],
+   unlocked:Array.isArray(v.unlocked)?[...new Set(v.unlocked.filter(id=>ACHIEVEMENTS.some(a=>a.id===id)))]:[],
+   upgrades:{engine:clampLevel(v.upgrades?.engine),shield:clampLevel(v.upgrades?.shield),magnet:clampLevel(v.upgrades?.magnet)},
+   secrets:Array.isArray(v.secrets)?[...new Set(v.secrets.filter(id=>["aurora","eclipse","supernova","meteor","starfall"].includes(id)))]:[],
+   ownedBoost:!!v.ownedBoost,trailsOwned:Array.isArray(v.trailsOwned)?[...new Set(v.trailsOwned.filter(id=>["blue","gold","violet"].includes(id)))]:["blue"],
+   selectedTrail:["blue","gold","violet"].includes(v.selectedTrail)?v.selectedTrail:"blue",daily,
+   stats:{runs:Math.max(0,Number(v.stats?.runs)||0),totalScore:Math.max(0,Number(v.stats?.totalScore)||0),longest:Math.max(0,Number(v.stats?.longest)||0),blackHoles:Math.max(0,Number(v.stats?.blackHoles)||0),missions:Math.max(0,Number(v.stats?.missions)||0),stars:Math.max(0,Number(v.stats?.stars)||0)}};
+ }catch(_){return{stars:0,bank:0,ownedSkins:SKINS.filter(s=>!s.cost).map(s=>s.id),sectors:[],hiddenPlaces:[],unlocked:[],upgrades:{engine:0,shield:0,magnet:0},secrets:[],ownedBoost:false,trailsOwned:["blue"],selectedTrail:"blue",daily:{day:new Date().toLocaleDateString("en-CA"),progress:0,claimed:false},stats:{runs:0,totalScore:0,longest:0,blackHoles:0,missions:0,stars:0}};}
 };
 let progress=safeReadProgress(),survivedMinute=false,activeEvent=null,nextEventAt=32,eventSpawnClock=0,runStatsSaved=false,runBlackHoles=0;
 let selectedMission=MISSIONS[0],lastMissionId="",nearMisses=0,starMilestoneAwarded=false,missionDone=false,missionShownProgress=-1,timeDilation=1,lastMusicDilation=1;
@@ -54,7 +65,12 @@ const FACTS=[
  {tag:"COMET",title:"ذيل لا يسبق المذنب",body:"عندما يقترب المذنب من الشمس، يسخن الجليد فيه ويخرج منه غاز وغبار. لذلك يظهر له ذيل يتجه بعيدًا عن الشمس."},
  {tag:"EXOPLANET",title:"عوالم حول نجوم أخرى",body:"الكواكب الخارجية تدور حول نجوم غير الشمس. اكتشف العلماء آلافًا منها، وبعضها قد تكون لديه ظروف مناسبة للماء."},
  {tag:"URANUS",title:"كوكب يدور على جانبه",body:"يميل محور أورانوس كثيرًا، لذلك يبدو كأنه يتدحرج حول الشمس بدل أن يدور مثل معظم الكواكب."},
- {tag:"PLUTO",title:"عالم جليدي صغير",body:"بلوتو كوكب قزم بعيد، ويحتاج نحو 248 سنة أرضية ليكمل دورة واحدة حول الشمس."}
+ {tag:"PLUTO",title:"عالم جليدي صغير",body:"بلوتو كوكب قزم بعيد، ويحتاج نحو 248 سنة أرضية ليكمل دورة واحدة حول الشمس."},
+ {tag:"TITAN",title:"بحيرات ليست من الماء",body:"قمر زحل تيتان لديه بحيرات وأنهار من الميثان والإيثان السائلين، لأن سطحه شديد البرودة."},
+ {tag:"TRAPPIST-1",title:"سبعة عوالم متقاربة",body:"حول النجم TRAPPIST-1 سبعة كواكب بحجم قريب من الأرض، وبعض مداراتها تسمح بوجود ماء سائل إذا توافرت الظروف المناسبة."},
+ {tag:"NEBULA",title:"مهد النجوم",body:"السدم سحب من الغاز والغبار. في بعض أجزائها تنهار المادة بفعل الجاذبية، فتبدأ نجوم جديدة بالتكوّن."},
+ {tag:"EUROPA",title:"محيط تحت الجليد",body:"قمر أوروبا حول المشتري مغطى بالجليد، وتشير القياسات إلى وجود محيط مالح تحته. لذلك يهتم العلماء بدراسة هذا العالم."},
+ {tag:"LIGHT IN SPACE",title:"الضوء يعبر الفراغ",body:"الصوت يحتاج إلى مادة لينتقل، لذلك لا نسمعه في فراغ الفضاء. أما الضوء فيستطيع السفر عبره بسرعة تقارب 300 ألف كيلومتر في الثانية."}
 ];
 const safeReadAtlas=()=>{try{const v=JSON.parse(localStorage.getItem(ATLAS_SAVE)||"[]");return Array.isArray(v)?[...new Set(v.filter(n=>Number.isInteger(n)&&n>=0&&n<FACTS.length))]:[];}catch(_){return[];}};
 const safeSaveAtlas=()=>{try{localStorage.setItem(ATLAS_SAVE,JSON.stringify(discovered));}catch(_){}};
