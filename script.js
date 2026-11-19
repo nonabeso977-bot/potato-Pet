@@ -27,13 +27,14 @@ const MISSIONS=[
  {id:"saturn",title:"زوري حلقات زحل",target:1,unit:"/ 1",reward:260,starReward:26}
 ];
 const PROGRESS_SAVE="orbitProgress.v1";
+const clampLevel=n=>Number.isInteger(n)?Math.max(0,Math.min(3,n)):0;
 const safeReadProgress=()=>{
  try{
   const v=JSON.parse(localStorage.getItem(PROGRESS_SAVE)||"{}");
-  return {stars:Number.isFinite(v.stars)?Math.max(0,v.stars):0,bank:Number.isFinite(v.bank)?Math.max(0,v.bank):(Number.isFinite(v.stars)?Math.max(0,v.stars):0),ownedSkins:Array.isArray(v.ownedSkins)?[...new Set(v.ownedSkins.filter(id=>SKINS.some(s=>s.id===id)))]:SKINS.filter(s=>!s.cost).map(s=>s.id),sectors:Array.isArray(v.sectors)?[...new Set(v.sectors.filter(n=>Number.isInteger(n)&&n>=0&&n<STAGES.length))]:[],unlocked:Array.isArray(v.unlocked)?[...new Set(v.unlocked.filter(id=>ACHIEVEMENTS.some(a=>a.id===id)))]:[]};
- }catch(_){return{stars:0,bank:0,ownedSkins:SKINS.filter(s=>!s.cost).map(s=>s.id),sectors:[],unlocked:[]};}
+  return {stars:Number.isFinite(v.stars)?Math.max(0,v.stars):0,bank:Number.isFinite(v.bank)?Math.max(0,v.bank):(Number.isFinite(v.stars)?Math.max(0,v.stars):0),ownedSkins:Array.isArray(v.ownedSkins)?[...new Set(v.ownedSkins.filter(id=>SKINS.some(s=>s.id===id)))]:SKINS.filter(s=>!s.cost).map(s=>s.id),sectors:Array.isArray(v.sectors)?[...new Set(v.sectors.filter(n=>Number.isInteger(n)&&n>=0&&n<STAGES.length))]:[],unlocked:Array.isArray(v.unlocked)?[...new Set(v.unlocked.filter(id=>ACHIEVEMENTS.some(a=>a.id===id)))]:[],upgrades:{engine:clampLevel(v.upgrades?.engine),shield:clampLevel(v.upgrades?.shield),magnet:clampLevel(v.upgrades?.magnet)},secrets:Array.isArray(v.secrets)?[...new Set(v.secrets.filter(id=>["aurora","eclipse","supernova","meteor"].includes(id)))]:[],stats:{runs:Math.max(0,Number(v.stats?.runs)||0),totalScore:Math.max(0,Number(v.stats?.totalScore)||0),longest:Math.max(0,Number(v.stats?.longest)||0),blackHoles:Math.max(0,Number(v.stats?.blackHoles)||0),missions:Math.max(0,Number(v.stats?.missions)||0),stars:Math.max(0,Number(v.stats?.stars)||0)}};
+ }catch(_){return{stars:0,bank:0,ownedSkins:SKINS.filter(s=>!s.cost).map(s=>s.id),sectors:[],unlocked:[],upgrades:{engine:0,shield:0,magnet:0},secrets:[],stats:{runs:0,totalScore:0,longest:0,blackHoles:0,missions:0,stars:0}};}
 };
-let progress=safeReadProgress(),survivedMinute=false;
+let progress=safeReadProgress(),survivedMinute=false,activeEvent=null,nextEventAt=32,eventSpawnClock=0,runStatsSaved=false,runBlackHoles=0;
 let selectedMission=MISSIONS[0],lastMissionId="",nearMisses=0,starMilestoneAwarded=false,missionDone=false,missionShownProgress=-1,timeDilation=1,lastMusicDilation=1;
 let selectedSkin=(()=>{try{const saved=localStorage.getItem(SKIN_SAVE)||"nova";return SKINS.some(s=>s.id===saved&&(!s.cost||progress.ownedSkins.includes(s.id)))?saved:"nova";}catch(_){return"nova";}})();
 let records=(()=>{try{const v=JSON.parse(localStorage.getItem(RECORDS_SAVE)||"[]");return Array.isArray(v)?v.filter(x=>x&&typeof x.name==="string"&&Number.isFinite(x.score)).sort((a,b)=>b.score-a.score).slice(0,10):[];}catch(_){return[];}})();
@@ -106,7 +107,7 @@ function markSector(index){
  }
 }
 function addLifetimeStar(){
- progress.stars++;progress.bank++;saveProgress();
+ progress.stars++;progress.bank++;progress.stats.stars++;saveProgress();
  if(progress.stars>=100)awardAchievement("hundred-stars");
 }
 function renderRecords(){
@@ -119,6 +120,42 @@ function renderRecords(){
  }).join("");
 }
 function escapeText(value){return value.replace(/[&<>\"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[ch]));}
+const UPGRADE_DEFS=[
+ {id:"engine",name:"محرك الانسياب",desc:"استجابة أسرع لحركة المركبة",costs:[120,240,420],icon:"↗"},
+ {id:"shield",name:"درع ممتد",desc:"ثوانٍ إضافية من الحماية",costs:[140,260,440],icon:"◎"},
+ {id:"magnet",name:"مغناطيس أوسع",desc:"يجذب النجوم من مسافة أبعد",costs:[130,250,430],icon:"⌁"}
+];
+function renderWorkshop(){
+ $("upgradeGrid").innerHTML=UPGRADE_DEFS.map(u=>{
+  const level=progress.upgrades[u.id]||0,price=u.costs[level],max=level>=3;
+  return '<article class="upgrade-card"><div class="upgrade-top"><i>'+u.icon+'</i><span>المستوى '+level+' / 3</span></div><strong>'+u.name+'</strong><p>'+u.desc+'</p><div class="upgrade-track"><i style="width:'+(level/3*100)+'%"></i></div><button type="button" data-upgrade="'+u.id+'" '+(max||progress.bank<price?"disabled":"")+'>'+(max?"اكتملت الترقية": "تطوير · "+price+" ✦")+'</button></article>';
+ }).join("");
+ $("upgradeGrid").querySelectorAll("[data-upgrade]").forEach(button=>button.addEventListener("click",()=>{
+  const item=UPGRADE_DEFS.find(u=>u.id===button.dataset.upgrade);if(!item)return;
+  const level=progress.upgrades[item.id]||0,price=item.costs[level];
+  if(level>=3||progress.bank<price)return;
+  progress.bank-=price;progress.upgrades[item.id]=level+1;saveProgress();
+  $("skinShopNotice").textContent="تم تطوير "+item.name+" إلى المستوى "+(level+1)+".";
+  sound(980,.18,"triangle");renderWorkshop();renderSkins();
+ }));
+}
+function renderJourneyStats(){
+ const st=progress.stats;
+ $("journeyStats").innerHTML=[
+  ["الرحلات",st.runs],["مجموع النقاط",format(st.totalScore)],["أطول نجاة",Math.floor(st.longest)+" ث"],["ثقوب سوداء",st.blackHoles],["مهمات مكتملة",st.missions],["نجوم جُمعت",st.stars]
+ ].map(x=>'<div class="journey-stat"><small>'+x[0]+'</small><strong>'+x[1]+'</strong></div>').join("");
+ const labels={aurora:"الشفق القطبي",meteor:"زخة النيازك",eclipse:"الكسوف",supernova:"الانفجار النجمي"};
+ $("secretList").innerHTML=Object.entries(labels).map(([id,name])=>'<span class="secret-chip '+(progress.secrets.includes(id)?"found":"")+'">'+(progress.secrets.includes(id)?"✦ ":"? ")+name+'</span>').join("");
+}
+function unlockSecret(id){
+ if(progress.secrets.includes(id))return;
+ progress.secrets.push(id);saveProgress();renderJourneyStats();
+ const names={aurora:"الشفق القطبي",meteor:"زخة النيازك",eclipse:"الكسوف",supernova:"الانفجار النجمي"};
+ $("discoveryTitle").textContent="اكتشاف سري: "+names[id];
+ $("discoveryFact").textContent="رصدتِ حدثًا نادرًا في الفضاء. عاد هذا الاكتشاف إلى سجل رحلاتك.";
+ $("discoveryToast").hidden=false;$("discoveryToast").classList.remove("show");
+ requestAnimationFrame(()=>$("discoveryToast").classList.add("show"));discoveryToastTime=4.2;
+}
 function renderSkins(){
  $("starBalance").textContent=String(progress.bank);
  $("skinGrid").innerHTML=SKINS.map(s=>{
@@ -136,7 +173,7 @@ function renderSkins(){
   selectedSkin=skin.id;try{localStorage.setItem(SKIN_SAVE,selectedSkin);}catch(_){}renderSkins();
  }));
 }
-function openHangar(){renderSkins();renderRecords();renderAchievements();try{$("pilotNameInput").value=localStorage.getItem("orbitPilotName")||"";}catch(_){}$("hangarModal").hidden=false;}
+function openHangar(){renderSkins();renderWorkshop();renderJourneyStats();renderRecords();renderAchievements();try{$("pilotNameInput").value=localStorage.getItem("orbitPilotName")||"";}catch(_){}$("hangarModal").hidden=false;}
 function closeHangar(){$("hangarModal").hidden=true;}
 function saveRunRecord(){
  let name="رحّالة";try{name=(localStorage.getItem("orbitPilotName")||"رحّالة").trim().slice(0,16)||"رحّالة";}catch(_){}
@@ -159,6 +196,7 @@ function resize(){
  backgroundStars=Array.from({length:Math.max(45,Math.round(width*height/6500))},()=>({x:rand(0,width),y:rand(0,height),r:rand(.4,1.7),a:rand(.2,.8),phase:rand(0,6)}));
 }
 function reset(){
+ runStatsSaved=false;runBlackHoles=0;activeEvent=null;eventSpawnClock=0;nextEventAt=rand(27,39);$("eventBanner").hidden=true;
  score=0;lives=3;level=1;stageIndex=0;combo=1;comboTime=0;elapsed=0;spawnClock=0;stars=[];rocks=[];blackHoles=[];pickups=[];artifacts=[];particles=[];firstRockPending=true;
  shieldTime=0;magnetTime=0;collected=0;missionDone=false;nearMisses=0;starMilestoneAwarded=false;missionShownProgress=-1;timeDilation=1;lastMusicDilation=1;shake=0;discoveryToastTime=0;survivedMinute=false;
  const choices=MISSIONS.filter(m=>m.id!==lastMissionId);selectedMission=choices[Math.floor(Math.random()*choices.length)]||MISSIONS[0];lastMissionId=selectedMission.id;markSector(0);
@@ -225,7 +263,7 @@ function resume(){
  if(state!=="paused")return;state="running";$("arenaMessage").hidden=true;$("pauseButton").textContent="Ⅱ";last=performance.now();requestAnimationFrame(loop);
 }
 function endGame(){
- state="over";saveRunRecord();const newRecord=score>best;if(newRecord){best=score;safeSaveBest(best);setBest();}
+ state="over";if(!runStatsSaved){runStatsSaved=true;progress.stats.runs++;progress.stats.totalScore+=score;progress.stats.longest=Math.max(progress.stats.longest,elapsed);progress.stats.blackHoles+=runBlackHoles;if(missionDone)progress.stats.missions++;saveProgress();renderJourneyStats();}saveRunRecord();const newRecord=score>best;if(newRecord){best=score;safeSaveBest(best);setBest();}
  $("pauseButton").textContent="↻";showMessage("انتهت الرحلة","نتيجتك "+format(score)+" · "+(newRecord?"رقم قياسي جديد!":"حاولي تجاوز رقمك القياسي"),"رحلة جديدة");
  $("exitButton").hidden=false;
 }
@@ -327,7 +365,7 @@ function spawn(){
    return;
  }
  if(roll<.065&&!blackHoles.length){
-   blackHoles.push({x,y:rand(height*.2,height*.58),r:24,life:7.5,age:0,spin:rand(0,6),seed:rand(0,Math.PI*2)});
+   runBlackHoles++;blackHoles.push({x,y:rand(height*.2,height*.58),r:24,life:7.5,age:0,spin:rand(0,6),seed:rand(0,Math.PI*2)});
    sound(115,.24,"sine");
    return;
  }
@@ -337,6 +375,23 @@ function spawn(){
  }
  if(Math.random()<.48)stars.push({x,y:-15,r:8,vy:rand(95,145)+level*7,spin:rand(0,6),pulse:rand(0,6)});
  else rocks.push(makeRock());
+}
+function triggerCosmicEvent(){
+ const types=["aurora","meteor","eclipse","supernova"];
+ const type=types[Math.floor(Math.random()*types.length)];
+ activeEvent={type,time:0,duration:type==="supernova"?5.5:9};
+ const data={
+  aurora:["الشفق القطبي","النجوم تمنح نقاطًا مضاعفة"],
+  meteor:["زخة النيازك","موجة صخور إضافية، تحركي بحذر"],
+  eclipse:["الكسوف","يخفت الضوء قليلًا ويتغير صوت الفضاء"],
+  supernova:["انفجار نجمي","تجمّع نجوم نادر ظهر أمامك"]
+ }[type];
+ $("eventBanner").textContent="حدث نادر · "+data[0]+" · "+data[1];$("eventBanner").hidden=false;
+ if(type==="supernova"){
+  for(let i=0;i<9;i++)stars.push({x:rand(24,width-24),y:rand(height*.12,height*.52),r:9,vy:rand(55,85),spin:rand(0,6),pulse:rand(0,6)});
+  burst(width*.5,height*.3,"#ffd77a",55);
+ }
+ sound(type==="meteor"?260:type==="eclipse"?180:880,.2,type==="meteor"?"sawtooth":"sine");
 }
 function circleHit(a,b){const dx=a.x-b.x,dy=a.y-b.y,rr=a.r+b.r;return dx*dx+dy*dy<rr*rr;}
 function missionValue(){
@@ -350,19 +405,19 @@ function missionValue(){
 function checkMission(){
  if(missionDone)return;
  if(missionValue()>=selectedMission.target){
-  missionDone=true;score+=selectedMission.reward;progress.bank+=selectedMission.starReward;saveProgress();
+  missionDone=true;score+=selectedMission.reward;progress.bank+=selectedMission.starReward;progress.stats.missions++;saveProgress();
   burst(player.x,player.y,"#76e4e4",30);sound(980,.24,"triangle");updateHUD();
  }
 }
 function collectStar(s){
- score+=10*combo;combo=Math.min(8,combo+1);comboTime=2.2;collected++;addLifetimeStar();awardAchievement("first-star");checkMission();
+ score+=(activeEvent?.type==="aurora"?20:10)*combo;combo=Math.min(8,combo+1);comboTime=2.2;collected++;addLifetimeStar();awardAchievement("first-star");checkMission();
  burst(s.x,s.y,"#ffd77a",12);sound(720+combo*55,.065,"triangle");
  if(collected>=20&&!starMilestoneAwarded){starMilestoneAwarded=true;awardAchievement("mission-20");}
  updateHUD();
 }
 function collectPickup(p){
- if(p.kind==="shield"){shieldTime=6;magnetTime=0;burst(p.x,p.y,"#76e4e4",22);sound(840,.13,"sine");}
- else{magnetTime=7;shieldTime=0;burst(p.x,p.y,"#a99bff",22);sound(920,.13,"triangle");}
+ if(p.kind==="shield"){shieldTime=6+(progress.upgrades.shield||0)*1.25;magnetTime=0;burst(p.x,p.y,"#76e4e4",22);sound(840,.13,"sine");}
+ else{magnetTime=7+(progress.upgrades.magnet||0)*1.3;shieldTime=0;burst(p.x,p.y,"#a99bff",22);sound(920,.13,"triangle");}
  updateHUD();
 }
 function collectArtifact(a){
@@ -397,10 +452,17 @@ function update(dt){
  if(nextStage!==stageIndex){stageIndex=nextStage;markSector(stageIndex);checkMission();updateHUD();sound(360,.16,"sine");}
  if(elapsed>=60&&!survivedMinute){survivedMinute=true;awardAchievement("minute-survivor");}spawnClock+=step;
  if(selectedMission.id==="survive"&&Math.floor(elapsed)!==missionShownProgress){updateHUD();checkMission();}
+ if(!activeEvent&&elapsed>=nextEventAt)triggerCosmicEvent();
+ if(activeEvent){
+  activeEvent.time+=step;
+  if(activeEvent.type==="meteor"){eventSpawnClock+=step;while(eventSpawnClock>.48){eventSpawnClock-=.48;const rock=makeRock();rock.vy*=1.25;rocks.push(rock);}}
+  if(activeEvent.time>=activeEvent.duration){unlockSecret(activeEvent.type);activeEvent=null;$("eventBanner").hidden=true;nextEventAt=elapsed+rand(43,62);}
+ }
  const interval=Math.max(.28,.88-level*.055);
  while(spawnClock>interval){spawnClock-=interval;spawn();}
- player.x+=(player.targetX-player.x)*Math.min(1,step*13);
- player.y+=(player.targetY-player.y)*Math.min(1,step*13);
+
+ player.x+=(player.targetX-player.x)*Math.min(1,step*(13+(progress.upgrades.engine||0)*2.4));
+ player.y+=(player.targetY-player.y)*Math.min(1,step*(13+(progress.upgrades.engine||0)*2.4));
  player.x=clamp(player.x,player.r+7,width-player.r-7);player.y=clamp(player.y,height*.42,height-28);
  player.invulnerable=Math.max(0,player.invulnerable-step);
  if(comboTime>0){comboTime-=step;if(comboTime<=0){combo=1;updateHUD();}}
@@ -413,7 +475,7 @@ function update(dt){
    if(discoveryToastTime<=0){$("discoveryToast").classList.remove("show");$("discoveryToast").hidden=true;}
  }
  if(magnetTime>0){
-   for(const s of stars){const dx=player.x-s.x,dy=player.y-s.y,d=Math.hypot(dx,dy);if(d<175&&d>1){const pull=(1-d/175)*420;s.x+=dx/d*pull*step;s.y+=dy/d*pull*step;}}
+   for(const s of stars){const dx=player.x-s.x,dy=player.y-s.y,d=Math.hypot(dx,dy);if(d<175+(progress.upgrades.magnet||0)*35&&d>1){const range=175+(progress.upgrades.magnet||0)*35;const pull=(1-d/range)*420;s.x+=dx/d*pull*step;s.y+=dy/d*pull*step;}}
  }
  for(let i=blackHoles.length-1;i>=0;i--){
    const b=blackHoles[i];b.age+=step;b.life-=step;b.spin+=step*.7;
@@ -459,6 +521,8 @@ function drawBackground(t){
  if(stageIndex===0){ctx.strokeStyle="#8de7ff22";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(width*.76,height*.23,width*.25,18,-.25,0,Math.PI*2);ctx.stroke();}
  if(stageIndex===1){ctx.save();ctx.globalAlpha=.16;for(let i=0;i<9;i++){const x=(i*97+elapsed*22)%(width+80)-40,y=(i*61+30)%height;ctx.strokeStyle="#ffc19b";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+rand(12,34),y-2);ctx.stroke();}ctx.restore();}
  if(stageIndex===2){ctx.save();ctx.translate(width*.76,height*.22);ctx.rotate(-.22);ctx.strokeStyle="#f4d69a55";ctx.lineWidth=9;ctx.beginPath();ctx.ellipse(0,0,65,19,0,0,Math.PI*2);ctx.stroke();ctx.fillStyle="#c9a56b55";ctx.beginPath();ctx.arc(0,0,24,0,Math.PI*2);ctx.fill();ctx.restore();}
+ if(activeEvent?.type==="aurora"){ctx.save();ctx.globalAlpha=.2+.12*Math.sin(t*.002);const aurora=ctx.createLinearGradient(0,height*.12,width,height*.55);aurora.addColorStop(0,"#67f4d000");aurora.addColorStop(.45,"#67f4d055");aurora.addColorStop(1,"#b28cff00");ctx.fillStyle=aurora;ctx.fillRect(0,0,width,height);ctx.restore();}
+ if(activeEvent?.type==="eclipse"){ctx.fillStyle="#05030b88";ctx.fillRect(0,0,width,height);}
  if(stageIndex===3){ctx.save();for(let i=0;i<4;i++){const x=width*(.18+i*.21),y=height*(.18+(i%2)*.2),cloud=ctx.createRadialGradient(x,y,3,x,y,65);cloud.addColorStop(0,"#bda0ff22");cloud.addColorStop(1,"#bda0ff00");ctx.fillStyle=cloud;ctx.fillRect(x-65,y-65,130,130);}ctx.restore();}
 }
 function drawStar(s){
