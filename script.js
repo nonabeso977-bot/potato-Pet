@@ -79,7 +79,7 @@ const safeSaveBest=value=>{try{localStorage.setItem(SAVE,String(value));}catch(_
 let best=safeReadBest(),discovered=safeReadAtlas(),score=0,lives=3,level=1,combo=1,comboTime=0;
 let state="menu",last=0,elapsed=0,spawnClock=0,stars=[],rocks=[],blackHoles=[],pickups=[],artifacts=[],particles=[],backgroundStars=[];
 let discoveryToastTime=0,stageIndex=0,firstRockPending=false;
-let shieldTime=0,magnetTime=0,collected=0,shake=0;
+let shieldTime=0,magnetTime=0,boostTime=0,boostCooldown=0,collected=0,shake=0,runRescueUsed=false;
 let width=0,height=0,dpr=1,player={x:0,y:0,targetX:0,targetY:0,r:13,invulnerable:0};
 let pointerDown=false,muted=false,audio=null,runId=0,musicOn=false,musicNodes=[],musicTimer=null;
 const rand=(a,b)=>a+Math.random()*(b-a);
@@ -263,15 +263,16 @@ function resize(){
  backgroundStars=Array.from({length:Math.max(45,Math.round(width*height/6500))},()=>({x:rand(0,width),y:rand(0,height),r:rand(.4,1.7),a:rand(.2,.8),phase:rand(0,6)}));
 }
 function reset(){
- runStatsSaved=false;runBlackHoles=0;activeEvent=null;eventSpawnClock=0;nextEventAt=rand(27,39);$("eventBanner").hidden=true;
+ runStatsSaved=false;runBlackHoles=0;runRescueUsed=false;boostTime=0;boostCooldown=0;activeEvent=null;eventSpawnClock=0;nextEventAt=rand(27,39);$("eventBanner").hidden=true;
  score=0;lives=3;level=1;stageIndex=0;combo=1;comboTime=0;elapsed=0;spawnClock=0;stars=[];rocks=[];blackHoles=[];pickups=[];artifacts=[];particles=[];firstRockPending=true;
- shieldTime=0;magnetTime=0;collected=0;missionDone=false;nearMisses=0;starMilestoneAwarded=false;missionShownProgress=-1;timeDilation=1;lastMusicDilation=1;shake=0;discoveryToastTime=0;survivedMinute=false;
+ shieldTime=0;magnetTime=0;boostTime=0;boostCooldown=0;collected=0;missionDone=false;nearMisses=0;starMilestoneAwarded=false;missionShownProgress=-1;timeDilation=1;lastMusicDilation=1;shake=0;discoveryToastTime=0;survivedMinute=false;
  const choices=MISSIONS.filter(m=>m.id!==lastMissionId);selectedMission=choices[Math.floor(Math.random()*choices.length)]||MISSIONS[0];lastMissionId=selectedMission.id;markSector(0);
  $("discoveryToast").hidden=true;$("discoveryToast").classList.remove("show");
  player={x:width/2,y:height*.78,targetX:width/2,targetY:height*.78,r:12,invulnerable:1.5};
  updateHUD();runId++;
 }
 function updateHUD(){
+ $("boostButton").disabled=!progress.ownedBoost||boostCooldown>0||boostTime>0||state!=="running";$("boostButton").classList.toggle("ready",progress.ownedBoost&&boostCooldown<=0&&boostTime<=0);$("boostButton").textContent=boostTime>0?"اندفاع نشط":boostCooldown>0?"إعادة الشحن "+Math.ceil(boostCooldown)+"ث":"اندفاع · SPACE";
  $("score").textContent=format(score);$("best").textContent=format(best);$("level").textContent=String(level).padStart(2,"0");
  $("stageName").textContent=STAGES[stageIndex].name;$("stageHint").textContent=STAGES[stageIndex].hint;
  $("lives").querySelectorAll("i").forEach((el,i)=>el.classList.toggle("off",i>=lives));
@@ -437,7 +438,7 @@ function spawn(){
    return;
  }
  if(roll<.12){
-   pickups.push({x,y:-18,r:11,vy:rand(88,112)+level*4,spin:0,kind:Math.random()<.52?"shield":"magnet"});
+   const powerRoll=Math.random();pickups.push({x,y:-18,r:11,vy:rand(88,112)+level*4,spin:0,kind:powerRoll<.36?"shield":powerRoll<.72?"magnet":"crate"});
    return;
  }
  if(Math.random()<.48)stars.push({x,y:-15,r:8,vy:rand(95,145)+level*7,spin:rand(0,6),pulse:rand(0,6),kind:Math.random()<.13?"blue":"normal"});
@@ -489,8 +490,10 @@ function collectStar(s){
  if(collected>=20&&!starMilestoneAwarded){starMilestoneAwarded=true;awardAchievement("mission-20");}
  updateHUD();
 }
+function activateBoost(){if(state!=="running"||!progress.ownedBoost||boostCooldown>0||boostTime>0)return;boostTime=3;boostCooldown=16;player.invulnerable=Math.max(player.invulnerable,3);burst(player.x,player.y,"#74caff",24);sound(760,.18,"sine");updateHUD();}
 function collectPickup(p){
- if(p.kind==="shield"){shieldTime=6+(progress.upgrades.shield||0)*1.25;magnetTime=0;burst(p.x,p.y,"#76e4e4",22);sound(840,.13,"sine");}
+ if(p.kind==="crate"){const reward=Math.floor(Math.random()*4);if(reward===0){score+=180;burst(p.x,p.y,"#ffd77a",28);$("eventBanner").textContent="صندوق مفاجآت · +180 نقطة";}else if(reward===1){addLifetimeStar(8);burst(p.x,p.y,"#74caff",28);$("eventBanner").textContent="صندوق مفاجآت · +8 نجوم";}else if(reward===2){shieldTime=7;magnetTime=0;burst(p.x,p.y,"#76e4e4",28);$("eventBanner").textContent="صندوق مفاجآت · درع مجاني";}else{magnetTime=9;shieldTime=0;burst(p.x,p.y,"#a99bff",28);$("eventBanner").textContent="صندوق مفاجآت · مغناطيس ممتد";}$("eventBanner").hidden=false;sound(1120,.2,"triangle");}
+ else if(p.kind==="shield"){shieldTime=6+(progress.upgrades.shield||0)*1.25;magnetTime=0;burst(p.x,p.y,"#76e4e4",22);sound(840,.13,"sine");}
  else{magnetTime=7+(progress.upgrades.magnet||0)*1.3;shieldTime=0;burst(p.x,p.y,"#a99bff",22);sound(920,.13,"triangle");}
  updateHUD();
 }
@@ -501,7 +504,7 @@ function collectArtifact(a){
  showDiscovery(a.id);updateHUD();updateAtlasButton();
 }
 function hitRock(r){
- if(player.invulnerable>0)return;
+ if(player.invulnerable>0||boostTime>0)return;
  lives--;player.invulnerable=1.35;combo=1;comboTime=0;shake=9;
  burst(player.x,player.y,"#ff9fcb",20);sound(150,.2,"sawtooth");updateHUD();
  if(lives<=0)endGame();
@@ -535,13 +538,13 @@ function update(dt){
  const interval=Math.max(.28,.88-level*.055);
  while(spawnClock>interval){spawnClock-=interval;spawn();}
 
- player.x+=(player.targetX-player.x)*Math.min(1,step*(13+(progress.upgrades.engine||0)*2.4));
- player.y+=(player.targetY-player.y)*Math.min(1,step*(13+(progress.upgrades.engine||0)*2.4));
+ player.x+=(player.targetX-player.x)*Math.min(1,step*(13+(progress.upgrades.engine||0)*2.4)*(boostTime>0?1.65:1));
+ player.y+=(player.targetY-player.y)*Math.min(1,step*(13+(progress.upgrades.engine||0)*2.4)*(boostTime>0?1.65:1));
  player.x=clamp(player.x,player.r+7,width-player.r-7);player.y=clamp(player.y,height*.42,height-28);
  player.invulnerable=Math.max(0,player.invulnerable-step);
  if(comboTime>0){comboTime-=step;if(comboTime<=0){combo=1;updateHUD();}}
  const hadPower=shieldTime>0||magnetTime>0;
- shieldTime=Math.max(0,shieldTime-step);magnetTime=Math.max(0,magnetTime-step);shake=Math.max(0,shake-step*24);
+ shieldTime=Math.max(0,shieldTime-step);magnetTime=Math.max(0,magnetTime-step);boostTime=Math.max(0,boostTime-step);boostCooldown=Math.max(0,boostCooldown-step);shake=Math.max(0,shake-step*24);if(progress.ownedBoost)updateHUD();
  if(hadPower&&!shieldTime&&!magnetTime)updateHUD();
  if(shieldTime>0||magnetTime>0)$("powerTimer").style.width=(Math.max(shieldTime,magnetTime)/7*30)+"px";
  if(discoveryToastTime>0){
@@ -561,7 +564,7 @@ function update(dt){
      player.targetX=clamp(player.targetX+dx/d*pull*step*.55,player.r+7,width-player.r-7);
      player.targetY=clamp(player.targetY+dy/d*pull*step*.55,height*.42,height-28);
    }
-   if(!b.collapsing&&appear>.7&&d<b.r+player.r*.72&&player.invulnerable<=0){
+   if(!b.collapsing&&appear>.7&&d<b.r+player.r*.72&&player.invulnerable<=0&&boostTime<=0){
      b.collapsing=true;b.life=Math.min(b.life,.8);
      if(shieldTime>0){
        shieldTime=0;score+=120;burst(b.x,b.y,"#c9aaff",34);sound(430,.24,"triangle");updateHUD();
@@ -693,10 +696,10 @@ function drawPlayer(t){
 }
 function drawPickup(p){
  ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.spin);
- const color=p.kind==="shield"?"#76e4e4":"#a99bff";
+ const color=p.kind==="shield"?"#76e4e4":p.kind==="crate"?"#ffd77a":"#a99bff";
  ctx.shadowBlur=20;ctx.shadowColor=color;ctx.fillStyle="#111b34";ctx.strokeStyle=color;ctx.lineWidth=2;
  ctx.beginPath();ctx.arc(0,0,p.r,0,Math.PI*2);ctx.fill();ctx.stroke();
- ctx.rotate(-p.spin);ctx.fillStyle=color;ctx.font="bold 15px sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(p.kind==="shield"?"◎":"⌁",0,1);ctx.restore();
+ ctx.rotate(-p.spin);ctx.fillStyle=color;ctx.font="bold 15px sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(p.kind==="shield"?"◎":p.kind==="crate"?"?":"⌁",0,1);ctx.restore();
 }
 function draw(t){
  ctx.save();
@@ -721,7 +724,7 @@ canvas.addEventListener("pointerup",()=>pointerDown=false);canvas.addEventListen
 window.addEventListener("keydown",e=>{
  const key=e.key.toLowerCase();if(["arrowleft","arrowright","arrowup","arrowdown"," "].includes(key))e.preventDefault();
  if(key==="escape"||key==="p"){state==="running"?pause():state==="paused"?resume():null;return;}
- if(state!=="running")return;const step=width*.08;
+ if(state!=="running")return;if(key===" ")activateBoost();const step=width*.08;
  if(key==="arrowleft"||key==="a")player.targetX-=step;if(key==="arrowright"||key==="d")player.targetX+=step;
  if(key==="arrowup"||key==="w")player.targetY-=step;if(key==="arrowdown"||key==="s")player.targetY+=step;
  player.targetX=clamp(player.targetX,18,width-18);player.targetY=clamp(player.targetY,height*.43,height-27);
