@@ -154,7 +154,7 @@ function openMap(){
  showMapDetail(index);
 }
 function showMapDetail(index){
- const hidden=typeof index==="string",placeIndexes={europa:4,titan:5,enceladus:6},factIndexes={europa:3,titan:16,enceladus:19};
+ const hidden=typeof index==="string",placeIndexes={europa:7,titan:8,enceladus:9},factIndexes={europa:3,titan:16,enceladus:19};
  const placeIndex=hidden?placeIndexes[index]:index;
  const [name,description]=MAP_DETAILS[placeIndex];
  const seen=hidden?progress.hiddenPlaces.includes(index):progress.sectors.includes(index);
