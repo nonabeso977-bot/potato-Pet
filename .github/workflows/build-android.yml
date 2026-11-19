@@ -57,7 +57,7 @@ jobs:
 
       - name: Read app version
         id: app_version
-        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+        run: echo "version=$(node -p 'require(\"./package.json\").version')" >> "$GITHUB_OUTPUT"
 
       - name: Build installable debug APK
         working-directory: android
