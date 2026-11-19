@@ -125,13 +125,18 @@ function renderAbilityShop(){
  const b=$("buyBoost");b?.addEventListener("click",()=>{if(progress.ownedBoost||progress.bank<160)return;progress.bank-=160;progress.ownedBoost=true;saveProgress();renderAbilityShop();renderSkins();sound(1040,.2,"triangle");});
 }
 function renderMap(){
+ syncHiddenPlaces();
  const visited=progress.sectors;
- $("mapProgress").textContent=visited.length+" / "+STAGES.length;
+ $("mapProgress").textContent=visited.length+" / "+STAGES.length+" · أسرار "+progress.hiddenPlaces.length+" / 2";
  $("galaxyMap").querySelectorAll("[data-sector]").forEach(button=>{
   const index=Number(button.dataset.sector),seen=visited.includes(index);
-  button.classList.toggle("visited",seen);
-  button.classList.toggle("current",index===stageIndex&&state==="running");
+  button.classList.toggle("visited",seen);button.classList.toggle("current",index===stageIndex&&state==="running");
   button.querySelector("small").textContent=seen?"تمت زيارتها":"لم تُزر بعد";
+ });
+ $("galaxyMap").querySelectorAll("[data-place]").forEach(button=>{
+  const id=button.dataset.place,seen=progress.hiddenPlaces.includes(id);
+  button.disabled=!seen;button.classList.toggle("unlocked",seen);button.classList.toggle("visited",seen);
+  button.querySelector("small").textContent=seen?"تم فتح الموقع":"موقع مخفي";
  });
 }
 function openMap(){
@@ -140,9 +145,10 @@ function openMap(){
  showMapDetail(index);
 }
 function showMapDetail(index){
- const [name,description]=MAP_DETAILS[index];
- const seen=progress.sectors.includes(index);
- $("mapDetail").innerHTML="<strong>"+name+"</strong><p>"+description+"</p><small>"+(seen?"سُجلت هذه المنطقة في رحلاتك.":"ستُسجل عند الوصول إليها أثناء اللعب.")+"</small>";
+ const hidden=typeof index==="string",placeIndex=hidden?(index==="europa"?4:5):index;
+ const [name,description]=MAP_DETAILS[placeIndex];
+ const seen=hidden?progress.hiddenPlaces.includes(index):progress.sectors.includes(index);
+ $("mapDetail").innerHTML="<strong>"+name+"</strong><p>"+description+"</p><small>"+(seen?"تم فتح هذا الموقع في سجل المجرة.":"ستُفتح هذه المنطقة بعد إكمال شروط الاستكشاف.")+"</small>";
 }
 function closeMap(){$("mapModal").hidden=true;}
 function saveRecords(){try{localStorage.setItem(RECORDS_SAVE,JSON.stringify(records));}catch(_){}}
@@ -163,7 +169,7 @@ function awardAchievement(id){
 }
 function markSector(index){
  if(!progress.sectors.includes(index)){
-  progress.sectors.push(index);saveProgress();renderMap();
+  progress.sectors.push(index);syncHiddenPlaces();saveProgress();renderMap();
   if(progress.sectors.length===STAGES.length)awardAchievement("all-sectors");
  }
 }
@@ -210,7 +216,7 @@ function renderJourneyStats(){
 }
 function unlockSecret(id){
  if(progress.secrets.includes(id))return;
- progress.secrets.push(id);saveProgress();renderJourneyStats();
+ progress.secrets.push(id);syncHiddenPlaces();saveProgress();renderJourneyStats();renderMap();
  const names={aurora:"الشفق القطبي",meteor:"زخة النيازك",eclipse:"الكسوف",supernova:"الانفجار النجمي",starfall:"مطر النجوم"};
  $("discoveryTitle").textContent="اكتشاف سري: "+names[id];
  $("discoveryFact").textContent="رصدتِ حدثًا نادرًا في الفضاء. عاد هذا الاكتشاف إلى سجل رحلاتك.";
@@ -725,7 +731,7 @@ $("atlasButton").addEventListener("click",openAtlas);
 $("mapButton").addEventListener("click",openMap);
 $("closeMap").addEventListener("click",closeMap);
 $("mapModal").addEventListener("click",e=>{if(e.target===$("mapModal"))closeMap();});
-$("galaxyMap").querySelectorAll("[data-sector]").forEach(button=>button.addEventListener("click",()=>showMapDetail(Number(button.dataset.sector))));
+$("galaxyMap").querySelectorAll("[data-sector],[data-place]").forEach(button=>button.addEventListener("click",()=>{if(button.dataset.place)showMapDetail(button.dataset.place);else showMapDetail(Number(button.dataset.sector));}));
 $("hangarButton").addEventListener("click",openHangar);
 $("closeHangar").addEventListener("click",closeHangar);
 $("savePilotName").addEventListener("click",()=>{const name=$("pilotNameInput").value.trim().slice(0,16)||"رحّالة";try{localStorage.setItem("orbitPilotName",name);}catch(_){}$("pilotNameInput").value=name;renderRecords();});
