@@ -79,7 +79,7 @@ const safeSaveBest=value=>{try{localStorage.setItem(SAVE,String(value));}catch(_
 let best=safeReadBest(),discovered=safeReadAtlas(),score=0,lives=3,level=1,combo=1,comboTime=0;
 let state="menu",last=0,elapsed=0,spawnClock=0,stars=[],rocks=[],blackHoles=[],pickups=[],artifacts=[],particles=[],backgroundStars=[];
 let discoveryToastTime=0,stageIndex=0,firstRockPending=false;
-let shieldTime=0,magnetTime=0,boostTime=0,boostCooldown=0,collected=0,shake=0,runRescueUsed=false;
+let shieldTime=0,magnetTime=0,boostTime=0,boostCooldown=0,boostShownCooldown=0,collected=0,shake=0,runRescueUsed=false;
 let width=0,height=0,dpr=1,player={x:0,y:0,targetX:0,targetY:0,r:13,invulnerable:0};
 let pointerDown=false,muted=false,audio=null,runId=0,musicOn=false,musicNodes=[],musicTimer=null;
 const rand=(a,b)=>a+Math.random()*(b-a);
@@ -263,9 +263,9 @@ function resize(){
  backgroundStars=Array.from({length:Math.max(45,Math.round(width*height/6500))},()=>({x:rand(0,width),y:rand(0,height),r:rand(.4,1.7),a:rand(.2,.8),phase:rand(0,6)}));
 }
 function reset(){
- runStatsSaved=false;runBlackHoles=0;runRescueUsed=false;boostTime=0;boostCooldown=0;activeEvent=null;eventSpawnClock=0;nextEventAt=rand(27,39);$("eventBanner").hidden=true;
+ runStatsSaved=false;runBlackHoles=0;runRescueUsed=false;boostTime=0;boostCooldown=0;boostShownCooldown=0;activeEvent=null;eventSpawnClock=0;nextEventAt=rand(27,39);$("eventBanner").hidden=true;
  score=0;lives=3;level=1;stageIndex=0;combo=1;comboTime=0;elapsed=0;spawnClock=0;stars=[];rocks=[];blackHoles=[];pickups=[];artifacts=[];particles=[];firstRockPending=true;
- shieldTime=0;magnetTime=0;boostTime=0;boostCooldown=0;collected=0;missionDone=false;nearMisses=0;starMilestoneAwarded=false;missionShownProgress=-1;timeDilation=1;lastMusicDilation=1;shake=0;discoveryToastTime=0;survivedMinute=false;
+ shieldTime=0;magnetTime=0;boostTime=0;boostCooldown=0;boostShownCooldown=0;collected=0;missionDone=false;nearMisses=0;starMilestoneAwarded=false;missionShownProgress=-1;timeDilation=1;lastMusicDilation=1;shake=0;discoveryToastTime=0;survivedMinute=false;
  const choices=MISSIONS.filter(m=>m.id!==lastMissionId);selectedMission=choices[Math.floor(Math.random()*choices.length)]||MISSIONS[0];lastMissionId=selectedMission.id;markSector(0);
  $("discoveryToast").hidden=true;$("discoveryToast").classList.remove("show");
  player={x:width/2,y:height*.78,targetX:width/2,targetY:height*.78,r:12,invulnerable:1.5};
@@ -485,12 +485,12 @@ function checkMission(){
 function collectStar(s){
  const rare=s.kind==="blue";
  score+=(rare?60:(activeEvent?.type==="aurora"?20:10))*combo;
- combo=Math.min(8,combo+1);comboTime=2.2;collected++;addLifetimeStar(rare?5:1);progress.daily.progress+=rare?5:1;saveProgress();if(!$("hangarModal").hidden)renderDaily();awardAchievement("first-star");checkMission();
+ combo=Math.min(8,combo+1);comboTime=2.2;collected++;addLifetimeStar(rare?5:1);if(progress.daily.day!==new Date().toLocaleDateString("en-CA"))progress.daily={day:new Date().toLocaleDateString("en-CA"),progress:0,claimed:false};progress.daily.progress+=rare?5:1;saveProgress();if(!$("hangarModal").hidden)renderDaily();awardAchievement("first-star");checkMission();
  burst(s.x,s.y,rare?"#74caff":"#ffd77a",rare?22:12);sound(rare?1180:720+combo*55,.09,"triangle");
  if(collected>=20&&!starMilestoneAwarded){starMilestoneAwarded=true;awardAchievement("mission-20");}
  updateHUD();
 }
-function activateBoost(){if(state!=="running"||!progress.ownedBoost||boostCooldown>0||boostTime>0)return;boostTime=3;boostCooldown=16;player.invulnerable=Math.max(player.invulnerable,3);burst(player.x,player.y,"#74caff",24);sound(760,.18,"sine");updateHUD();}
+function activateBoost(){if(state!=="running"||!progress.ownedBoost||boostCooldown>0||boostTime>0)return;boostTime=3;boostCooldown=16;boostShownCooldown=16;player.invulnerable=Math.max(player.invulnerable,3);burst(player.x,player.y,"#74caff",24);sound(760,.18,"sine");updateHUD();}
 function collectPickup(p){
  if(p.kind==="crate"){const reward=Math.floor(Math.random()*4);if(reward===0){score+=180;burst(p.x,p.y,"#ffd77a",28);$("eventBanner").textContent="صندوق مفاجآت · +180 نقطة";}else if(reward===1){addLifetimeStar(8);burst(p.x,p.y,"#74caff",28);$("eventBanner").textContent="صندوق مفاجآت · +8 نجوم";}else if(reward===2){shieldTime=7;magnetTime=0;burst(p.x,p.y,"#76e4e4",28);$("eventBanner").textContent="صندوق مفاجآت · درع مجاني";}else{magnetTime=9;shieldTime=0;burst(p.x,p.y,"#a99bff",28);$("eventBanner").textContent="صندوق مفاجآت · مغناطيس ممتد";}$("eventBanner").hidden=false;sound(1120,.2,"triangle");}
  else if(p.kind==="shield"){shieldTime=6+(progress.upgrades.shield||0)*1.25;magnetTime=0;burst(p.x,p.y,"#76e4e4",22);sound(840,.13,"sine");}
@@ -544,7 +544,7 @@ function update(dt){
  player.invulnerable=Math.max(0,player.invulnerable-step);
  if(comboTime>0){comboTime-=step;if(comboTime<=0){combo=1;updateHUD();}}
  const hadPower=shieldTime>0||magnetTime>0;
- shieldTime=Math.max(0,shieldTime-step);magnetTime=Math.max(0,magnetTime-step);boostTime=Math.max(0,boostTime-step);boostCooldown=Math.max(0,boostCooldown-step);shake=Math.max(0,shake-step*24);if(progress.ownedBoost)updateHUD();
+ shieldTime=Math.max(0,shieldTime-step);magnetTime=Math.max(0,magnetTime-step);boostTime=Math.max(0,boostTime-step);boostCooldown=Math.max(0,boostCooldown-step);shake=Math.max(0,shake-step*24);if(progress.ownedBoost&&Math.ceil(boostCooldown)!==boostShownCooldown){boostShownCooldown=Math.ceil(boostCooldown);updateHUD();}
  if(hadPower&&!shieldTime&&!magnetTime)updateHUD();
  if(shieldTime>0||magnetTime>0)$("powerTimer").style.width=(Math.max(shieldTime,magnetTime)/7*30)+"px";
  if(discoveryToastTime>0){
@@ -748,7 +748,7 @@ $("pauseButton").addEventListener("click",()=>state==="running"?pause():state===
 $("boostButton").addEventListener("click",activateBoost);
 $("rescueButton").addEventListener("click",()=>{if(state!=="rescue"||runRescueUsed||progress.bank<80)return;progress.bank-=80;runRescueUsed=true;lives=1;player.invulnerable=2.8;state="running";$("arenaMessage").hidden=true;$("rescueButton").hidden=true;$("resumeButton").hidden=false;$("exitButton").hidden=true;updateHUD();last=performance.now();requestAnimationFrame(loop);});
 $("resumeButton").addEventListener("click",()=>{if(state==="paused")resume();else if(state==="over")start();});
-$("exitButton").addEventListener("click",backToMenu);
+$("exitButton").addEventListener("click",()=>{if(state==="rescue")endGame();backToMenu();});
 $("soundButton").addEventListener("click",()=>{muted=!muted;$("soundButton").textContent=muted?"♪̸":"♫";$("soundButton").setAttribute("aria-label",muted?"تشغيل المؤثرات":"إيقاف المؤثرات");if(!muted)sound();});
 $("musicButton").addEventListener("click",()=>musicOn?stopAmbient():startAmbient());
 window.addEventListener("resize",()=>{if(!$("gamePanel").hidden){resize();if(state==="running"||state==="paused")draw(performance.now());}});
