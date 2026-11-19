@@ -14,10 +14,10 @@ const ACHIEVEMENTS=[
  {id:"first-discovery",icon:"⌕",name:"فضول كوني",desc:"افتحي أول معلومة في دفتر الاكتشافات."},
  {id:"minute-survivor",icon:"◷",name:"دقيقة في المدار",desc:"استمري في رحلة واحدة لمدة 60 ثانية."},
  {id:"hundred-stars",icon:"✧",name:"مطر النجوم",desc:"اجمعي 100 نجمة عبر جميع الرحلات."},
- {id:"all-sectors",icon:"◉",name:"رحّالة المجرة",desc:"زوري المناطق الفضائية الأربع."},
+ {id:"all-sectors",icon:"◉",name:"رحّالة المجرة",desc:"زوري المناطق الفضائية السبع."},
  {id:"atlas-master",icon:"✧",name:"موسوعة مكتملة",desc:"اجمعي الاكتشافات الفضائية الستة والعشرين كلها."}
 ];
-const STAGES=[{name:"مدار الأرض",hint:"نجوم زرقاء وهواء هادئ",bg:"#10264a",glow:"#275b83",rock:"#63829b"},{name:"سهول المريخ",hint:"غبار أحمر وصخور أكثر",bg:"#3a1d2a",glow:"#a34c45",rock:"#bd7864"},{name:"حلقات زحل",hint:"غبار ذهبي وحلقات لامعة",bg:"#352b20",glow:"#a17a42",rock:"#b89a6c"},{name:"حافة السديم",hint:"سحب بنفسجية وثقوب سوداء",bg:"#251b45",glow:"#7654a8",rock:"#8c79b7"}];
+const STAGES=[{name:"مدار الأرض",hint:"نجوم زرقاء وهواء هادئ",bg:"#10264a",glow:"#275b83",rock:"#63829b"},{name:"سهول المريخ",hint:"غبار أحمر وصخور أكثر",bg:"#3a1d2a",glow:"#a34c45",rock:"#bd7864"},{name:"حلقات زحل",hint:"غبار ذهبي وحلقات لامعة",bg:"#352b20",glow:"#a17a42",rock:"#b89a6c"},{name:"حافة السديم",hint:"سحب بنفسجية وثقوب سوداء",bg:"#251b45",glow:"#7654a8",rock:"#8c79b7"},{name:"حزام الكويكبات",hint:"صخور متناثرة وحقول كثيفة",bg:"#252638",glow:"#777b9d",rock:"#9b91a8"},{name:"مدار المشتري",hint:"عملاق غازي وعواصف بعيدة",bg:"#33251f",glow:"#a16b50",rock:"#c18d70"},{name:"العودة إلى الأرض",hint:"إشارة زرقاء تظهر في الأفق",bg:"#071b35",glow:"#287bb5",rock:"#7197b8"}];
 const MISSIONS=[
  {id:"stars",title:"اجمعي 20 نجمة",target:20,unit:"نجمة",reward:150,starReward:15},
  {id:"survive",title:"ابقي 45 ثانية في المدار",target:45,unit:"ث",reward:180,starReward:18},
@@ -113,12 +113,15 @@ const MAP_DETAILS=[
  ["سهول المريخ","عالم أحمر تغطيه سهول واسعة وغبار دقيق. راقبي الصخور المتحركة."],
  ["حلقات زحل","حلقات زحل تتكوّن أساسًا من قطع جليدية وصخرية تدور حول الكوكب."],
  ["حافة السديم","سحب ضخمة من الغاز والغبار، وهي مناطق يمكن أن تولد فيها نجوم جديدة."],
+ ["حزام الكويكبات","منطقة واسعة تضم أجرامًا صخرية وجليدية كثيرة تدور حول الشمس، بين مداري المريخ والمشتري."],
+ ["مدار المشتري","منطقة يهيمن عليها أكبر كواكب المجموعة الشمسية، بعواصفه وأقماره الكثيرة."],
+ ["العودة إلى الأرض","آخر محطة في مسار المجرة. تظهر الأرض من بعيد كإشارة زرقاء مألوفة بعد الرحلة الطويلة."],
  ["أوروبا","قمر جليدي يدور حول المشتري. تشير الأدلة إلى وجود محيط مالح تحت سطحه."],
  ["تيتان","أكبر أقمار زحل. له غلاف جوي كثيف وبحيرات من الميثان السائل."],
  ["إنسيلادوس","قمر صغير حول زحل، يطلق نافورات من بخار الماء والجليد من شقوق قرب قطبه الجنوبي."]
 ];
 const TRAILS=[{id:"blue",name:"نبض أزرق",color:"#74caff",cost:0},{id:"gold",name:"غبار ذهبي",color:"#ffd77a",cost:120},{id:"violet",name:"شفق بنفسجي",color:"#b49aff",cost:180}];
-function syncHiddenPlaces(){const unlocked=[];if(progress.sectors.length>=STAGES.length)unlocked.push("europa");if(progress.secrets.length>=3)unlocked.push("titan");if(progress.secrets.length>=5)unlocked.push("enceladus");let changed=false;for(const id of unlocked)if(!progress.hiddenPlaces.includes(id)){progress.hiddenPlaces.push(id);changed=true;}if(changed)saveProgress();}
+function syncHiddenPlaces(){const unlocked=[];if(progress.sectors.length>=Math.min(4,STAGES.length))unlocked.push("europa");if(progress.secrets.length>=3)unlocked.push("titan");if(progress.secrets.length>=5)unlocked.push("enceladus");let changed=false;for(const id of unlocked)if(!progress.hiddenPlaces.includes(id)){progress.hiddenPlaces.push(id);changed=true;}if(changed)saveProgress();}
 function renderDaily(){
  const d=progress.daily,done=d.progress>=25;
  $("dailyCard").innerHTML='<strong>جامع النجوم اليومي</strong><p>اجمعي 25 نجمة اليوم.</p><div class="daily-progress"><i style="width:'+Math.min(100,d.progress/25*100)+'%"></i></div><small>'+Math.min(25,d.progress)+' / 25 · المكافأة 35 ✦</small><br><button id="claimDaily" type="button" '+(!done||d.claimed?"disabled":"")+'>'+(d.claimed?"تم الاستلام":done?"استلام 35 نجمة":"واصلي الجمع")+'</button>';
@@ -692,6 +695,9 @@ function drawBackground(t){
  if(activeEvent?.type==="aurora"){ctx.save();ctx.globalAlpha=.2+.12*Math.sin(t*.002);const aurora=ctx.createLinearGradient(0,height*.12,width,height*.55);aurora.addColorStop(0,"#67f4d000");aurora.addColorStop(.45,"#67f4d055");aurora.addColorStop(1,"#b28cff00");ctx.fillStyle=aurora;ctx.fillRect(0,0,width,height);ctx.restore();}
  if(activeEvent?.type==="eclipse"){ctx.fillStyle="#05030b88";ctx.fillRect(0,0,width,height);}
  if(stageIndex===3){ctx.save();for(let i=0;i<4;i++){const x=width*(.18+i*.21),y=height*(.18+(i%2)*.2),cloud=ctx.createRadialGradient(x,y,3,x,y,65);cloud.addColorStop(0,"#bda0ff22");cloud.addColorStop(1,"#bda0ff00");ctx.fillStyle=cloud;ctx.fillRect(x-65,y-65,130,130);}ctx.restore();}
+ if(stageIndex===4){ctx.save();ctx.globalAlpha=.62;for(let i=0;i<30;i++){const x=(i*83+elapsed*31)%(width+36)-18,y=height*(.08+(i%9)*.105),r=2+(i%4)*1.2;ctx.fillStyle=i%3===0?"#c7b9a8":"#8f91a8";ctx.beginPath();ctx.ellipse(x,y,r*1.6,r*.75,(i%5)*.24,0,Math.PI*2);ctx.fill();}ctx.restore();}
+ if(stageIndex===5){ctx.save();const x=width*.76,y=height*.22,r=Math.min(width,height)*.105;const planet=ctx.createRadialGradient(x-r*.35,y-r*.42,r*.08,x,y,r);planet.addColorStop(0,"#f0d6ad");planet.addColorStop(.62,"#b77e59");planet.addColorStop(1,"#563b39");ctx.fillStyle=planet;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.save();ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.clip();for(let i=-2;i<=2;i++){ctx.fillStyle=i%2?"#e8c39a66":"#6e4b4866";ctx.fillRect(x-r,y+i*r*.38,r*2,r*.12);}ctx.fillStyle="#a84f4566";ctx.beginPath();ctx.ellipse(x+r*.28,y+r*.18,r*.2,r*.1,-.2,0,Math.PI*2);ctx.fill();ctx.restore();ctx.restore();}
+ if(stageIndex===6){ctx.save();const x=width*.76,y=height*.22,r=Math.min(width,height)*.12;ctx.shadowBlur=34;ctx.shadowColor="#55b9ff66";const earth=ctx.createRadialGradient(x-r*.35,y-r*.42,r*.08,x,y,r);earth.addColorStop(0,"#8de5ff");earth.addColorStop(.55,"#287fbd");earth.addColorStop(1,"#09264d");ctx.fillStyle=earth;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.save();ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.clip();ctx.fillStyle="#70c99a";ctx.beginPath();ctx.ellipse(x-r*.2,y-r*.05,r*.3,r*.17,-.5,0,Math.PI*2);ctx.ellipse(x+r*.28,y+r*.28,r*.22,r*.12,.35,0,Math.PI*2);ctx.fill();ctx.restore();ctx.restore();}
 }
 function drawStar(s){
  const rare=s.kind==="blue",color=rare?"#74caff":"#ffd77a";
