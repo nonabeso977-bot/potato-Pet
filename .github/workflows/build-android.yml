@@ -8,6 +8,7 @@ on:
       - "style.css"
       - "script.js"
       - "icon.svg"
+      - "manifest.webmanifest"
       - "package.json"
       - "capacitor.config.json"
       - "scripts/**"
@@ -54,6 +55,10 @@ jobs:
       - name: Bundle the game for offline use
         run: npm run prepare:web && npx cap sync android
 
+      - name: Read app version
+        id: app_version
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
       - name: Build installable debug APK
         working-directory: android
         run: ./gradlew assembleDebug
@@ -69,10 +74,10 @@ jobs:
       - name: Publish APK release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v4.2.0-android
-          name: "مدار | Orbit Arcade 4.2.0 Android"
+          tag_name: v${{ steps.app_version.outputs.version }}-android
+          name: "مدار | Orbit Arcade ${{ steps.app_version.outputs.version }} Android"
           body: |
-            نسخة أندرويد قابلة للتثبيت من لعبة مدار (Orbit Arcade).
+            نسخة أندرويد قابلة للتثبيت من لعبة مدار (Orbit Arcade).\n\nرقم الإصدار: ${{ steps.app_version.outputs.version }}
 
             - تعمل اللعبة الأساسية دون اتصال بالإنترنت.
             - نزّل ملف APK وثبّته على جهاز Android.
