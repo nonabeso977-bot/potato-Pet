@@ -17,6 +17,7 @@ const ACHIEVEMENTS=[
  {id:"all-sectors",icon:"◉",name:"رحّالة المجرة",desc:"زوري المناطق الفضائية السبع."},
  {id:"atlas-master",icon:"✧",name:"موسوعة مكتملة",desc:"اجمعي الاكتشافات الفضائية الستة والعشرين كلها."}
 ];
+const FINAL_SCORE=999999;
 const STAGES=[{name:"مدار الأرض",hint:"نجوم زرقاء وهواء هادئ",bg:"#10264a",glow:"#275b83",rock:"#63829b"},{name:"سهول المريخ",hint:"غبار أحمر وصخور أكثر",bg:"#3a1d2a",glow:"#a34c45",rock:"#bd7864"},{name:"حلقات زحل",hint:"غبار ذهبي وحلقات لامعة",bg:"#352b20",glow:"#a17a42",rock:"#b89a6c"},{name:"حافة السديم",hint:"سحب بنفسجية وثقوب سوداء",bg:"#251b45",glow:"#7654a8",rock:"#8c79b7"},{name:"حزام الكويكبات",hint:"صخور متناثرة وحقول كثيفة",bg:"#252638",glow:"#777b9d",rock:"#9b91a8"},{name:"مدار المشتري",hint:"عملاق غازي وعواصف بعيدة",bg:"#33251f",glow:"#a16b50",rock:"#c18d70"},{name:"العودة إلى الأرض",hint:"إشارة زرقاء تظهر في الأفق",bg:"#071b35",glow:"#287bb5",rock:"#7197b8"}];
 const MISSIONS=[
  {id:"stars",title:"اجمعي 20 نجمة",target:20,unit:"نجمة",reward:150,starReward:15},
@@ -86,7 +87,7 @@ const safeReadBest=()=>{try{return Number(localStorage.getItem(SAVE)||localStora
 const safeSaveBest=value=>{try{localStorage.setItem(SAVE,String(value));}catch(_){}};
 let best=safeReadBest(),discovered=safeReadAtlas(),score=0,lives=3,level=1,combo=1,comboTime=0;
 let state="menu",last=0,elapsed=0,spawnClock=0,stars=[],rocks=[],blackHoles=[],pickups=[],artifacts=[],particles=[],backgroundStars=[];
-let discoveryToastTime=0,stageIndex=0,firstRockPending=false;
+let discoveryToastTime=0,stageIndex=0,firstRockPending=false,finaleTimers=[];
 let shieldTime=0,magnetTime=0,boostTime=0,boostCooldown=0,boostShownCooldown=0,collected=0,shake=0,runRescueUsed=false;
 let width=0,height=0,dpr=1,player={x:0,y:0,targetX:0,targetY:0,r:13,invulnerable:0};
 let pointerDown=false,muted=false,audio=null,runId=0,musicOn=false,musicNodes=[],musicTimer=null;
@@ -387,7 +388,19 @@ function showMessage(title,body,buttonText="متابعة الرحلة"){
  $("messageTitle").textContent=title;$("messageText").textContent=body;
  $("resumeButton").innerHTML=buttonText+' <b>↗</b>';$("arenaMessage").hidden=false;
 }
+function clearFinaleTimers(){finaleTimers.forEach(timer=>clearTimeout(timer));finaleTimers=[];}
+function finaleLater(callback,delay){finaleTimers.push(setTimeout(callback,delay));}
+function startFinaleSequence(){
+ clearFinaleTimers();$("arenaMessage").hidden=true;$("eventBanner").hidden=true;$("discoveryToast").hidden=true;$("arenaHint").style.opacity="0";
+ $("pauseButton").hidden=true;$("boostButton").hidden=true;
+ $("finaleEarth").hidden=false;$("finaleCredits").hidden=true;$("finaleSignal").hidden=true;$("finaleReturn").hidden=true;$("finaleScreen").hidden=false;
+ finaleLater(()=>{$("finaleEarth").hidden=true;$("finaleCredits").hidden=false;},4200);
+ finaleLater(()=>{$("finaleSignal").hidden=false;sound(680,.16,"sine");finaleLater(()=>sound(520,.18,"sine"),260);finaleLater(()=>sound(760,.28,"sine"),610);},8500);
+ finaleLater(()=>$("finaleReturn").hidden=false,14000);
+}
+function beginFinale(){if(state==="finale")return;score=FINAL_SCORE;endGame(true);}
 function start(){
+ clearFinaleTimers();$("finaleScreen").hidden=true;$("pauseButton").hidden=false;$("boostButton").hidden=false;
  awardAchievement("first-flight");
  $("intro").hidden=true;$("features").hidden=true;$("gamePanel").hidden=false;
  state="starting";$("arenaMessage").hidden=true;$("exitButton").hidden=true;$("pauseButton").textContent="Ⅱ";
@@ -418,12 +431,16 @@ function pause(){
 function resume(){
  if(state!=="paused")return;state="running";$("arenaMessage").hidden=true;$("pauseButton").textContent="Ⅱ";last=performance.now();requestAnimationFrame(loop);
 }
-function endGame(){
- state="over";$("rescueButton").hidden=true;$("resumeButton").hidden=false;if(!runStatsSaved){runStatsSaved=true;progress.stats.runs++;progress.stats.totalScore+=score;progress.stats.longest=Math.max(progress.stats.longest,elapsed);progress.stats.blackHoles+=runBlackHoles;saveProgress();renderJourneyStats();}saveRunRecord();const newRecord=score>best;if(newRecord){best=score;safeSaveBest(best);setBest();}
- $("pauseButton").textContent="↻";showMessage("انتهت الرحلة","نتيجتك "+format(score)+" · "+(newRecord?"رقم قياسي جديد!":"حاولي تجاوز رقمك القياسي"),"رحلة جديدة");
+function endGame(isFinal=false){
+ if(!isFinal&&score>=FINAL_SCORE){beginFinale();return;}
+ state=isFinal?"finale":"over";$("rescueButton").hidden=true;$("resumeButton").hidden=false;if(!runStatsSaved){runStatsSaved=true;progress.stats.runs++;progress.stats.totalScore+=score;progress.stats.longest=Math.max(progress.stats.longest,elapsed);progress.stats.blackHoles+=runBlackHoles;saveProgress();renderJourneyStats();}saveRunRecord();const newRecord=score>best;if(newRecord){best=score;safeSaveBest(best);setBest();}
+ $("pauseButton").textContent="↻";
+ if(isFinal){startFinaleSequence();return;}
+ showMessage("انتهت الرحلة","نتيجتك "+format(score)+" · "+(newRecord?"رقم قياسي جديد!":"حاولي تجاوز رقمك القياسي"),"رحلة جديدة");
  $("exitButton").hidden=false;
 }
 function backToMenu(){
+ clearFinaleTimers();$("finaleScreen").hidden=true;$("pauseButton").hidden=false;$("boostButton").hidden=false;
  state="menu";$("gamePanel").hidden=true;$("intro").hidden=false;$("features").hidden=false;
  $("resumeButton").onclick=null;$("exitButton").hidden=true;setBest();
 }
@@ -566,13 +583,13 @@ function missionValue(){
 function checkMission(){
  if(missionDone)return;
  if(missionValue()>=selectedMission.target){
-  missionDone=true;score+=selectedMission.reward;progress.bank+=selectedMission.starReward;progress.stats.missions++;saveProgress();renderJourneyStats();
+  missionDone=true;score=Math.min(FINAL_SCORE,score+selectedMission.reward);progress.bank+=selectedMission.starReward;progress.stats.missions++;saveProgress();renderJourneyStats();
   burst(player.x,player.y,"#76e4e4",30);sound(980,.24,"triangle");updateHUD();
  }
 }
 function collectStar(s){
  const rare=s.kind==="blue";
- score+=(rare?60:(activeEvent?.type==="aurora"?20:10))*combo;
+ score=Math.min(FINAL_SCORE,score+(rare?60:(activeEvent?.type==="aurora"?20:10))*combo);
  combo=Math.min(8,combo+1);comboTime=2.2;collected++;addLifetimeStar(rare?5:1);if(progress.daily.day!==localDateKey())progress.daily={day:localDateKey(),progress:0,claimed:false};progress.daily.progress+=rare?5:1;saveProgress();if(!$("hangarModal").hidden)renderDaily();awardAchievement("first-star");checkMission();
  burst(s.x,s.y,rare?"#74caff":"#ffd77a",rare?22:12);sound(rare?1180:720+combo*55,.09,"triangle");
  if(collected>=20&&!starMilestoneAwarded){starMilestoneAwarded=true;awardAchievement("mission-20");}
@@ -580,14 +597,14 @@ function collectStar(s){
 }
 function activateBoost(){if(state!=="running"||!progress.ownedBoost||boostCooldown>0||boostTime>0)return;boostTime=3;boostCooldown=16;boostShownCooldown=16;player.invulnerable=Math.max(player.invulnerable,3);burst(player.x,player.y,"#74caff",24);sound(760,.18,"sine");updateHUD();}
 function collectPickup(p){
- if(p.kind==="crate"){const reward=Math.floor(Math.random()*4);if(reward===0){score+=180;burst(p.x,p.y,"#ffd77a",28);$("eventBanner").textContent="صندوق مفاجآت · +180 نقطة";}else if(reward===1){addLifetimeStar(8);burst(p.x,p.y,"#74caff",28);$("eventBanner").textContent="صندوق مفاجآت · +8 نجوم";}else if(reward===2){shieldTime=7;magnetTime=0;burst(p.x,p.y,"#76e4e4",28);$("eventBanner").textContent="صندوق مفاجآت · درع مجاني";}else{magnetTime=9;shieldTime=0;burst(p.x,p.y,"#a99bff",28);$("eventBanner").textContent="صندوق مفاجآت · مغناطيس ممتد";}$("eventBanner").hidden=false;sound(1120,.2,"triangle");}
+ if(p.kind==="crate"){const reward=Math.floor(Math.random()*4);if(reward===0){score=Math.min(FINAL_SCORE,score+180);burst(p.x,p.y,"#ffd77a",28);$("eventBanner").textContent="صندوق مفاجآت · +180 نقطة";}else if(reward===1){addLifetimeStar(8);burst(p.x,p.y,"#74caff",28);$("eventBanner").textContent="صندوق مفاجآت · +8 نجوم";}else if(reward===2){shieldTime=7;magnetTime=0;burst(p.x,p.y,"#76e4e4",28);$("eventBanner").textContent="صندوق مفاجآت · درع مجاني";}else{magnetTime=9;shieldTime=0;burst(p.x,p.y,"#a99bff",28);$("eventBanner").textContent="صندوق مفاجآت · مغناطيس ممتد";}$("eventBanner").hidden=false;sound(1120,.2,"triangle");}
  else if(p.kind==="shield"){shieldTime=6+(progress.upgrades.shield||0)*1.25;magnetTime=0;burst(p.x,p.y,"#76e4e4",22);sound(840,.13,"sine");}
  else{magnetTime=7+(progress.upgrades.magnet||0)*1.3;shieldTime=0;burst(p.x,p.y,"#a99bff",22);sound(920,.13,"triangle");}
  updateHUD();
 }
 function recordFact(index,toast=true){
  if(!Number.isInteger(index)||index<0||index>=FACTS.length||discovered.includes(index))return false;
- discovered.push(index);safeSaveAtlas();score+=80;awardAchievement("first-discovery");
+ discovered.push(index);safeSaveAtlas();score=Math.min(FINAL_SCORE,score+80);awardAchievement("first-discovery");
  if(discovered.length===FACTS.length)awardAchievement("atlas-master");
  if(toast)showDiscovery(index);
  updateHUD();updateAtlasButton();return true;
@@ -660,7 +677,7 @@ function update(dt){
    if(!b.collapsing&&appear>.7&&d<b.r+player.r*.72&&player.invulnerable<=0&&boostTime<=0){
      b.collapsing=true;b.life=Math.min(b.life,.8);
      if(shieldTime>0){
-       shieldTime=0;score+=120;burst(b.x,b.y,"#c9aaff",34);sound(430,.24,"triangle");updateHUD();
+       shieldTime=0;score=Math.min(FINAL_SCORE,score+120);burst(b.x,b.y,"#c9aaff",34);sound(430,.24,"triangle");updateHUD();
      }else{hitRock(b);if(state!=="running")return;}
      continue;
    }
@@ -675,11 +692,12 @@ function update(dt){
  for(let i=pickups.length-1;i>=0;i--){const p=pickups[i];p.y+=p.vy*step;p.spin+=step*2.8;if(circleHit(player,p)){collectPickup(p);pickups.splice(i,1);continue;}if(p.y>height+25)pickups.splice(i,1);}
  for(let i=rocks.length-1;i>=0;i--){const r=rocks[i];r.x+=r.vx*step;r.y+=r.vy*step;r.rot+=r.spin*step;if(r.x<r.r||r.x>width-r.r)r.vx*=-1;
    const dx=player.x-r.x,dy=player.y-r.y,d=Math.hypot(dx,dy);
-   if(!r.nearMiss&&d<player.r+r.r+18&&d>player.r+r.r*.83){r.nearMiss=true;nearMisses++;checkMission();score+=5;burst(r.x,r.y,"#a99bff",5);updateHUD();}
+   if(!r.nearMiss&&d<player.r+r.r+18&&d>player.r+r.r*.83){r.nearMiss=true;nearMisses++;checkMission();score=Math.min(FINAL_SCORE,score+5);burst(r.x,r.y,"#a99bff",5);updateHUD();}
    if(circleHit(player,{...r,r:r.r*.83})){rocks.splice(i,1);if(shieldTime>0){shieldTime=0;player.invulnerable=.65;burst(r.x,r.y,"#76e4e4",24);sound(520,.16,"triangle");updateHUD();}else hitRock(r);if(state!=="running")return;continue;}
    if(r.y>height+35)rocks.splice(i,1);
  }
  for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.x+=p.vx*step;p.y+=p.vy*step;p.vx*=.985;p.vy*=.985;p.life-=step;if(p.life<=0)particles.splice(i,1);}
+ if(score>=FINAL_SCORE){beginFinale();return;}
 }
 function drawBackground(t){
  const stage=STAGES[stageIndex];
@@ -849,6 +867,7 @@ $("atlasModal").addEventListener("click",e=>{if(e.target===$("atlasModal"))close
 window.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("atlasModal").hidden)closeAtlas();if(e.key==="Escape"&&!$("hangarModal").hidden)closeHangar();});
 $("pauseButton").addEventListener("click",()=>state==="running"?pause():state==="over"?start():null);
 $("boostButton").addEventListener("click",activateBoost);
+$("finaleReturn").addEventListener("click",backToMenu);
 $("rescueButton").addEventListener("click",()=>{if(state!=="rescue"||runRescueUsed||progress.bank<80)return;progress.bank-=80;runRescueUsed=true;lives=1;player.invulnerable=2.8;state="running";$("arenaMessage").hidden=true;$("rescueButton").hidden=true;$("resumeButton").hidden=false;$("exitButton").hidden=true;updateHUD();last=performance.now();requestAnimationFrame(loop);});
 $("resumeButton").addEventListener("click",()=>{if(state==="paused")resume();else if(state==="over")start();});
 $("exitButton").addEventListener("click",()=>{if(state==="rescue")endGame();backToMenu();});
