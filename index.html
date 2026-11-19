@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Changa:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=4.2.0">
+<link rel="stylesheet" href="style.css?v=4.3.0">
 </head>
 <body>
 <main class="shell">
@@ -92,6 +92,15 @@
       <header class="atlas-header"><div><span class="eyebrow">PILOT CENTER / ORBIT</span><h2 id="hangarHeading">مركز الرحّالة</h2></div><button class="atlas-close" id="closeHangar" type="button" aria-label="إغلاق">×</button></header>
       <p class="atlas-description">اختاري شكل مركبتك، وتابعي قائمة المتصدرين لهذا الجهاز.</p>
       <div class="pilot-name-row"><label for="pilotNameInput">اسمك في سجل النتائج (اختياري)</label><input id="pilotNameInput" maxlength="16" placeholder="مثلاً: رحّالة أو هنادي" aria-label="اسم يظهر في سجل النتائج"><button id="savePilotName" type="button">حفظ الاسم</button></div>
+      <section class="backup-panel" aria-labelledby="backupHeading">
+        <div><h3 id="backupHeading">نسخة احتياطية للرحّالة</h3><p>احفظي تقدمك واكتشافاتك قبل تحديث التطبيق أو تغيير الهاتف.</p></div>
+        <div class="backup-actions">
+          <button id="exportPilotBackup" type="button">تنزيل نسخة احتياطية</button>
+          <button id="importPilotBackup" type="button">استعادة نسخة</button>
+          <input id="backupFileInput" type="file" accept=".json,application/json" hidden>
+        </div>
+        <small id="backupStatus" role="status" aria-live="polite">ملف النسخة الاحتياطية يحفظ النجوم والمركبات والإنجازات والسجل.</small>
+      </section>
       <h3 class="hangar-subtitle">مظهر المركبة</h3>
       <div class="star-wallet"><span>رصيد النجوم</span><strong><b id="starBalance">0</b> ✦</strong></div>
       <p class="atlas-description skin-shop-note" id="skinShopNotice" aria-live="polite">اجمعي النجوم أثناء الرحلات، أو أكملي المهمات لتحصلي على مكافآت إضافية.</p>
@@ -139,9 +148,9 @@
     <article><span class="feature-icon violet">⌁</span><div><strong>قوى المدار</strong><small>درع يحميك ومغناطيس يجذب النجوم</small></div></article>
     <article><span class="feature-icon blackhole-feature">◉</span><div><strong>أفق الحدث</strong><small>قاومي جاذبية الثقب الأسود</small></div></article>
   </section>
-  <footer><span>ORBIT / BUILD 4.2 · INSTALLABLE EDITION</span><span>صُممت لتُلعَب، لا لتُشاهَد فقط.</span></footer>
+  <footer><span>ORBIT / BUILD 4.3 · PILOT BACKUP</span><span>صُممت لتُلعَب، لا لتُشاهَد فقط.</span></footer>
 </main>
-<script src="script.js?v=4.1.0"></script>
-<script src="./pwa.js?v=4.2.0"></script>
+<script src="script.js?v=4.3.0"></script>
+<script src="./pwa.js?v=4.3.0"></script>
 </body>
 </html>
