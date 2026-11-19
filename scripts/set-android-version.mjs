@@ -21,8 +21,8 @@ if (!/\bversionCode\s+\d+/.test(gradle) || !/\bversionName\s+"[^"]+"/.test(gradl
 }
 
 gradle = gradle
-  .replace(/\bversionCode\s+\d+/, \`versionCode \${versionCode}\`)
-  .replace(/\bversionName\s+"[^"]+"/, \`versionName "\${packageJson.version}"\`);
+  .replace(/\bversionCode\s+\d+/, "versionCode " + versionCode)
+  .replace(/\bversionName\s+"[^"]+"/, 'versionName "' + packageJson.version + '"');
 
 await writeFile(gradleUrl, gradle, "utf8");
-console.log(\`Android version set to \${packageJson.version} (versionCode \${versionCode})\`);
+console.log("Android version set to " + packageJson.version + " (versionCode " + versionCode + ")");
