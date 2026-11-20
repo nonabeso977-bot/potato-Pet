@@ -345,3 +345,41 @@ footer{font-size:8px;margin-top:14px}
 @keyframes finaleTitle{0%{opacity:0;letter-spacing:.65em;filter:blur(5px)}100%{opacity:1;letter-spacing:.32em;filter:blur(0)}}
 @keyframes signalFlicker{0%,18%,22%,62%,100%{opacity:1}20%,60%{opacity:.35}}
 @media(prefers-reduced-motion:reduce){.finale-earth-scene,.finale-credits,.finale-earth-globe,.finale-title,.finale-signal{animation:none}}
+
+/* ORBIT 4.7 · HOMEBOUND return-vessel community project preview */
+.fleet-project{position:relative;overflow:hidden;margin:18px 0 22px;padding:16px;border:1px solid #74caff44;border-radius:18px;background:radial-gradient(ellipse at 90% 0%,#285b8730,transparent 48%),linear-gradient(145deg,#101e39,#0b1429)}
+.fleet-project:before{content:"";position:absolute;inset:auto -35px -75px auto;width:180px;height:180px;border:1px solid #74caff18;border-radius:50%;box-shadow:0 0 0 18px #74caff08,0 0 0 38px #74caff05;pointer-events:none}
+.fleet-project-head{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.fleet-kicker{display:block;color:#8ccfff;font:600 8px "Space Grotesk",sans-serif;letter-spacing:1.3px}
+.fleet-project-head h3{margin:5px 0 0;color:#eef5ff;font-size:17px}
+.fleet-preview-badge{flex:0 0 auto;padding:5px 9px;border:1px solid #ffd77a55;border-radius:20px;background:#ffd77a0d;color:#ffdfa0;font-size:9px}
+.fleet-intro{position:relative;z-index:1;margin:10px 0;color:#aabbd7;font-size:11px;line-height:1.9}
+.fleet-ship-art{position:relative;display:grid;place-items:center;height:104px;margin:10px 0 14px;overflow:hidden;border:1px solid #74caff20;border-radius:14px;background:radial-gradient(ellipse at 50% 55%,#2a5a8345,transparent 54%),linear-gradient(90deg,#0a1428,#152743,#0a1428)}
+.fleet-orbit{position:absolute;width:138px;height:52px;border:1px solid #8fdfff88;border-radius:50%;transform:rotate(-18deg);box-shadow:0 0 18px #74caff22}
+.fleet-ship{position:relative;z-index:1;display:grid;place-items:center;width:45px;height:45px;border:1px solid #a9eaff99;border-radius:14px;background:linear-gradient(145deg,#b4eaff,#477ca9 60%,#172e55);color:#fff;font-size:25px;box-shadow:0 0 24px #74caff77;transform:rotate(45deg)}
+.fleet-ship-art i{position:absolute;width:4px;height:4px;border-radius:50%;background:#e8f8ff;box-shadow:0 0 12px 3px #74caff;left:25%;top:28%}
+.fleet-progress-meta{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#eaf3ff;font-size:11px}
+.fleet-progress-meta span{color:#8fdfff;font:600 11px "Space Grotesk",sans-serif}
+.fleet-progress-track{height:8px;margin:9px 0;border-radius:10px;overflow:hidden;background:#ffffff12}
+.fleet-progress-track i{display:block;width:0;height:100%;border-radius:10px;background:linear-gradient(90deg,#74caff,#76e4e4,#c5b7ff);box-shadow:0 0 13px #74caff66;transition:width .35s ease}
+.fleet-stage-detail{min-height:38px;margin:7px 0;color:#9eacc8;font-size:10px;line-height:1.8}
+.fleet-contribute{width:100%;padding:11px 13px;border:1px solid #76e4e477;border-radius:11px;background:linear-gradient(100deg,#17415a,#252b55);color:#d8faff;font:600 11px "Changa",sans-serif;cursor:pointer;transition:transform .15s,filter .15s}
+.fleet-contribute:active{transform:scale(.985)}
+.fleet-contribute:disabled{opacity:.55;cursor:default}
+.fleet-local-warning{margin:8px 0 15px;padding:8px 10px;border-right:2px solid #ffd77a88;background:#ffd77a09;color:#c8b98e;font-size:9px;line-height:1.8}
+.fleet-subheading{margin:15px 0 8px;color:#e8efff;font-size:11px}
+.fleet-crew-list,.fleet-story-log{display:grid;gap:6px}
+.fleet-crew-row{display:grid;grid-template-columns:30px minmax(0,1fr) auto;align-items:center;gap:9px;padding:9px 10px;border:1px solid #ffffff12;border-radius:10px;background:#ffffff06;color:#cbd8ee;font-size:10px}
+.fleet-crew-row b{color:#8fdfff;font:600 10px "Space Grotesk",sans-serif}
+.fleet-crew-row strong{color:#ffd77a;font:600 11px "Space Grotesk",sans-serif}
+.fleet-empty{margin:0;padding:10px;border:1px dashed #ffffff20;border-radius:10px;color:#8797b4;font-size:10px;text-align:center}
+.fleet-log-entry{padding:10px 11px;border:1px solid #a99bff24;border-radius:10px;background:#a99bff08}
+.fleet-log-entry small{display:block;color:#a99bff;font:600 8px "Space Grotesk",sans-serif;letter-spacing:.7px}
+.fleet-log-entry strong{display:block;margin-top:4px;color:#e9e5ff;font-size:10px}
+.fleet-log-entry p{margin:4px 0 0;color:#aab5ce;font-size:9px;line-height:1.8}
+.fleet-finale-note{width:min(100%,340px);padding:13px 12px;border:1px solid #74caff33;border-radius:13px;background:linear-gradient(120deg,#10243b,#121a34);text-align:center}
+.fleet-finale-note span{color:#8fdfff;font:600 8px "Space Grotesk",sans-serif;letter-spacing:.15em}
+.fleet-finale-note p{margin:8px 0;color:#d1e0f3;font-size:11px;line-height:1.9}
+.fleet-finale-note small{color:#91a2bf;font-size:9px;line-height:1.8}
+@media(max-width:650px){.fleet-project{padding:13px}.fleet-project-head h3{font-size:15px}.fleet-ship-art{height:90px}}
+@media(prefers-reduced-motion:reduce){.fleet-progress-track i,.fleet-contribute{transition:none}}
