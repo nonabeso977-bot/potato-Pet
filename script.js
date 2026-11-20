@@ -390,13 +390,40 @@ function showMessage(title,body,buttonText="متابعة الرحلة"){
 }
 function clearFinaleTimers(){finaleTimers.forEach(timer=>clearTimeout(timer));finaleTimers=[];}
 function finaleLater(callback,delay){finaleTimers.push(setTimeout(callback,delay));}
+function renderFinaleWinners(){
+ const host=$("finaleWinnerList");
+ if(!host)return;
+ const bestByPilot=new Map();
+ records.slice().sort((a,b)=>b.score-a.score).forEach(record=>{
+  const name=String(record.name||"رحّالة").trim().slice(0,16)||"رحّالة";
+  if(!bestByPilot.has(name))bestByPilot.set(name,record.score);
+ });
+ const winners=[...bestByPilot.entries()].sort((a,b)=>b[1]-a[1]).slice(0,5);
+ host.innerHTML=winners.length?winners.map(([name,winnerScore],index)=>
+  '<div class="finale-winner-row"><b>'+String(index+1).padStart(2,"0")+'</b><span>'+escapeText(name)+'</span><strong>'+format(winnerScore)+'</strong></div>'
+ ).join(""):'<p class="finale-no-winners">لا توجد أسماء مسجلة بعد.</p>';
+}
+function playFinaleLogoSound(){
+ sound(420,.09,"square");
+ finaleLater(()=>sound(690,.11,"triangle"),150);
+ finaleLater(()=>sound(540,.13,"square"),330);
+ finaleLater(()=>sound(880,.2,"sine"),510);
+}
 function startFinaleSequence(){
  clearFinaleTimers();$("arenaMessage").hidden=true;$("eventBanner").hidden=true;$("discoveryToast").hidden=true;$("arenaHint").style.opacity="0";
  $("pauseButton").hidden=true;$("boostButton").hidden=true;
- $("finaleEarth").hidden=false;$("finaleCredits").hidden=true;$("finaleSignal").hidden=true;$("finaleReturn").hidden=true;$("finaleScreen").hidden=false;
- finaleLater(()=>{$("finaleEarth").hidden=true;$("finaleCredits").hidden=false;},4200);
- finaleLater(()=>{$("finaleSignal").hidden=false;sound(680,.16,"sine");finaleLater(()=>sound(520,.18,"sine"),260);finaleLater(()=>sound(760,.28,"sine"),610);},8500);
- finaleLater(()=>$("finaleReturn").hidden=false,14000);
+ $("finaleEarth").hidden=false;$("finaleCredits").hidden=true;$("finaleUpdate").hidden=true;$("finaleTagline").hidden=true;$("finaleWinners").hidden=true;$("finaleReturn").hidden=true;$("finaleScreen").hidden=false;
+ finaleLater(()=>{
+  $("finaleEarth").hidden=true;$("finaleCredits").hidden=false;
+  playFinaleLogoSound();
+ },4200);
+ finaleLater(()=>$("finaleUpdate").hidden=false,5350);
+ finaleLater(()=>$("finaleTagline").hidden=false,6100);
+ finaleLater(()=>{
+  renderFinaleWinners();
+  $("finaleWinners").hidden=false;
+ },7600);
+ finaleLater(()=>$("finaleReturn").hidden=false,16500);
 }
 function beginFinale(){if(state==="finale")return;score=FINAL_SCORE;endGame(true);}
 function start(){
