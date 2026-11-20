@@ -114,7 +114,6 @@
     <section class="atlas-dialog hangar-dialog" role="dialog" aria-modal="true" aria-labelledby="hangarHeading">
       <header class="atlas-header"><div><span class="eyebrow">PILOT CENTER / ORBIT</span><h2 id="hangarHeading">مركز الرحّالة</h2></div><button class="atlas-close" id="closeHangar" type="button" aria-label="إغلاق">×</button></header>
       <p class="atlas-description">اختاري شكل مركبتك، وتابعي قائمة المتصدرين لهذا الجهاز.</p>
-      <div class="pilot-name-row"><label for="pilotNameInput">اسمك في سجل النتائج (اختياري)</label><input id="pilotNameInput" maxlength="16" placeholder="مثلاً: رحّالة أو هنادي" aria-label="اسم يظهر في سجل النتائج"><button id="savePilotName" type="button">حفظ الاسم</button></div>
 
       <section class="profile-panel" aria-labelledby="profilePanelHeading">
         <div class="profile-panel-head">
@@ -122,10 +121,10 @@
           <span class="profile-state" id="profileState">معاينة محلية</span>
         </div>
         <p class="profile-intro">هذه بطاقة هويتك داخل مدار. سنربطها بحساب دائم عندما نفعّل المصادقة وقاعدة البيانات.</p>
-        <label class="profile-label" for="profileUsername">اسم اللاعب</label>
-        <div class="profile-name-row">
-          <input id="profileUsername" maxlength="16" autocomplete="nickname" placeholder="اسم الرحّالة">
-          <button id="saveProfileName" type="button">حفظ الاسم</button>
+        <label class="profile-label" for="pilotNameInput">اسم اللاعب</label>
+        <div class="profile-name-row pilot-name-row">
+          <input id="pilotNameInput" maxlength="16" autocomplete="nickname" placeholder="اسم الرحّالة" aria-label="اسم اللاعب">
+          <button id="savePilotName" type="button">حفظ الاسم</button>
         </div>
         <div class="profile-code-card">
           <div><small>PLAYER ID · معرّف هذا الجهاز حالياً</small><strong id="profilePlayerId">LOCAL-...</strong></div>
