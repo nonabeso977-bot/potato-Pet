@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Changa:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=4.6.0">
+<link rel="stylesheet" href="style.css?v=4.7.0">
 </head>
 <body>
 <main class="shell">
@@ -89,7 +89,12 @@
           <div class="finale-notes">
             <span>DEVELOPMENT NOTES</span>
             <p>The journey was never just about distance.</p>
-            <small>ORBIT ARCADE · FINAL UPDATE 4.6.0 · 2026</small>
+            <small>ORBIT ARCADE · FINAL UPDATE 4.7.0 · 2026</small>
+          </div>
+          <div class="fleet-finale-note">
+            <span>HOMEBOUND PROJECT · CREW ARCHIVE</span>
+            <p>هذه هي المركبة التي أصلحها المستكشفون معاً. لم تكن العودة إلى الأرض رحلة شخص واحد.</p>
+            <small id="fleetFinalCrew">سيظهر سجل طاقم الإصلاح بعد تفعيل المشروع الجماعي.</small>
           </div>
           <div class="finale-signal" id="finaleSignal" hidden>UNKNOWN TRANSMISSION · 001<br><small>NO SOURCE IDENTIFIED</small></div>
           <button class="primary-button small" id="finaleReturn" type="button" hidden>العودة إلى مدار</button>
@@ -118,6 +123,23 @@
           <input id="backupFileInput" type="file" accept=".json,application/json" hidden>
         </div>
         <small id="backupStatus" role="status" aria-live="polite">ملف النسخة الاحتياطية يحفظ النجوم والمركبات والإنجازات والسجل.</small>
+      </section>
+      <section class="fleet-project" aria-labelledby="fleetProjectHeading">
+        <div class="fleet-project-head">
+          <div><span class="fleet-kicker">COMMUNITY STORY / HOMEBOUND</span><h3 id="fleetProjectHeading">مشروع مركبة العودة</h3></div>
+          <span class="fleet-preview-badge">معاينة محلية</span>
+        </div>
+        <p class="fleet-intro">عثر المستكشفون على مركبة قديمة صُممت للعودة إلى الأرض. ساهموا في إصلاحها، واكتشفوا سجل رحلتها المفقود.</p>
+        <div class="fleet-ship-art" aria-hidden="true"><span class="fleet-orbit"></span><span class="fleet-ship">✧</span><i></i></div>
+        <div class="fleet-progress-meta"><strong id="fleetStageTitle">هيكل المركبة</strong><span id="fleetProgressAmount">0 / 100</span></div>
+        <div class="fleet-progress-track"><i id="fleetProgressFill"></i></div>
+        <p class="fleet-stage-detail" id="fleetStageDetail">تم العثور على مركبة العودة. هيكلها متضرر وسجلاتها مشوشة.</p>
+        <button class="fleet-contribute" id="fleetContribute" type="button">جرّبي المساهمة في الإصلاح +10</button>
+        <p class="fleet-local-warning">تنبيه: هذه معاينة محفوظة على هذا الجهاز فقط. لن تظهر المساهمات لبقية اللاعبين قبل ربط قاعدة البيانات.</p>
+        <h4 class="fleet-subheading">سجل المستكشفين</h4>
+        <div class="fleet-crew-list" id="fleetCrewList"><p class="fleet-empty">لم تُسجّل مساهمات في هذه المعاينة بعد.</p></div>
+        <h4 class="fleet-subheading">السجلات المستعادة</h4>
+        <div class="fleet-story-log" id="fleetStoryLog"></div>
       </section>
       <h3 class="hangar-subtitle">مظهر المركبة</h3>
       <div class="star-wallet"><span>رصيد النجوم</span><strong><b id="starBalance">0</b> ✦</strong></div>
@@ -168,7 +190,7 @@
   </section>
   <footer><span>ORBIT / BUILD 4.5 · PILOT BACKUP</span><span>صُممت لتُلعَب، لا لتُشاهَد فقط.</span></footer>
 </main>
-<script src="script.js?v=4.6.0"></script>
-<script src="./pwa.js?v=4.6.0"></script>
+<script src="script.js?v=4.7.0"></script>\n<script src="fleet.js?v=4.7.0"></script>
+<script src="./pwa.js?v=4.7.0"></script>
 </body>
 </html>
