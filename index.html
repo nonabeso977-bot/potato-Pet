@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Changa:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=4.8.0">
+<link rel="stylesheet" href="style.css?v=4.9.0">
 </head>
 <body>
 <main class="shell">
@@ -115,6 +115,35 @@
       <header class="atlas-header"><div><span class="eyebrow">PILOT CENTER / ORBIT</span><h2 id="hangarHeading">مركز الرحّالة</h2></div><button class="atlas-close" id="closeHangar" type="button" aria-label="إغلاق">×</button></header>
       <p class="atlas-description">اختاري شكل مركبتك، وتابعي قائمة المتصدرين لهذا الجهاز.</p>
       <div class="pilot-name-row"><label for="pilotNameInput">اسمك في سجل النتائج (اختياري)</label><input id="pilotNameInput" maxlength="16" placeholder="مثلاً: رحّالة أو هنادي" aria-label="اسم يظهر في سجل النتائج"><button id="savePilotName" type="button">حفظ الاسم</button></div>
+
+      <section class="profile-panel" aria-labelledby="profilePanelHeading">
+        <div class="profile-panel-head">
+          <div><span class="profile-kicker">PILOT IDENTITY / ORBIT NETWORK</span><h3 id="profilePanelHeading">هوية الرحّالة</h3></div>
+          <span class="profile-state" id="profileState">معاينة محلية</span>
+        </div>
+        <p class="profile-intro">هذه بطاقة هويتك داخل مدار. سنربطها بحساب دائم عندما نفعّل المصادقة وقاعدة البيانات.</p>
+        <label class="profile-label" for="profileUsername">اسم اللاعب</label>
+        <div class="profile-name-row">
+          <input id="profileUsername" maxlength="16" autocomplete="nickname" placeholder="اسم الرحّالة">
+          <button id="saveProfileName" type="button">حفظ الاسم</button>
+        </div>
+        <div class="profile-code-card">
+          <div><small>PLAYER ID · معرّف هذا الجهاز حالياً</small><strong id="profilePlayerId">LOCAL-...</strong></div>
+          <button id="copyProfileId" type="button">نسخ</button>
+        </div>
+        <div class="profile-code-card profile-code-muted">
+          <div><small>LOGIN CODE · كود دخول الحساب</small><strong id="profileLoginCode">ينتظر تفعيل المصادقة</strong></div>
+          <span class="profile-lock" aria-hidden="true">LOCKED</span>
+        </div>
+        <div class="profile-world">
+          <label class="profile-label" for="profileWorldCode">WORLD CODE · كود عالم الإصلاح</label>
+          <div class="profile-name-row">
+            <input id="profileWorldCode" maxlength="20" placeholder="أدخلي كود العالم" autocomplete="off" disabled>
+            <button id="joinProfileWorld" type="button" disabled>انضمام</button>
+          </div>
+          <small id="profileStatus" role="status" aria-live="polite">الأكواد الفعلية ستُنشأ وتُتحقق عبر الخادم بعد إعداد Supabase.</small>
+        </div>
+      </section>
       <section class="backup-panel" aria-labelledby="backupHeading">
         <div><h3 id="backupHeading">نسخة احتياطية للرحّالة</h3><p>احفظي تقدمك واكتشافاتك قبل تحديث التطبيق أو تغيير الهاتف.</p></div>
         <div class="backup-actions">
@@ -188,9 +217,10 @@
     <article><span class="feature-icon violet">⌁</span><div><strong>قوى المدار</strong><small>درع يحميك ومغناطيس يجذب النجوم</small></div></article>
     <article><span class="feature-icon blackhole-feature">◉</span><div><strong>أفق الحدث</strong><small>قاومي جاذبية الثقب الأسود</small></div></article>
   </section>
-  <footer><span>ORBIT / BUILD 4.8 · PILOT BACKUP</span><span>صُممت لتُلعَب، لا لتُشاهَد فقط.</span></footer>
+  <footer><span>ORBIT / BUILD 4.9 · PILOT IDENTITY</span><span>صُممت لتُلعَب، لا لتُشاهَد فقط.</span></footer>
 </main>
-<script src="script.js?v=4.8.0"></script>\n<script src="fleet.js?v=4.8.0"></script>
-<script src="./pwa.js?v=4.8.0"></script>
+<script src="script.js?v=4.9.0"></script>\n<script src="fleet.js?v=4.9.0"></script>
+<script src="profile.js?v=4.9.0"></script>
+<script src="./pwa.js?v=4.9.0"></script>
 </body>
 </html>
