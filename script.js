@@ -52,7 +52,20 @@ const safeReadProgress=()=>{
 let progress=safeReadProgress(),survivedMinute=false,activeEvent=null,nextEventAt=32,eventSpawnClock=0,runStatsSaved=false,runBlackHoles=0;
 let selectedMission=MISSIONS[0],lastMissionId="",nearMisses=0,starMilestoneAwarded=false,missionDone=false,missionShownProgress=-1,timeDilation=1,lastMusicDilation=1;
 let selectedSkin=(()=>{try{const saved=localStorage.getItem(SKIN_SAVE)||"nova";return SKINS.some(s=>s.id===saved&&(!s.cost||progress.ownedSkins.includes(s.id)))?saved:"nova";}catch(_){return"nova";}})();
-let records=(()=>{try{const v=JSON.parse(localStorage.getItem(RECORDS_SAVE)||"[]");return Array.isArray(v)?v.filter(x=>x&&typeof x.name==="string"&&Number.isFinite(x.score)).sort((a,b)=>b.score-a.score).slice(0,10):[];}catch(_){return[];}})();
+let records=(()=>{
+ try{
+  const value=JSON.parse(localStorage.getItem(RECORDS_SAVE)||"[]");
+  if(!Array.isArray(value))return[];
+  const bestByPilot=new Map();
+  value.filter(item=>item&&typeof item.name==="string"&&Number.isFinite(Number(item.score))&&Number(item.score)>=0).forEach(item=>{
+   const name=item.name.trim().slice(0,16)||"رحّالة";
+   const candidate={name,score:Math.floor(Number(item.score)),when:Number.isFinite(Number(item.when))?Number(item.when):Date.now()};
+   const previous=bestByPilot.get(name);
+   if(!previous||candidate.score>previous.score)bestByPilot.set(name,candidate);
+  });
+  return [...bestByPilot.values()].sort((a,b)=>b.score-a.score).slice(0,10);
+ }catch(_){return[];}
+})();
 const FACTS=[
  {tag:"THE SUN",title:"ثماني دقائق من الماضي",body:"ضوء الشمس يحتاج نحو 8 دقائق و20 ثانية ليصل إلى الأرض. عندما تنظرين إليها، فأنت ترينها كما كانت قبل دقائق."},
  {tag:"VENUS",title:"يوم أطول من سنة",body:"الزهرة يدور حول محوره في نحو 243 يومًا أرضيًا، بينما يكمل دورته حول الشمس في نحو 225 يومًا."},
@@ -333,7 +346,13 @@ function openHangar(){renderSkins();renderWorkshop();renderTrails();renderAbilit
 function closeHangar(){$("hangarModal").hidden=true;}
 function saveRunRecord(){
  let name="رحّالة";try{name=(localStorage.getItem("orbitPilotName")||"رحّالة").trim().slice(0,16)||"رحّالة";}catch(_){}
- records.push({name,score,when:Date.now()});records.sort((a,b)=>b.score-a.score);records=records.slice(0,10);saveRecords();
+ const existing=records.find(record=>record.name===name);
+ if(existing){
+  if(score>existing.score){existing.score=score;existing.when=Date.now();}
+ }else{
+  records.push({name,score,when:Date.now()});
+ }
+ records.sort((a,b)=>b.score-a.score);records=records.slice(0,10);saveRecords();
 }
 function closeAtlas(){$("atlasModal").hidden=true;}
 function showDiscovery(index){
