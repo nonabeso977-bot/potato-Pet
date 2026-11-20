@@ -43,7 +43,7 @@
   }
 
   let profile = readProfile();
-  const nameInput = $("profileUsername");
+  const nameInput = $("pilotNameInput");
   const idOutput = $("profilePlayerId");
   const status = $("profileStatus");
   if (!nameInput || !idOutput || !status) return;
@@ -51,7 +51,7 @@
   nameInput.value = profile.name;
   idOutput.textContent = profile.id;
 
-  $("saveProfileName").addEventListener("click", () => {
+  $("savePilotName").addEventListener("click", () => {
     const name = nameInput.value.trim().slice(0, 16);
     if (!name) {
       status.textContent = "اكتبي اسماً للاعب أولاً.";
@@ -62,8 +62,6 @@
     profile = { ...profile, name };
     writeProfile(profile);
     try { localStorage.setItem(NAME_KEY, name); } catch (_) {}
-    const legacyName = $("pilotNameInput");
-    if (legacyName) legacyName.value = name;
     status.classList.remove("error");
     status.textContent = "حُفظ الاسم على هذا الجهاز. لم يُنشأ حساب متصل بعد.";
     document.dispatchEvent(new CustomEvent("orbit:pilot-profile-updated", { detail: { name, id: profile.id } }));
