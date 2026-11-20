@@ -383,3 +383,13 @@ footer{font-size:8px;margin-top:14px}
 .fleet-finale-note small{color:#91a2bf;font-size:9px;line-height:1.8}
 @media(max-width:650px){.fleet-project{padding:13px}.fleet-project-head h3{font-size:15px}.fleet-ship-art{height:90px}}
 @media(prefers-reduced-motion:reduce){.fleet-progress-track i,.fleet-contribute{transition:none}}
+
+/* ORBIT 4.7 · return ship arrival and compact finale layout */
+.fleet-return-ship{position:relative;width:86px;height:38px;margin:0 auto -4px;filter:drop-shadow(0 0 12px #82d9ff99);animation:fleetShipArrival 4.2s ease-in-out both}
+.fleet-return-ship:before{content:"";position:absolute;left:7px;right:7px;top:10px;height:19px;clip-path:polygon(50% 0,100% 70%,67% 61%,50% 100%,33% 61%,0 70%);background:linear-gradient(180deg,#e8f7ff,#6eb7e8 58%,#315a91)}
+.fleet-return-ship:after{content:"";position:absolute;left:39px;top:25px;width:8px;height:12px;background:linear-gradient(#9ceaff,transparent);filter:blur(2px)}
+.fleet-return-ship span{position:absolute;left:40px;top:12px;width:6px;height:6px;border-radius:50%;background:#f4fdff;box-shadow:0 0 10px 3px #9ceaff}
+@keyframes fleetShipArrival{0%{opacity:0;transform:translate(-34px,22px) scale(.7)}18%{opacity:1}75%{transform:translate(0,0) scale(1)}100%{opacity:1;transform:translate(0,0) scale(1)}}
+.finale-credits{max-height:100%;overflow-y:auto;overscroll-behavior:contain;padding:10px 0;scrollbar-width:thin}
+@media(max-height:700px){.finale-screen{align-items:flex-start}.finale-credits{margin:auto 0}}
+@media(prefers-reduced-motion:reduce){.fleet-return-ship{animation:none}}
