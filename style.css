@@ -414,3 +414,30 @@ footer{font-size:8px;margin-top:14px}
 @keyframes finaleLogoReveal{0%{opacity:0;transform:translateY(10px) scale(.97);filter:blur(6px)}100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
 @media(max-width:420px){.finale-screen{padding:14px}.finale-credits{gap:10px}.finale-title{font-size:clamp(21px,6vw,29px)}.finale-tagline{font-size:8px}.finale-winner-row{padding:6px 8px}}
 @media(prefers-reduced-motion:reduce){.finale-title,.finale-update,.finale-tagline,.finale-winners{animation:none}}
+
+
+/* ORBIT 4.9 · pilot identity and multiplayer access preview */
+.profile-panel{position:relative;overflow:hidden;margin:16px 0 20px;padding:15px;border:1px solid #76e4e455;border-radius:16px;background:radial-gradient(ellipse at 100% 0%,#3479a52b,transparent 48%),linear-gradient(145deg,#10243b,#0d172e)}
+.profile-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.profile-kicker{display:block;color:#8fdfff;font:600 8px "Space Grotesk",sans-serif;letter-spacing:1.2px}
+.profile-panel-head h3{margin:5px 0 0;color:#eef5ff;font-size:16px}
+.profile-state{flex:0 0 auto;padding:5px 9px;border:1px solid #ffd77a55;border-radius:20px;background:#ffd77a0d;color:#ffdfa0;font-size:9px}
+.profile-intro{margin:9px 0 13px;color:#aabbd7;font-size:10px;line-height:1.8}
+.profile-label{display:block;margin:9px 0 6px;color:#cbd9ef;font-size:10px}
+.profile-name-row{display:flex;gap:7px}
+.profile-name-row input{width:100%;min-width:0;padding:10px 11px;border:1px solid #ffffff24;border-radius:10px;background:#080f20;color:#eef5ff;font:inherit;font-size:11px;outline:none}
+.profile-name-row input:focus{border-color:#76e4e4aa}
+.profile-name-row input:disabled{opacity:.55;cursor:not-allowed}
+.profile-name-row button,.profile-code-card button{flex:0 0 auto;padding:9px 13px;border:1px solid #76e4e477;border-radius:10px;background:#76e4e414;color:#c9f8f5;font:600 10px "Changa",sans-serif;cursor:pointer}
+.profile-name-row button:disabled{opacity:.45;cursor:not-allowed}
+.profile-code-card{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;padding:11px;border:1px solid #74caff30;border-radius:11px;background:#081427aa}
+.profile-code-card div{min-width:0}
+.profile-code-card small{display:block;color:#8ea7c7;font:600 8px "Space Grotesk",sans-serif;letter-spacing:.08em}
+.profile-code-card strong{display:block;overflow-wrap:anywhere;margin-top:5px;color:#e5f3ff;font:600 12px "Space Grotesk",sans-serif;letter-spacing:.04em}
+.profile-code-muted{border-color:#ffffff16;background:#ffffff05}
+.profile-code-muted strong{color:#8495b2;font:500 10px "Changa",sans-serif;letter-spacing:0}
+.profile-lock{color:#8b9bb5;font:600 8px "Space Grotesk",sans-serif;letter-spacing:.1em}
+.profile-world{margin-top:12px;padding-top:10px;border-top:1px solid #ffffff14}
+#profileStatus{display:block;margin-top:8px;color:#91a9c7;font-size:9px;line-height:1.8}
+#profileStatus.error{color:#ffb1bf}
+@media(max-width:420px){.profile-panel{padding:12px}.profile-name-row{gap:5px}.profile-name-row button{padding-inline:10px}}
