@@ -1,6 +1,6 @@
 "use strict";
-const CACHE_NAME="orbit-arcade-pwa-4.7.0";
-const APP_SHELL=["./","./index.html","./style.css?v=4.7.0","./script.js?v=4.7.0","./pwa.js?v=4.7.0","./fleet.js?v=4.7.0","./manifest.webmanifest","./icon.svg"];
+const CACHE_NAME="orbit-arcade-pwa-4.8.0";
+const APP_SHELL=["./","./index.html","./style.css?v=4.8.0","./script.js?v=4.8.0","./pwa.js?v=4.8.0","./fleet.js?v=4.8.0","./manifest.webmanifest","./icon.svg"];
 self.addEventListener("install",event=>{
  event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_SHELL)).then(()=>self.skipWaiting()));
 });
