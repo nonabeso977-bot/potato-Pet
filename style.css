@@ -482,3 +482,18 @@ footer{font-size:8px;margin-top:14px}
   line-height:1.4;
 }
 .discovery-toast small{margin-top:2px;font-size:8px}
+
+
+/* 5.2.0 · one scroll area for the galaxy map on mobile */
+.map-dialog{
+  max-height:min(88dvh,760px);
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+.map-dialog .galaxy-map{
+  max-height:none;
+  overflow:visible;
+  overscroll-behavior:visible;
+  touch-action:pan-y;
+}
