@@ -278,7 +278,7 @@ footer{font-size:8px;margin-top:14px}
 .map-open{border-color:#74caff55;background:#74caff0d;color:#c5eaff}
 .map-open b{color:#74caff;font-size:15px}
 .map-dialog{width:min(100%,700px)}
-.galaxy-map{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:16px 24px;padding:22px 12px;margin:10px 0 14px;min-height:245px;border:1px solid #74caff22;border-radius:18px;background:radial-gradient(ellipse at 50% 50%,#243b6c66,transparent 65%),#08152a}
+.galaxy-map{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:16px 24px;padding:22px 12px;margin:10px 0 14px;min-height:245px;max-height:440px;overflow-y:auto;overscroll-behavior:contain;align-content:start;border:1px solid #74caff22;border-radius:18px;background:radial-gradient(ellipse at 50% 50%,#243b6c66,transparent 65%),#08152a}
 .map-route{position:absolute;inset:18% 15%;border:1px dashed #74caff55;border-radius:50%;transform:rotate(-22deg);pointer-events:none}
 .map-node{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:90px;padding:9px;border:1px solid #ffffff1a;border-radius:14px;background:#101d38;color:#dce8ff;cursor:pointer}
 .map-node i{display:grid;place-items:center;width:31px;height:31px;border-radius:50%;background:#74caff15;color:#74caff;font-style:normal;font-size:17px}
@@ -321,3 +321,123 @@ footer{font-size:8px;margin-top:14px}
 #backupStatus{display:block;min-height:18px;color:#91a9c7;font-size:9px;line-height:1.7}
 #backupStatus.error{color:#ffb1bf}
 @media(max-width:420px){.backup-actions{flex-direction:column}.backup-actions button{width:100%}}
+
+.map-node[data-sector="6"]{border-color:#ffd77a55;background:linear-gradient(145deg,#172b48,#17243a)}.map-node[data-sector="6"] i{color:#ffd77a;background:#ffd77a18}
+
+/* ORBIT 4.6 · final arrival sequence */
+.finale-screen{position:absolute;z-index:9;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:22px;background:#000;color:#e9f1ff;text-align:center;}
+.finale-screen[hidden],.finale-screen [hidden]{display:none!important}
+.finale-earth-scene,.finale-credits{width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:17px;animation:finaleReveal 2s ease both;}
+.finale-kicker{font:600 9px "Space Grotesk",sans-serif;letter-spacing:.2em;color:#8bb9e8;}
+.finale-earth-globe{position:relative;width:min(43vw,220px);min-width:142px;aspect-ratio:1;border-radius:50%;overflow:hidden;background:radial-gradient(circle at 31% 25%,#a9edff 0%,#398fca 31%,#15538d 65%,#061a3d 100%);box-shadow:0 0 35px #4da9ff88,0 0 110px #2c83d455,inset -18px -16px 35px #020a20aa;animation:earthDrift 7s ease-in-out infinite;}
+.finale-earth-globe:before{content:"";position:absolute;inset:8% 12%;border-radius:48% 38% 53% 43%;background:radial-gradient(ellipse at 27% 30%,#78c68c 0 13%,transparent 14%),radial-gradient(ellipse at 58% 62%,#7acb91 0 16%,transparent 17%),radial-gradient(ellipse at 73% 24%,#83d19a 0 9%,transparent 10%),radial-gradient(ellipse at 43% 82%,#5fae83 0 8%,transparent 9%);filter:blur(1px);}
+.finale-earth-scene p{margin:0;color:#d2e3f6;font-size:clamp(12px,2.7vw,16px);letter-spacing:.04em;}
+.finale-title{font:700 clamp(39px,11vw,68px) "Space Grotesk",sans-serif;letter-spacing:.32em;padding-left:.32em;color:#f2f5ff;text-shadow:0 0 30px #8dbdff55;animation:finaleTitle 2s ease both;}
+.finale-subtitle{margin:-8px 0 12px;color:#879bb8;font:500 9px "Space Grotesk",sans-serif;letter-spacing:.2em;}
+.finale-notes{width:min(100%,340px);padding:15px 12px;border-top:1px solid #8fb9df35;border-bottom:1px solid #8fb9df35;background:#0b162788;}
+.finale-notes span{font:600 9px "Space Grotesk",sans-serif;letter-spacing:.18em;color:#9dbfe4;}
+.finale-notes p{margin:9px 0;color:#c5d1e2;font-size:12px;}
+.finale-notes small{color:#7488a5;font:500 8px "Space Grotesk",sans-serif;letter-spacing:.1em;}
+.finale-signal{margin:4px 0 0;color:#9ec8ee;font:600 9px/1.9 "Space Grotesk",sans-serif;letter-spacing:.16em;animation:signalFlicker 1.8s steps(2,end) infinite;}
+.finale-signal small{color:#607b9c;font-size:8px;}
+@keyframes finaleReveal{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes earthDrift{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-8px) rotate(3deg)}}
+@keyframes finaleTitle{0%{opacity:0;letter-spacing:.65em;filter:blur(5px)}100%{opacity:1;letter-spacing:.32em;filter:blur(0)}}
+@keyframes signalFlicker{0%,18%,22%,62%,100%{opacity:1}20%,60%{opacity:.35}}
+@media(prefers-reduced-motion:reduce){.finale-earth-scene,.finale-credits,.finale-earth-globe,.finale-title,.finale-signal{animation:none}}
+
+/* ORBIT 4.7 · HOMEBOUND return-vessel community project preview */
+.fleet-project{position:relative;overflow:hidden;margin:18px 0 22px;padding:16px;border:1px solid #74caff44;border-radius:18px;background:radial-gradient(ellipse at 90% 0%,#285b8730,transparent 48%),linear-gradient(145deg,#101e39,#0b1429)}
+.fleet-project:before{content:"";position:absolute;inset:auto -35px -75px auto;width:180px;height:180px;border:1px solid #74caff18;border-radius:50%;box-shadow:0 0 0 18px #74caff08,0 0 0 38px #74caff05;pointer-events:none}
+.fleet-project-head{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.fleet-kicker{display:block;color:#8ccfff;font:600 8px "Space Grotesk",sans-serif;letter-spacing:1.3px}
+.fleet-project-head h3{margin:5px 0 0;color:#eef5ff;font-size:17px}
+.fleet-preview-badge{flex:0 0 auto;padding:5px 9px;border:1px solid #ffd77a55;border-radius:20px;background:#ffd77a0d;color:#ffdfa0;font-size:9px}
+.fleet-intro{position:relative;z-index:1;margin:10px 0;color:#aabbd7;font-size:11px;line-height:1.9}
+.fleet-ship-art{position:relative;display:grid;place-items:center;height:104px;margin:10px 0 14px;overflow:hidden;border:1px solid #74caff20;border-radius:14px;background:radial-gradient(ellipse at 50% 55%,#2a5a8345,transparent 54%),linear-gradient(90deg,#0a1428,#152743,#0a1428)}
+.fleet-orbit{position:absolute;width:138px;height:52px;border:1px solid #8fdfff88;border-radius:50%;transform:rotate(-18deg);box-shadow:0 0 18px #74caff22}
+.fleet-ship{position:relative;z-index:1;display:grid;place-items:center;width:45px;height:45px;border:1px solid #a9eaff99;border-radius:14px;background:linear-gradient(145deg,#b4eaff,#477ca9 60%,#172e55);color:#fff;font-size:25px;box-shadow:0 0 24px #74caff77;transform:rotate(45deg)}
+.fleet-ship-art i{position:absolute;width:4px;height:4px;border-radius:50%;background:#e8f8ff;box-shadow:0 0 12px 3px #74caff;left:25%;top:28%}
+.fleet-progress-meta{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#eaf3ff;font-size:11px}
+.fleet-progress-meta span{color:#8fdfff;font:600 11px "Space Grotesk",sans-serif}
+.fleet-progress-track{height:8px;margin:9px 0;border-radius:10px;overflow:hidden;background:#ffffff12}
+.fleet-progress-track i{display:block;width:0;height:100%;border-radius:10px;background:linear-gradient(90deg,#74caff,#76e4e4,#c5b7ff);box-shadow:0 0 13px #74caff66;transition:width .35s ease}
+.fleet-stage-detail{min-height:38px;margin:7px 0;color:#9eacc8;font-size:10px;line-height:1.8}
+.fleet-contribute{width:100%;padding:11px 13px;border:1px solid #76e4e477;border-radius:11px;background:linear-gradient(100deg,#17415a,#252b55);color:#d8faff;font:600 11px "Changa",sans-serif;cursor:pointer;transition:transform .15s,filter .15s}
+.fleet-contribute:active{transform:scale(.985)}
+.fleet-contribute:disabled{opacity:.55;cursor:default}
+.fleet-local-warning{margin:8px 0 15px;padding:8px 10px;border-right:2px solid #ffd77a88;background:#ffd77a09;color:#c8b98e;font-size:9px;line-height:1.8}
+.fleet-subheading{margin:15px 0 8px;color:#e8efff;font-size:11px}
+.fleet-crew-list,.fleet-story-log{display:grid;gap:6px}
+.fleet-crew-row{display:grid;grid-template-columns:30px minmax(0,1fr) auto;align-items:center;gap:9px;padding:9px 10px;border:1px solid #ffffff12;border-radius:10px;background:#ffffff06;color:#cbd8ee;font-size:10px}
+.fleet-crew-row b{color:#8fdfff;font:600 10px "Space Grotesk",sans-serif}
+.fleet-crew-row strong{color:#ffd77a;font:600 11px "Space Grotesk",sans-serif}
+.fleet-empty{margin:0;padding:10px;border:1px dashed #ffffff20;border-radius:10px;color:#8797b4;font-size:10px;text-align:center}
+.fleet-log-entry{padding:10px 11px;border:1px solid #a99bff24;border-radius:10px;background:#a99bff08}
+.fleet-log-entry small{display:block;color:#a99bff;font:600 8px "Space Grotesk",sans-serif;letter-spacing:.7px}
+.fleet-log-entry strong{display:block;margin-top:4px;color:#e9e5ff;font-size:10px}
+.fleet-log-entry p{margin:4px 0 0;color:#aab5ce;font-size:9px;line-height:1.8}
+.fleet-finale-note{width:min(100%,340px);padding:13px 12px;border:1px solid #74caff33;border-radius:13px;background:linear-gradient(120deg,#10243b,#121a34);text-align:center}
+.fleet-finale-note span{color:#8fdfff;font:600 8px "Space Grotesk",sans-serif;letter-spacing:.15em}
+.fleet-finale-note p{margin:8px 0;color:#d1e0f3;font-size:11px;line-height:1.9}
+.fleet-finale-note small{color:#91a2bf;font-size:9px;line-height:1.8}
+@media(max-width:650px){.fleet-project{padding:13px}.fleet-project-head h3{font-size:15px}.fleet-ship-art{height:90px}}
+@media(prefers-reduced-motion:reduce){.fleet-progress-track i,.fleet-contribute{transition:none}}
+
+/* ORBIT 4.7 · return ship arrival and compact finale layout */
+.fleet-return-ship{position:relative;width:86px;height:38px;margin:0 auto -4px;filter:drop-shadow(0 0 12px #82d9ff99);animation:fleetShipArrival 4.2s ease-in-out both}
+.fleet-return-ship:before{content:"";position:absolute;left:7px;right:7px;top:10px;height:19px;clip-path:polygon(50% 0,100% 70%,67% 61%,50% 100%,33% 61%,0 70%);background:linear-gradient(180deg,#e8f7ff,#6eb7e8 58%,#315a91)}
+.fleet-return-ship:after{content:"";position:absolute;left:39px;top:25px;width:8px;height:12px;background:linear-gradient(#9ceaff,transparent);filter:blur(2px)}
+.fleet-return-ship span{position:absolute;left:40px;top:12px;width:6px;height:6px;border-radius:50%;background:#f4fdff;box-shadow:0 0 10px 3px #9ceaff}
+@keyframes fleetShipArrival{0%{opacity:0;transform:translate(-34px,22px) scale(.7)}18%{opacity:1}75%{transform:translate(0,0) scale(1)}100%{opacity:1;transform:translate(0,0) scale(1)}}
+.finale-credits{max-height:100%;overflow-y:auto;overscroll-behavior:contain;padding:10px 0;scrollbar-width:thin}
+@media(max-height:700px){.finale-screen{align-items:flex-start}.finale-credits{margin:auto 0}}
+@media(prefers-reduced-motion:reduce){.fleet-return-ship{animation:none}}
+
+
+/* ORBIT 4.8 · cinematic black-screen end credits */
+.finale-credits{gap:13px}
+.finale-title{max-width:100%;margin:0;padding:0;color:#f5f7ff;font:italic 800 clamp(24px,6.4vw,43px)/1.2 "Space Grotesk",sans-serif;letter-spacing:.015em;text-shadow:0 0 24px #8dbdff38;animation:finaleLogoReveal 1.7s ease both}
+.finale-accent-a{color:#48a5ff}
+.finale-update{margin:0;color:#8ea0bb;font:600 9px "Space Grotesk",sans-serif;letter-spacing:.14em;animation:finaleReveal .9s ease both}
+.finale-tagline{margin:0;color:#e5edfa;font:600 10px "Space Grotesk",sans-serif;letter-spacing:.13em;animation:finaleReveal .9s ease both}
+.finale-winners{width:min(100%,390px);padding:13px 0 10px;border-top:1px solid #ffffff24;animation:finaleReveal 1s ease both}
+.finale-section-label{display:block;margin-bottom:10px;color:#70baff;font:700 10px "Space Grotesk",sans-serif;letter-spacing:.2em}
+.finale-winner-list{display:grid;gap:6px}
+.finale-winner-row{display:grid;grid-template-columns:30px minmax(0,1fr) auto;align-items:center;gap:10px;padding:7px 12px;border-bottom:1px solid #ffffff12;color:#eaf2ff;text-align:left}
+.finale-winner-row b{color:#6ebaff;font:700 10px "Space Grotesk",sans-serif}
+.finale-winner-row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+.finale-winner-row strong{color:#b7dfff;font:600 11px "Space Grotesk",sans-serif}
+.finale-local-note{display:block;margin-top:9px;color:#687991;font:500 8px "Space Grotesk",sans-serif;letter-spacing:.12em}
+.finale-no-winners{margin:0;color:#9aa9bf;font-size:11px}
+.finale-credits .fleet-finale-note{margin-top:5px}
+@keyframes finaleLogoReveal{0%{opacity:0;transform:translateY(10px) scale(.97);filter:blur(6px)}100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
+@media(max-width:420px){.finale-screen{padding:14px}.finale-credits{gap:10px}.finale-title{font-size:clamp(21px,6vw,29px)}.finale-tagline{font-size:8px}.finale-winner-row{padding:6px 8px}}
+@media(prefers-reduced-motion:reduce){.finale-title,.finale-update,.finale-tagline,.finale-winners{animation:none}}
+
+
+/* ORBIT 4.9 · pilot identity and multiplayer access preview */
+.profile-panel{position:relative;overflow:hidden;margin:16px 0 20px;padding:15px;border:1px solid #76e4e455;border-radius:16px;background:radial-gradient(ellipse at 100% 0%,#3479a52b,transparent 48%),linear-gradient(145deg,#10243b,#0d172e)}
+.profile-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.profile-kicker{display:block;color:#8fdfff;font:600 8px "Space Grotesk",sans-serif;letter-spacing:1.2px}
+.profile-panel-head h3{margin:5px 0 0;color:#eef5ff;font-size:16px}
+.profile-state{flex:0 0 auto;padding:5px 9px;border:1px solid #ffd77a55;border-radius:20px;background:#ffd77a0d;color:#ffdfa0;font-size:9px}
+.profile-intro{margin:9px 0 13px;color:#aabbd7;font-size:10px;line-height:1.8}
+.profile-label{display:block;margin:9px 0 6px;color:#cbd9ef;font-size:10px}
+.profile-name-row{display:flex;gap:7px}
+.profile-name-row input{width:100%;min-width:0;padding:10px 11px;border:1px solid #ffffff24;border-radius:10px;background:#080f20;color:#eef5ff;font:inherit;font-size:11px;outline:none}
+.profile-name-row input:focus{border-color:#76e4e4aa}
+.profile-name-row input:disabled{opacity:.55;cursor:not-allowed}
+.profile-name-row button,.profile-code-card button{flex:0 0 auto;padding:9px 13px;border:1px solid #76e4e477;border-radius:10px;background:#76e4e414;color:#c9f8f5;font:600 10px "Changa",sans-serif;cursor:pointer}
+.profile-name-row button:disabled{opacity:.45;cursor:not-allowed}
+.profile-code-card{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;padding:11px;border:1px solid #74caff30;border-radius:11px;background:#081427aa}
+.profile-code-card div{min-width:0}
+.profile-code-card small{display:block;color:#8ea7c7;font:600 8px "Space Grotesk",sans-serif;letter-spacing:.08em}
+.profile-code-card strong{display:block;overflow-wrap:anywhere;margin-top:5px;color:#e5f3ff;font:600 12px "Space Grotesk",sans-serif;letter-spacing:.04em}
+.profile-code-muted{border-color:#ffffff16;background:#ffffff05}
+.profile-code-muted strong{color:#8495b2;font:500 10px "Changa",sans-serif;letter-spacing:0}
+.profile-lock{color:#8b9bb5;font:600 8px "Space Grotesk",sans-serif;letter-spacing:.1em}
+.profile-world{margin-top:12px;padding-top:10px;border-top:1px solid #ffffff14}
+#profileStatus{display:block;margin-top:8px;color:#91a9c7;font-size:9px;line-height:1.8}
+#profileStatus.error{color:#ffb1bf}
+@media(max-width:420px){.profile-panel{padding:12px}.profile-name-row{gap:5px}.profile-name-row button{padding-inline:10px}}
