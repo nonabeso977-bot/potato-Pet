@@ -497,3 +497,111 @@ footer{font-size:8px;margin-top:14px}
   overscroll-behavior:visible;
   touch-action:pan-y;
 }
+
+
+/* ORBIT 5.4.0 · full-screen cinematic homecoming finale */
+.finale-screen{
+ position:fixed!important;z-index:99999!important;inset:0!important;
+ width:100vw;height:100vh;height:100dvh;
+ padding:0!important;border:0!important;border-radius:0!important;
+ background:#000!important;color:#fff;overflow:hidden;
+}
+.finale-earth-scene{
+ position:relative;width:100%;height:100%;min-height:100%;
+ justify-content:center;gap:17px;padding:24px;
+ background:#020711;
+}
+.finale-kicker{font-size:10px;letter-spacing:.24em;color:#a8c8e8}
+.finale-earth-globe{
+ width:clamp(205px,48vw,390px);min-width:0;margin-top:8px;
+ background:
+  radial-gradient(ellipse at 31% 22%,#d4f7ff 0,#8bd8f2 9%,transparent 29%),
+  radial-gradient(circle at 34% 29%,#2f9bd0 0,#1765a5 43%,#0a2e65 76%,#04142f 100%);
+ border:2px solid #9de8ff88;
+ box-shadow:0 0 18px #70caff99,0 0 62px #268bdb88,0 0 150px #1769bd55,inset -30px -24px 48px #01091dcc;
+}
+.finale-earth-globe:before{
+ inset:7% 9%;
+ background:
+  radial-gradient(ellipse at 25% 26%,#8bd18d 0 8%,transparent 9%),
+  radial-gradient(ellipse at 39% 35%,#6fbd83 0 12%,transparent 13%),
+  radial-gradient(ellipse at 65% 24%,#a0d99a 0 7%,transparent 8%),
+  radial-gradient(ellipse at 70% 53%,#72c28b 0 13%,transparent 14%),
+  radial-gradient(ellipse at 43% 69%,#86cc8c 0 11%,transparent 12%),
+  radial-gradient(ellipse at 24% 75%,#5eaa7e 0 7%,transparent 8%);
+ filter:blur(1.4px);
+}
+.finale-earth-globe:after{
+ content:"";position:absolute;inset:4%;border-radius:50%;
+ background:
+  repeating-linear-gradient(164deg,transparent 0 17px,#e3faff18 18px 20px,transparent 21px 35px),
+  radial-gradient(ellipse at 56% 18%,#e8fbff45,transparent 45%);
+ mix-blend-mode:screen;opacity:.72;
+}
+.finale-earth-scene p{max-width:90%;font-size:clamp(13px,2.8vw,18px);color:#e2f2ff}
+.fleet-return-ship{
+ z-index:2;position:relative;width:146px;height:84px;margin:0 auto -20px;
+ filter:drop-shadow(0 0 10px #8bdfff) drop-shadow(0 0 24px #45aaff88);
+ animation:fleetShipArrival 4.2s cubic-bezier(.2,.72,.2,1) both;
+}
+.fleet-return-ship:before{
+ content:"";position:absolute;left:7px;right:7px;top:8px;height:62px;
+ clip-path:polygon(50% 0,66% 29%,96% 67%,66% 60%,50% 100%,34% 60%,4% 67%,34% 29%);
+ background:linear-gradient(100deg,#456d9b 0%,#d9f5ff 28%,#83c7ec 49%,#eafaff 66%,#315b8e 100%);
+ border:1px solid #e5faff;
+}
+.fleet-return-ship:after{
+ content:"";position:absolute;left:calc(50% - 9px);top:58px;width:18px;height:30px;
+ background:linear-gradient(180deg,#d9f8ff,#69caff88 48%,transparent);
+ filter:blur(5px);opacity:.95;
+}
+.fleet-return-ship span{
+ position:absolute;z-index:2;left:calc(50% - 9px);top:29px;width:18px;height:13px;
+ border:2px solid #e5fbff;border-radius:50% 50% 45% 45%;
+ background:radial-gradient(circle at 35% 30%,#fff,#53bfff 65%,#174a83);
+ box-shadow:0 0 13px #a9edff;
+}
+@keyframes fleetShipArrival{
+ 0%{opacity:0;transform:translate(-75px,-95px) scale(.42)}
+ 18%{opacity:1}
+ 72%{transform:translate(12px,6px) scale(.92)}
+ 100%{opacity:1;transform:translate(0,13px) scale(1)}
+}
+.finale-credits{
+ position:absolute;inset:0;width:100%;height:100%;max-height:none;
+ display:flex;align-items:center;justify-content:center;gap:0;
+ padding:0!important;overflow:hidden;background:#000;
+ opacity:1;transition:opacity .85s ease;
+}
+.finale-title{
+ width:100%;max-width:calc(100vw - 12px);margin:0;padding:0;
+ color:#f7f9ff;font-family:"Space Grotesk",sans-serif;
+ font-size:clamp(19px,7.2vw,108px);font-weight:800;font-style:italic;
+ line-height:1;letter-spacing:-.055em;white-space:nowrap;
+ text-align:center;text-shadow:0 0 30px #398cff30;
+ transform:skewX(-7deg);
+ animation:finaleLogoImpact 1.25s cubic-bezier(.16,.8,.22,1) both;
+}
+.finale-accent-a{color:#258bff!important;text-shadow:0 0 22px #258bff55}
+.finale-update{
+ position:absolute;left:max(12px,env(safe-area-inset-left));
+ bottom:max(10px,env(safe-area-inset-bottom));
+ margin:0!important;padding:0!important;
+ color:#aeb8c8!important;opacity:.22;
+ font:500 7px/1.2 "Space Grotesk",sans-serif!important;
+ letter-spacing:.16em!important;text-align:left;
+ animation:none!important;
+}
+.finale-credits.finalizing{opacity:0}
+@keyframes finaleLogoImpact{
+ 0%{opacity:0;transform:skewX(-7deg) scale(.86);filter:blur(9px)}
+ 72%{opacity:1;transform:skewX(-7deg) scale(1.025);filter:blur(0)}
+ 100%{opacity:1;transform:skewX(-7deg) scale(1)}
+}
+@media(max-width:360px){
+ .finale-title{font-size:clamp(17px,6.9vw,25px);letter-spacing:-.065em}
+}
+@media(prefers-reduced-motion:reduce){
+ .finale-earth-scene,.fleet-return-ship,.finale-title{animation:none}
+ .finale-credits{transition:none}
+}
