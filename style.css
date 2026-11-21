@@ -451,3 +451,11 @@ footer{font-size:8px;margin-top:14px}
 .fleet-repair-status{min-height:24px;margin:8px 0;color:#9fe7e9;font-size:11px;line-height:1.8}
 .fleet-contribute:disabled{opacity:.55;cursor:not-allowed}
 @media(max-width:650px){.fleet-mode-switch{grid-template-columns:1fr}.friends-feature{grid-column:auto}}
+
+/* Workshop upgrade effect comparison */
+.upgrade-effect{display:flex;flex-direction:column;gap:2px;margin:7px 0;padding:7px 8px;border:1px solid #76e4e41c;border-radius:8px;background:#76e4e408}
+.upgrade-effect small{color:#8294b6;font-size:8px}
+.upgrade-effect span{color:#d9e9ff;font-size:9px;line-height:1.5}
+.upgrade-effect.next{border-color:#a99bff2b;background:#a99bff09}
+.upgrade-effect.next span{color:#c9bdff}
+.upgrade-card p{min-height:0}
