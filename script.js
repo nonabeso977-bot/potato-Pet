@@ -286,19 +286,24 @@ function renderRecords(){
 }
 function escapeText(value){return value.replace(/[&<>\"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[ch]));}
 const UPGRADE_DEFS=[
- {id:"engine",name:"محرك الانسياب",desc:"استجابة أسرع لحركة المركبة",costs:[120,240,420],icon:"↗"},
- {id:"shield",name:"درع ممتد",desc:"ثوانٍ إضافية من الحماية",costs:[140,260,440],icon:"◎"},
- {id:"magnet",name:"مغناطيس أوسع",desc:"يجذب النجوم من مسافة أبعد",costs:[130,250,430],icon:"⌁"}
+ {id:"engine",name:"محرك الانسياب",desc:"استجابة أسرع وتحكم أدق بالمركبة",costs:[120,240,420],icon:"↗",
+  effect:level=>["استجابة أساسية","استجابة الحركة +3","استجابة الحركة +6","استجابة الحركة +9"][level]},
+ {id:"shield",name:"درع ممتد",desc:"حماية أطول ووقت أمان أكبر بعد امتصاص الاصطدام",costs:[140,260,440],icon:"◎",
+  effect:level=>["6 ثوانٍ · أمان 0.65 ثانية","7.5 ثوانٍ · أمان 0.8 ثانية","9 ثوانٍ · أمان 0.95 ثانية","10.5 ثوانٍ · أمان 1.1 ثانية"][level]},
+ {id:"magnet",name:"مغناطيس أوسع",desc:"مدة جذب أطول ومدى وقوة سحب أكبر",costs:[130,250,430],icon:"⌁",
+  effect:level=>["7 ثوانٍ · مدى 175","8.6 ثوانٍ · مدى 220","10.2 ثوانٍ · مدى 265","11.8 ثانية · مدى 310"][level]}
 ];
 function renderWorkshop(){
  $("upgradeGrid").innerHTML=UPGRADE_DEFS.map(u=>{
   const level=progress.upgrades[u.id]||0,price=u.costs[level],max=level>=3;
-  return '<article class="upgrade-card"><div class="upgrade-top"><i>'+u.icon+'</i><span>المستوى '+level+' / 3</span></div><strong>'+u.name+'</strong><p>'+u.desc+'</p><div class="upgrade-track"><i style="width:'+(level/3*100)+'%"></i></div><button type="button" data-upgrade="'+u.id+'" '+(max||progress.bank<price?"disabled":"")+'>'+(max?"اكتملت الترقية": "تطوير · "+price+" ✦")+'</button></article>';
+  const nextEffect=max?"وصلت الترقية إلى أقصى كفاءة": "التالي: "+u.effect(level+1);
+  return '<article class="upgrade-card"><div class="upgrade-top"><i>'+u.icon+'</i><span>المستوى '+level+' / 3</span></div><strong>'+u.name+'</strong><p>'+u.desc+'</p><div class="upgrade-effect"><small>التأثير الحالي</small><span>'+u.effect(level)+'</span></div><div class="upgrade-effect next"><small>بعد الترقية</small><span>'+nextEffect+'</span></div><div class="upgrade-track"><i style="width:'+(level/3*100)+'%"></i></div><button type="button" data-upgrade="'+u.id+'" '+(max||progress.bank<price?"disabled":"")+'>'+(max?"اكتملت الترقية": "تطوير · "+price+" ✦")+'</button></article>';
  }).join("");
  $("upgradeGrid").querySelectorAll("[data-upgrade]").forEach(button=>button.addEventListener("click",()=>{
   const item=UPGRADE_DEFS.find(u=>u.id===button.dataset.upgrade);if(!item)return;
   const level=progress.upgrades[item.id]||0,price=item.costs[level];
   if(level>=3||progress.bank<price)return;
+  if(!window.confirm("تطوير "+item.name+" إلى المستوى "+(level+1)+" مقابل "+price+" نجمة؟"))return;
   progress.bank-=price;progress.upgrades[item.id]=level+1;saveProgress();
   $("skinShopNotice").textContent="تم تطوير "+item.name+" إلى المستوى "+(level+1)+".";
   sound(980,.18,"triangle");renderWorkshop();renderSkins();
@@ -645,8 +650,8 @@ function collectStar(s){
 function activateBoost(){if(state!=="running"||!progress.ownedBoost||boostCooldown>0||boostTime>0)return;boostTime=3;boostCooldown=16;boostShownCooldown=16;player.invulnerable=Math.max(player.invulnerable,3);burst(player.x,player.y,"#74caff",24);sound(760,.18,"sine");updateHUD();}
 function collectPickup(p){
  if(p.kind==="crate"){const reward=Math.floor(Math.random()*4);if(reward===0){score=Math.min(FINAL_SCORE,score+180);burst(p.x,p.y,"#ffd77a",28);$("eventBanner").textContent="صندوق مفاجآت · +180 نقطة";}else if(reward===1){addLifetimeStar(8);burst(p.x,p.y,"#74caff",28);$("eventBanner").textContent="صندوق مفاجآت · +8 نجوم";}else if(reward===2){shieldTime=7;magnetTime=0;burst(p.x,p.y,"#76e4e4",28);$("eventBanner").textContent="صندوق مفاجآت · درع مجاني";}else{magnetTime=9;shieldTime=0;burst(p.x,p.y,"#a99bff",28);$("eventBanner").textContent="صندوق مفاجآت · مغناطيس ممتد";}$("eventBanner").hidden=false;sound(1120,.2,"triangle");}
- else if(p.kind==="shield"){shieldTime=6+(progress.upgrades.shield||0)*1.25;magnetTime=0;burst(p.x,p.y,"#76e4e4",22);sound(840,.13,"sine");}
- else{magnetTime=7+(progress.upgrades.magnet||0)*1.3;shieldTime=0;burst(p.x,p.y,"#a99bff",22);sound(920,.13,"triangle");}
+ else if(p.kind==="shield"){shieldTime=6+(progress.upgrades.shield||0)*1.5;magnetTime=0;burst(p.x,p.y,"#76e4e4",22);sound(840,.13,"sine");}
+ else{magnetTime=7+(progress.upgrades.magnet||0)*1.6;shieldTime=0;burst(p.x,p.y,"#a99bff",22);sound(920,.13,"triangle");}
  updateHUD();
 }
 function recordFact(index,toast=true){
@@ -695,7 +700,7 @@ function update(dt){
  const interval=Math.max(.28,.88-level*.055);
  while(spawnClock>interval){spawnClock-=interval;spawn();}
 
- player.x+=(player.targetX-player.x)*Math.min(1,step*(14+(progress.upgrades.engine||0)*2.4+(repairedShip()?2:0))*(boostTime>0?1.65:1));
+ player.x+=(player.targetX-player.x)*Math.min(1,step*(14+(progress.upgrades.engine||0)*3+(repairedShip()?2:0))*(boostTime>0?1.65:1));
  player.y+=(player.targetY-player.y)*Math.min(1,step*(14+(progress.upgrades.engine||0)*2.4+(repairedShip()?2:0))*(boostTime>0?1.65:1));
  player.x=clamp(player.x,player.r+7,width-player.r-7);player.y=clamp(player.y,height*.42,height-28);
  player.invulnerable=Math.max(0,player.invulnerable-step);
@@ -709,7 +714,7 @@ function update(dt){
    if(discoveryToastTime<=0){$("discoveryToast").classList.remove("show");$("discoveryToast").hidden=true;}
  }
  if(magnetTime>0){
-   for(const s of stars){const dx=player.x-s.x,dy=player.y-s.y,d=Math.hypot(dx,dy);if(d<175+(progress.upgrades.magnet||0)*35&&d>1){const range=175+(progress.upgrades.magnet||0)*35;const pull=(1-d/range)*420;s.x+=dx/d*pull*step;s.y+=dy/d*pull*step;}}
+   for(const s of stars){const dx=player.x-s.x,dy=player.y-s.y,d=Math.hypot(dx,dy);if(d<175+(progress.upgrades.magnet||0)*45&&d>1){const range=175+(progress.upgrades.magnet||0)*45;const pull=(1-d/range)*(420+(progress.upgrades.magnet||0)*35);s.x+=dx/d*pull*step;s.y+=dy/d*pull*step;}}
  }
  for(let i=blackHoles.length-1;i>=0;i--){
    const b=blackHoles[i];b.age+=step;b.life-=step;b.spin+=step*.7;
@@ -740,7 +745,7 @@ function update(dt){
  for(let i=rocks.length-1;i>=0;i--){const r=rocks[i];r.x+=r.vx*step;r.y+=r.vy*step;r.rot+=r.spin*step;if(r.x<r.r||r.x>width-r.r)r.vx*=-1;
    const dx=player.x-r.x,dy=player.y-r.y,d=Math.hypot(dx,dy);
    if(!r.nearMiss&&d<player.r+r.r+18&&d>player.r+r.r*.83){r.nearMiss=true;nearMisses++;checkMission();score=Math.min(FINAL_SCORE,score+5);burst(r.x,r.y,"#a99bff",5);updateHUD();}
-   if(circleHit(player,{...r,r:r.r*.83})){rocks.splice(i,1);if(shieldTime>0){shieldTime=0;player.invulnerable=.65;burst(r.x,r.y,"#76e4e4",24);sound(520,.16,"triangle");updateHUD();}else hitRock(r);if(state!=="running")return;continue;}
+   if(circleHit(player,{...r,r:r.r*.83})){rocks.splice(i,1);if(shieldTime>0){shieldTime=0;player.invulnerable=.65+(progress.upgrades.shield||0)*.15;burst(r.x,r.y,"#76e4e4",24);sound(520,.16,"triangle");updateHUD();}else hitRock(r);if(state!=="running")return;continue;}
    if(r.y>height+35)rocks.splice(i,1);
  }
  for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.x+=p.vx*step;p.y+=p.vy*step;p.vx*=.985;p.vy*=.985;p.life-=step;if(p.life<=0)particles.splice(i,1);}
@@ -915,7 +920,7 @@ window.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("atlasModal").hidd
 $("pauseButton").addEventListener("click",()=>state==="running"?pause():state==="over"?start():null);
 $("boostButton").addEventListener("click",activateBoost);
 $("finaleReturn").addEventListener("click",backToMenu);
-window.addEventListener("orbit:wallet-updated",event=>{const bank=Number(event.detail?.bank);if(!Number.isFinite(bank)||bank<0)return;progress.bank=Math.floor(bank);saveProgress();renderSkins();});
+window.addEventListener("orbit:wallet-updated",event=>{const bank=Number(event.detail?.bank);if(!Number.isFinite(bank)||bank<0)return;progress.bank=Math.floor(bank);saveProgress();renderSkins();if(!$("hangarModal").hidden)renderWorkshop();});
 $("rescueButton").addEventListener("click",()=>{if(state!=="rescue"||runRescueUsed||progress.bank<80)return;progress.bank-=80;runRescueUsed=true;lives=1;player.invulnerable=2.8;state="running";$("arenaMessage").hidden=true;$("rescueButton").hidden=true;$("resumeButton").hidden=false;$("exitButton").hidden=true;updateHUD();last=performance.now();requestAnimationFrame(loop);});
 $("resumeButton").addEventListener("click",()=>{if(state==="paused")resume();else if(state==="over")start();});
 $("exitButton").addEventListener("click",()=>{if(state==="rescue")endGame();backToMenu();});
