@@ -439,26 +439,53 @@ function renderFinaleWinners(){
  ).join(""):'<p class="finale-no-winners">لا توجد أسماء مسجلة بعد.</p>';
 }
 function playFinaleLogoSound(){
- sound(420,.09,"square");
- finaleLater(()=>sound(690,.11,"triangle"),150);
- finaleLater(()=>sound(540,.13,"square"),330);
- finaleLater(()=>sound(880,.2,"sine"),510);
+ if(muted)return;
+ try{
+  audio=audio||new(window.AudioContext||window.webkitAudioContext)();
+  const ctx=audio,now=ctx.currentTime;
+  if(ctx.state==="suspended")ctx.resume().catch(()=>{});
+  const master=ctx.createGain();
+  master.gain.setValueAtTime(.88,now);
+  master.connect(ctx.destination);
+  const sweep=(from,to,duration,type,volume,delay=0,cutoff=900)=>{
+   const start=now+delay,osc=ctx.createOscillator(),gain=ctx.createGain(),filter=ctx.createBiquadFilter();
+   osc.type=type;
+   osc.frequency.setValueAtTime(from,start);
+   osc.frequency.exponentialRampToValueAtTime(to,start+duration);
+   filter.type="lowpass";filter.frequency.setValueAtTime(cutoff,start);filter.frequency.exponentialRampToValueAtTime(Math.max(90,cutoff*.38),start+duration);
+   gain.gain.setValueAtTime(.001,start);
+   gain.gain.linearRampToValueAtTime(volume,start+.035);
+   gain.gain.exponentialRampToValueAtTime(.001,start+duration);
+   osc.connect(filter);filter.connect(gain);gain.connect(master);
+   osc.start(start);osc.stop(start+duration+.03);
+  };
+  // Deep cinematic impact with a descending engine-like sweep, not a short electronic beep.
+  sweep(68,34,1.45,"sine",.48,0,180);
+  sweep(185,52,1.18,"sawtooth",.19,0,620);
+  sweep(620,235,.82,"triangle",.075,.035,1900);
+ }catch(_){}
 }
 function startFinaleSequence(){
- clearFinaleTimers();$("arenaMessage").hidden=true;$("eventBanner").hidden=true;$("discoveryToast").hidden=true;$("arenaHint").style.opacity="0";
+ clearFinaleTimers();
+ $("arenaMessage").hidden=true;$("eventBanner").hidden=true;$("discoveryToast").hidden=true;$("arenaHint").style.opacity="0";
  $("pauseButton").hidden=true;$("boostButton").hidden=true;
- $("finaleEarth").hidden=false;$("finaleCredits").hidden=true;$("finaleUpdate").hidden=true;$("finaleTagline").hidden=true;$("finaleWinners").hidden=true;$("finaleReturn").hidden=true;$("finaleScreen").hidden=false;
+ $("finaleEarth").hidden=false;$("finaleCredits").hidden=true;$("finaleCredits").classList.remove("finalizing");$("finaleScreen").hidden=false;
+ // The arrival scene plays first. The logo and its sound start on the exact same frame.
  finaleLater(()=>{
   $("finaleEarth").hidden=true;$("finaleCredits").hidden=false;
   playFinaleLogoSound();
  },4200);
- finaleLater(()=>$("finaleUpdate").hidden=false,5350);
- finaleLater(()=>$("finaleTagline").hidden=false,6100);
+ // Hold the title card, fade it away, then return to the game's home screen.
+ finaleLater(()=>$("finaleCredits").classList.add("finalizing"),10500);
  finaleLater(()=>{
-  renderFinaleWinners();
-  $("finaleWinners").hidden=false;
- },7600);
- finaleLater(()=>$("finaleReturn").hidden=false,16500);
+  $("finaleScreen").hidden=true;
+  $("gamePanel").hidden=true;
+  $("intro").hidden=false;
+  $("features").hidden=false;
+  $("pauseButton").hidden=false;
+  $("boostButton").hidden=false;
+  state="menu";
+ },11400);
 }
 function beginFinale(){if(state==="finale")return;score=FINAL_SCORE;endGame(true);}
 function start(){
