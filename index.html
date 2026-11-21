@@ -32,14 +32,14 @@
     <div class="intro-copy">
       <p class="eyebrow">رحلة قصيرة خارج المألوف</p>
       <h1>المجرة لا تنتظر<span>.</span></h1>
-      <p class="lead">انطلقي إلى المدار. اجمعي الضوء، تفادي الحطام، وحاولي تحطيم رقمك القياسي.</p>
+      <p class="lead">رحلة إلى المدار: جمع الضوء، تفادي الحطام، ومحاولة تحطيم الرقم القياسي.</p>
       <div class="record-line"><span>أفضل نتيجة</span><strong id="menuBest">000000</strong></div>
       <div class="intro-actions">
-        <button class="primary-button" id="startButton" type="button"><span>ابدئي الرحلة</span><b>↗</b></button>
+        <button class="primary-button" id="startButton" type="button"><span>بدء الرحلة الفردية</span><b>↗</b></button>
         <button class="atlas-button" id="atlasButton" type="button"><span>دفتر الاكتشافات</span><b id="atlasCount">0 / 26</b></button><button class="atlas-button map-open" id="mapButton" type="button"><span>خريطة المجرة</span><b>◎</b></button>
         <button class="atlas-button hangar-open" id="hangarButton" type="button"><span>المركبات والسجل</span><b>✦</b></button>
       </div>
-      <p class="control-note">اسحبي المركبة بإصبعك · أو استخدمي الأسهم / WASD</p>
+      <p class="control-note">تحريك المركبة بالإصبع أو باستخدام الأسهم / WASD</p>
     </div>
     <div class="hero-art" aria-hidden="true">
       <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
@@ -113,7 +113,7 @@
   <div class="atlas-overlay" id="hangarModal" hidden>
     <section class="atlas-dialog hangar-dialog" role="dialog" aria-modal="true" aria-labelledby="hangarHeading">
       <header class="atlas-header"><div><span class="eyebrow">PILOT CENTER / ORBIT</span><h2 id="hangarHeading">مركز الرحّالة</h2></div><button class="atlas-close" id="closeHangar" type="button" aria-label="إغلاق">×</button></header>
-      <p class="atlas-description">اختاري شكل مركبتك، وتابعي قائمة المتصدرين لهذا الجهاز.</p>
+      <p class="atlas-description">اختيار شكل المركبة ومتابعة قائمة المتصدرين على هذا الجهاز.</p>
 
       <section class="profile-panel" aria-labelledby="profilePanelHeading">
         <div class="profile-panel-head">
@@ -144,7 +144,7 @@
         </div>
       </section>
       <section class="backup-panel" aria-labelledby="backupHeading">
-        <div><h3 id="backupHeading">نسخة احتياطية للرحّالة</h3><p>احفظي تقدمك واكتشافاتك قبل تحديث التطبيق أو تغيير الهاتف.</p></div>
+        <div><h3 id="backupHeading">نسخة احتياطية للرحّالة</h3><p>حفظ التقدم والاكتشافات قبل تحديث التطبيق أو تغيير الهاتف.</p></div>
         <div class="backup-actions">
           <button id="exportPilotBackup" type="button">تنزيل نسخة احتياطية</button>
           <button id="importPilotBackup" type="button">استعادة نسخة</button>
@@ -159,11 +159,16 @@
         </div>
         <p class="fleet-intro">عثر المستكشفون على مركبة قديمة صُممت للعودة إلى الأرض. ساهموا في إصلاحها، واكتشفوا سجل رحلتها المفقود.</p>
         <div class="fleet-ship-art" aria-hidden="true"><span class="fleet-orbit"></span><span class="fleet-ship">✧</span><i></i></div>
-        <div class="fleet-progress-meta"><strong id="fleetStageTitle">هيكل المركبة</strong><span id="fleetProgressAmount">0 / 100</span></div>
+        <div class="fleet-mode-switch" role="group" aria-label="نوع إصلاح المركبة">
+          <button type="button" data-fleet-mode="solo" class="active">إصلاح فردي · 1000 ✦</button>
+          <button type="button" data-fleet-mode="group">إصلاح جماعي · 5000 ✦</button>
+        </div>
+        <div class="fleet-progress-meta"><strong id="fleetStageTitle">هيكل المركبة</strong><span id="fleetProgressAmount">0 / 5000 ✦</span></div>
         <div class="fleet-progress-track"><i id="fleetProgressFill"></i></div>
         <p class="fleet-stage-detail" id="fleetStageDetail">تم العثور على مركبة العودة. هيكلها متضرر وسجلاتها مشوشة.</p>
-        <button class="fleet-contribute" id="fleetContribute" type="button">جرّبي المساهمة في الإصلاح +10</button>
-        <p class="fleet-local-warning">تنبيه: هذه معاينة محفوظة على هذا الجهاز فقط. لن تظهر المساهمات لبقية اللاعبين قبل ربط قاعدة البيانات.</p>
+        <p class="fleet-repair-status" id="fleetRepairStatus" role="status" aria-live="polite">الإصلاح الفردي يقوّي المركبة ويمنحها فرصة إضافية في الرحلة.</p>
+        <button class="fleet-contribute" id="fleetContribute" type="button">إصلاح المركبة · 1000 ✦</button>
+        <p class="fleet-local-warning">تنبيه: الإصلاح الجماعي هنا معاينة محلية فقط. مشاركة الرصيد والتقدم بين الأجهزة ستعمل بعد ربط Supabase.</p>
         <h4 class="fleet-subheading">سجل المستكشفين</h4>
         <div class="fleet-crew-list" id="fleetCrewList"><p class="fleet-empty">لم تُسجّل مساهمات في هذه المعاينة بعد.</p></div>
         <h4 class="fleet-subheading">السجلات المستعادة</h4>
@@ -171,9 +176,9 @@
       </section>
       <h3 class="hangar-subtitle">مظهر المركبة</h3>
       <div class="star-wallet"><span>رصيد النجوم</span><strong><b id="starBalance">0</b> ✦</strong></div>
-      <p class="atlas-description skin-shop-note" id="skinShopNotice" aria-live="polite">اجمعي النجوم أثناء الرحلات، أو أكملي المهمات لتحصلي على مكافآت إضافية.</p>
+      <p class="atlas-description skin-shop-note" id="skinShopNotice" aria-live="polite">جمع النجوم أثناء الرحلات أو إكمال المهمات يمنح مكافآت إضافية.</p>
       <div class="skin-grid" id="skinGrid"></div><h3 class="hangar-subtitle">آثار المركبة</h3><div class="trail-grid" id="trailGrid"></div><h3 class="hangar-subtitle">قدرة الاندفاع</h3><div class="ability-shop" id="abilityShop"></div><h3 class="hangar-subtitle">تحدي اليوم</h3><div class="daily-card" id="dailyCard"></div>
-      <h3 class="hangar-subtitle">ورشة تطوير المركبة</h3><p class="atlas-description">طوّري قدراتك بالنجوم. كل ترقية لها ثلاثة مستويات.</p><div class="upgrade-grid" id="upgradeGrid"></div>
+      <h3 class="hangar-subtitle">ورشة تطوير المركبة</h3><p class="atlas-description">تطوير القدرات بالنجوم. لكل ترقية ثلاثة مستويات.</p><div class="upgrade-grid" id="upgradeGrid"></div>
       <h3 class="hangar-subtitle">سجل الرحلات والاستكشافات السرية</h3><div class="journey-stats" id="journeyStats"></div><div class="secret-list" id="secretList"></div>
       <h3 class="hangar-subtitle">سجل الإنجازات</h3>
       <p class="atlas-description" id="achievementSummary">0 من 8 إنجازات مفتوحة</p>
@@ -211,10 +216,11 @@
   </div>
 
   <section class="features" id="features">
-    <article><span class="feature-icon">✦</span><div><strong>اجمعي الضوء</strong><small>كل نجمة ترفع نتيجتك</small></div></article>
+    <article><span class="feature-icon">✦</span><div><strong>جمع الضوء</strong><small>كل نجمة ترفع النتيجة</small></div></article>
     <article><span class="feature-icon danger">◇</span><div><strong>تفادي الشهب</strong><small>ثلاث فرص فقط لكل رحلة</small></div></article>
-    <article><span class="feature-icon violet">⌁</span><div><strong>قوى المدار</strong><small>درع يحميك ومغناطيس يجذب النجوم</small></div></article>
-    <article><span class="feature-icon blackhole-feature">◉</span><div><strong>أفق الحدث</strong><small>قاومي جاذبية الثقب الأسود</small></div></article>
+    <article><span class="feature-icon violet">⌁</span><div><strong>قوى المدار</strong><small>درع للحماية ومغناطيس لجذب النجوم</small></div></article>
+    <article><span class="feature-icon blackhole-feature">◉</span><div><strong>أفق الحدث</strong><small>مقاومة جاذبية الثقب الأسود</small></div></article>
+    <article class="friends-feature"><span class="feature-icon">✧</span><div><strong>اللعب مع الأصدقاء</strong><small>تعاون جماعي لإصلاح مركبة العودة والوصول إلى الأرض</small></div></article>
   </section>
   <footer><span>ORBIT / BUILD 4.9 · PILOT IDENTITY</span><span>صُممت لتُلعَب، لا لتُشاهَد فقط.</span></footer>
 </main>
