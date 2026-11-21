@@ -474,9 +474,9 @@ function startFinaleSequence(){
  finaleLater(()=>{
   $("finaleEarth").hidden=true;$("finaleCredits").hidden=false;
   playFinaleLogoSound();
- },4200);
+ },6800);
  // Hold the title card, fade it away, then return to the game's home screen.
- finaleLater(()=>$("finaleCredits").classList.add("finalizing"),10500);
+ finaleLater(()=>$("finaleCredits").classList.add("finalizing"),15000);
  finaleLater(()=>{
   $("finaleScreen").hidden=true;
   $("gamePanel").hidden=true;
@@ -485,7 +485,7 @@ function startFinaleSequence(){
   $("pauseButton").hidden=false;
   $("boostButton").hidden=false;
   state="menu";
- },11400);
+ },16000);
 }
 function beginFinale(){if(state==="finale")return;score=FINAL_SCORE;endGame(true);}
 function start(){
