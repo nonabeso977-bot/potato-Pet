@@ -441,3 +441,13 @@ footer{font-size:8px;margin-top:14px}
 #profileStatus{display:block;margin-top:8px;color:#91a9c7;font-size:9px;line-height:1.8}
 #profileStatus.error{color:#ffb1bf}
 @media(max-width:420px){.profile-panel{padding:12px}.profile-name-row{gap:5px}.profile-name-row button{padding-inline:10px}}
+
+/* ORBIT 5.0 · repair modes and crew feature */
+.friends-feature{border-color:#76e4e455!important;background:linear-gradient(135deg,#17304a,#111c35)!important}
+.friends-feature .feature-icon{color:#8fdfff;background:#74caff18}
+.fleet-mode-switch{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.fleet-mode-switch button{min-width:0;padding:10px 8px;border:1px solid #ffffff22;border-radius:11px;background:#ffffff08;color:#aabbd7;font:600 11px "Changa",sans-serif;cursor:pointer}
+.fleet-mode-switch button.active{border-color:#76e4e4aa;background:#76e4e416;color:#e8fbff;box-shadow:inset 0 0 18px #76e4e40b}
+.fleet-repair-status{min-height:24px;margin:8px 0;color:#9fe7e9;font-size:11px;line-height:1.8}
+.fleet-contribute:disabled{opacity:.55;cursor:not-allowed}
+@media(max-width:650px){.fleet-mode-switch{grid-template-columns:1fr}.friends-feature{grid-column:auto}}
