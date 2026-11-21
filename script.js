@@ -17,7 +17,7 @@ const ACHIEVEMENTS=[
  {id:"all-sectors",icon:"◉",name:"رحّالة المجرة",desc:"زيارة المناطق الفضائية السبع."},
  {id:"atlas-master",icon:"✧",name:"موسوعة مكتملة",desc:"جمع الاكتشافات الفضائية الستة والثلاثين."}
 ];
-const FINAL_SCORE=90 // TEMPORARY: finale test threshold, restore to 10000 after verification;
+const FINAL_SCORE=100000; // Final score required to trigger the finale.
 const STAGES=[{name:"مدار الأرض",hint:"نجوم زرقاء وهواء هادئ",bg:"#10264a",glow:"#275b83",rock:"#63829b"},{name:"سهول المريخ",hint:"غبار أحمر وصخور أكثر",bg:"#3a1d2a",glow:"#a34c45",rock:"#bd7864"},{name:"حلقات زحل",hint:"غبار ذهبي وحلقات لامعة",bg:"#352b20",glow:"#a17a42",rock:"#b89a6c"},{name:"حافة السديم",hint:"سحب بنفسجية وثقوب سوداء",bg:"#251b45",glow:"#7654a8",rock:"#8c79b7"},{name:"حزام الكويكبات",hint:"صخور متناثرة وحقول كثيفة",bg:"#252638",glow:"#777b9d",rock:"#9b91a8"},{name:"مدار المشتري",hint:"عملاق غازي وعواصف بعيدة",bg:"#33251f",glow:"#a16b50",rock:"#c18d70"},{name:"العودة إلى الأرض",hint:"إشارة زرقاء تظهر في الأفق",bg:"#071b35",glow:"#287bb5",rock:"#7197b8"}];
 const MISSIONS=[
  {id:"stars",title:"جمع 20 نجمة",target:20,unit:"نجمة",reward:150,starReward:15},
