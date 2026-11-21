@@ -459,3 +459,26 @@ footer{font-size:8px;margin-top:14px}
 .upgrade-effect.next{border-color:#a99bff2b;background:#a99bff09}
 .upgrade-effect.next span{color:#c9bdff}
 .upgrade-card p{min-height:0}
+
+
+/* Compact discovery notice: keep the playfield visible. */
+.discovery-toast{
+  top:8px;
+  width:min(240px,calc(100% - 72px));
+  max-height:76px;
+  overflow:hidden;
+  padding:7px 10px;
+  border-radius:12px;
+}
+.discovery-kicker{font-size:7px;letter-spacing:1px}
+.discovery-toast strong{margin-top:2px;font-size:12px;line-height:1.35}
+.discovery-toast p{
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  overflow:hidden;
+  margin:2px 0 0;
+  font-size:9px;
+  line-height:1.4;
+}
+.discovery-toast small{margin-top:2px;font-size:8px}
