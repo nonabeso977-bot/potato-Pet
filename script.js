@@ -328,7 +328,7 @@ function unlockSecret(id){
   $("discoveryTitle").textContent="اكتشاف سري: "+names[id];
   $("discoveryFact").textContent="رصدتِ حدثًا نادرًا في الفضاء. عاد هذا الاكتشاف إلى سجل رحلاتك.";
   $("discoveryToast").hidden=false;$("discoveryToast").classList.remove("show");
-  requestAnimationFrame(()=>$("discoveryToast").classList.add("show"));discoveryToastTime=4.2;
+  requestAnimationFrame(()=>$("discoveryToast").classList.add("show"));discoveryToastTime=3.6;
  }
 }
 function renderSkins(){
@@ -366,7 +366,7 @@ function showDiscovery(index){
  $("discoveryTitle").textContent=fact.title;$("discoveryFact").textContent=fact.body;
  toast.hidden=false;toast.classList.remove("show");
  requestAnimationFrame(()=>toast.classList.add("show"));
- discoveryToastTime=5.2;
+ discoveryToastTime=3.6;
 }
 function resize(){
  const rect=canvas.getBoundingClientRect();if(!rect.width||!rect.height)return;
