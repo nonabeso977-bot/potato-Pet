@@ -632,3 +632,7 @@ footer{font-size:8px;margin-top:14px}
 @keyframes fleetShipArrival{0%{opacity:0;transform:translate(58px,-34px) scale(.48) rotate(13deg)}18%{opacity:1}72%{transform:translate(-8px,34px) scale(.9) rotate(3deg)}100%{opacity:1;transform:translate(-10px,46px) scale(1) rotate(0)}}
 @media(max-width:520px){.finale-earth-globe{width:min(72vw,310px);min-width:210px}.fleet-return-ship{top:23%;width:118px;height:66px}.finale-earth-scene{gap:13px}}
 @media(prefers-reduced-motion:reduce){.finale-earth-scene,.finale-earth-globe,.fleet-return-ship{animation:none}}
+
+/* Keep the ship centered on narrow and wide screens. */
+.fleet-return-ship{margin-left:calc(clamp(112px,26vw,168px) / -2)}
+@media(max-width:520px){.fleet-return-ship{margin-left:-59px}}
